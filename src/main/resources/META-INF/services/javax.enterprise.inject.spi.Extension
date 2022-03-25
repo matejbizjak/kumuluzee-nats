@@ -1,2 +1,3 @@
 com.kumuluz.ee.nats.cdi.NatsClientInitializer
 com.kumuluz.ee.nats.cdi.NatsListenerInitializer
+com.kumuluz.ee.nats.connection.NatsConnectionInitializer

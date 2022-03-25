@@ -1,17 +1,25 @@
 package com.kumuluz.ee.nats.annotations;
 
+import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Qualifier;
-import java.lang.annotation.ElementType;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 /**
  * @author Matej Bizjak
  */
 
+@Documented
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
 public @interface NatsClient {
+    NatsClient LITERAL = new NatsClient.NatsClientLiteral();
+
+    public static class NatsClientLiteral extends AnnotationLiteral<NatsClient> implements NatsClient {
+        public NatsClientLiteral() {
+
+        }
+    }
+
 }
