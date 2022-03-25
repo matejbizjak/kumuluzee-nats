@@ -23,6 +23,6 @@ public class NatsExtension implements Extension {
 
     @Override
     public void init(KumuluzServerWrapper kumuluzServerWrapper, EeConfig eeConfig) {
-        LOGGER.info("Initialising KumuluzEE NATS extension.");
+        LOGGER.info("Initialising KumuluzEE NATS Core extension.");
     }
 }
