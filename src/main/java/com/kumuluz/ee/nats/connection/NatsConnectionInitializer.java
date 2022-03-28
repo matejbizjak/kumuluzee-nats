@@ -3,6 +3,7 @@ package com.kumuluz.ee.nats.connection;
 import com.kumuluz.ee.nats.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.connection.config.NatsConnectionConfig;
 
+import javax.annotation.Priority;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.Extension;
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors;
 
 public class NatsConnectionInitializer implements Extension {
 
-    void after(@Observes AfterDeploymentValidation adv) {
+    void after(@Observes @Priority(2500) AfterDeploymentValidation adv) {
         NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
         natsConfigLoader.readConfiguration();
         Set<NatsConnectionConfig> configs = natsConfigLoader.getConfigs();

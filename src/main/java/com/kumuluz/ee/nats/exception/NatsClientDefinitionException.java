@@ -7,7 +7,6 @@ package com.kumuluz.ee.nats.exception;
 public class NatsClientDefinitionException extends RuntimeException {
 
     public NatsClientDefinitionException() {
-
     }
 
     public NatsClientDefinitionException(String message) {

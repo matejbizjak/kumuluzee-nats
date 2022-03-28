@@ -69,6 +69,11 @@ public class NatsClientInvoker implements InvocationHandler {
         if (subjectAnnotation != null) {
             connectionName = subjectAnnotation.connection();
         }
+
+        if (connectionName.isEmpty()) {
+            connectionName = "default";
+        }
+
         return connectionName;
     }
 
