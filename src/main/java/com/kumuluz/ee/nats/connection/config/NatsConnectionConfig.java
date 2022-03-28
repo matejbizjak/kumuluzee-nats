@@ -1,5 +1,6 @@
 package com.kumuluz.ee.nats.connection.config;
 
+import io.nats.client.Nats;
 import io.nats.client.Options;
 
 import javax.net.ssl.SSLContext;
@@ -43,13 +44,9 @@ public abstract class NatsConnectionConfig {
 
     private boolean noEcho;
 
-    private boolean utf8Support;
-
     private String username;
 
     private String password;
-
-    private String token;
 
     private String credentials;
 
@@ -127,14 +124,6 @@ public abstract class NatsConnectionConfig {
         this.noEcho = noEcho;
     }
 
-    public boolean isUtf8Support() {
-        return utf8Support;
-    }
-
-    public void setUtf8Support(boolean utf8Support) {
-        this.utf8Support = utf8Support;
-    }
-
     public String getUsername() {
         return username;
     }
@@ -151,14 +140,6 @@ public abstract class NatsConnectionConfig {
         this.password = password;
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public String getCredentials() {
         return credentials;
     }
@@ -173,6 +154,40 @@ public abstract class NatsConnectionConfig {
 
     public void setTls(TLS tls) {
         this.tls = tls;
+    }
+
+    /**
+     * @return NATS options builder based on this set of properties
+     * @throws IOException if there is a problem reading a file or setting up the SSL context
+     * @throws GeneralSecurityException if there is a problem setting up the SSL context
+     */
+    public Builder toOptionsBuilder() throws IOException, GeneralSecurityException {
+        Builder builder = new Builder();
+
+        builder = builder.servers(this.addresses.toArray(new String[0]));
+        builder = builder.maxReconnects(this.maxReconnect);
+        builder = builder.reconnectWait(this.reconnectWait);
+        builder = builder.connectionTimeout(this.connectionTimeout);
+        builder = builder.connectionName(this.name);
+        builder = builder.pingInterval(this.pingInterval);
+        builder = builder.reconnectBufferSize(this.reconnectBufferSize);
+        builder = builder.inboxPrefix(this.inboxPrefix);
+
+        if (this.noEcho) {
+            builder = builder.noEcho();
+        }
+
+        if (this.credentials != null && !this.credentials.isEmpty()) {
+            builder = builder.authHandler(Nats.credentials(this.credentials));
+        } else if (this.username != null && !this.username.isEmpty()) {
+            builder = builder.userInfo(this.username, this.password);
+        }
+
+        if (this.tls != null) {
+            builder.sslContext(this.tls.createTlsContext());
+        }
+
+        return builder;
     }
 
     /**

@@ -45,7 +45,7 @@ public class NatsConfigLoader {
                 SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
                 readAndSetConfigClass(configurationUtil, singleConfig, natsCorePrefix);
             } else {
-                throw new IllegalStateException("Configuration key '" + natsCorePrefix + "' required but not found.");
+                throw configNotFoundException(natsCorePrefix).get();
             }
         }
     }
@@ -88,18 +88,12 @@ public class NatsConfigLoader {
         // no-echo
         Optional<Boolean> noEcho = configurationUtil.getBoolean(currentPrefix + ".no-echo");
         noEcho.ifPresent(natsConnectionConfig::setNoEcho);
-        // utf8-support
-        Optional<Boolean> utf8Support = configurationUtil.getBoolean(currentPrefix + ".utf8-support");
-        utf8Support.ifPresent(natsConnectionConfig::setUtf8Support);
         // username
         Optional<String> username = configurationUtil.get(currentPrefix + ".username");
         username.ifPresent(natsConnectionConfig::setUsername);
         // password
         Optional<String> password = configurationUtil.get(currentPrefix + ".password");
         password.ifPresent(natsConnectionConfig::setPassword);
-        // token
-        Optional<String> token = configurationUtil.get(currentPrefix + ".token");
-        token.ifPresent(natsConnectionConfig::setToken);
         // credentials
         Optional<String> credentials = configurationUtil.get(currentPrefix + ".credentials");
         credentials.ifPresent(natsConnectionConfig::setCredentials);
