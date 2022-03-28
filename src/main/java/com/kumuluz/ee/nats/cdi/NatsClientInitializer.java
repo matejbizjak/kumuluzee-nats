@@ -47,13 +47,11 @@ public class NatsClientInitializer implements Extension {
                     , beanManager
             );
 
-            Class scopeClass = resolveScope(annotatedType.getJavaClass());
-
             BeanBuilder<T> beanBuilder = new BeanBuilder<>(beanManager)
                     .readFromType(annotatedType)
                     .qualifiers(new NatsClient.NatsClientLiteral(), new DefaultLiteral(), new AnyLiteral())
                     .passivationCapable(true)
-                    .scope(scopeClass)
+                    .scope(resolveScope(annotatedType.getJavaClass()))
                     .beanLifecycle(lifecycle);
 
             afterBeanDiscovery.addBean(beanBuilder.create());

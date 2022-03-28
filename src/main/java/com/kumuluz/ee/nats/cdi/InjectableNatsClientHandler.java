@@ -1,5 +1,7 @@
 package com.kumuluz.ee.nats.cdi;
 
+import com.kumuluz.ee.nats.other.NatsClientBuilder;
+
 import javax.enterprise.context.Dependent;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -14,14 +16,17 @@ import java.util.Map;
 @Dependent
 public class InjectableNatsClientHandler implements InvocationHandler {
 
-    private Map<Class, Object> natsClientInvokerCache = new HashMap<>();
+    private final Map<Class, Object> natsClientInvokerCache = new HashMap<>();
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object natsClientInvoker = natsClientInvokerCache.get(method.getDeclaringClass());
 
         if (natsClientInvoker == null) {
-            // TODO
+            NatsClientBuilder natsClientBuilder = NatsClientBuilder.getInstance();
+
+            natsClientInvoker = natsClientBuilder.build(method.getDeclaringClass());
+            natsClientInvokerCache.put(method.getDeclaringClass(), natsClientInvoker);
         }
 
         try {
