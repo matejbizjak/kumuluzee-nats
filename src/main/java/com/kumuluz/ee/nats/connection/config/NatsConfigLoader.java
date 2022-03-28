@@ -73,6 +73,51 @@ public class NatsConfigLoader {
         // reconnect-wait
         Optional<Integer> reconnectWait = configurationUtil.getInteger(currentPrefix + ".reconnect-wait");
         reconnectWait.ifPresent(integer -> natsConnectionConfig.setReconnectWait(Duration.ofSeconds(integer)));
-        // TODO
+        // connection-timeout
+        Optional<Integer> connectionTimeout = configurationUtil.getInteger(currentPrefix + ".connection-timeout");
+        connectionTimeout.ifPresent(integer -> natsConnectionConfig.setConnectionTimeout(Duration.ofSeconds(integer)));
+        // ping-interval
+        Optional<Integer> pingInterval = configurationUtil.getInteger(currentPrefix + ".ping-interval");
+        pingInterval.ifPresent(integer -> natsConnectionConfig.setPingInterval(Duration.ofSeconds(integer)));
+        // reconnect-buffer-size
+        Optional<Long> reconnectBufferSize = configurationUtil.getLong(currentPrefix + ".reconnect-buffer-size");
+        reconnectBufferSize.ifPresent(natsConnectionConfig::setReconnectBufferSize);
+        // inbox-prefix
+        Optional<String> inboxPrefix = configurationUtil.get(currentPrefix + ".inbox-prefix");
+        inboxPrefix.ifPresent(natsConnectionConfig::setInboxPrefix);
+        // no-echo
+        Optional<Boolean> noEcho = configurationUtil.getBoolean(currentPrefix + ".no-echo");
+        noEcho.ifPresent(natsConnectionConfig::setNoEcho);
+        // utf8-support
+        Optional<Boolean> utf8Support = configurationUtil.getBoolean(currentPrefix + ".utf8-support");
+        utf8Support.ifPresent(natsConnectionConfig::setUtf8Support);
+        // username
+        Optional<String> username = configurationUtil.get(currentPrefix + ".username");
+        username.ifPresent(natsConnectionConfig::setUsername);
+        // password
+        Optional<String> password = configurationUtil.get(currentPrefix + ".password");
+        password.ifPresent(natsConnectionConfig::setPassword);
+        // token
+        Optional<String> token = configurationUtil.get(currentPrefix + ".token");
+        token.ifPresent(natsConnectionConfig::setToken);
+        // credentials
+        Optional<String> credentials = configurationUtil.get(currentPrefix + ".credentials");
+        credentials.ifPresent(natsConnectionConfig::setCredentials);
+
+        // TLS
+        NatsConnectionConfig.TLS tls = new NatsConnectionConfig.TLS();
+        // trust-store-type
+        Optional<String> trustStoreType = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-type");
+        trustStoreType.ifPresent(tls::setTrustStoreType);
+        // trust-store-path
+        Optional<String> trustStorePath = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-path");
+        trustStorePath.ifPresent(tls::setTrustStorePath);
+        // trust-store-password
+        Optional<String> trustStorePassword = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-password");
+        trustStorePassword.ifPresent(tls::setTrustStorePassword);
+        // certificate-path
+        Optional<String> certificatePath = configurationUtil.get(currentPrefix + ".tls" + ".certificate-path");
+        certificatePath.ifPresent(tls::setCertificatePath);
+        natsConnectionConfig.setTls(tls);
     }
 }
