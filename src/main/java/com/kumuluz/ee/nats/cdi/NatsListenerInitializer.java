@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.cdi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.kumuluz.ee.nats.NatsExtension;
 import com.kumuluz.ee.nats.annotations.NatsListener;
 import com.kumuluz.ee.nats.annotations.Subject;
 import com.kumuluz.ee.nats.connection.NatsConnection;
@@ -51,6 +52,10 @@ public class NatsListenerInitializer implements Extension {
     }
 
     public void after(@Observes @Priority(2600) AfterDeploymentValidation adv, BeanManager beanManager) {
+        if (!NatsExtension.isExtensionEnabled()) {
+            return;
+        }
+
         for (ListenerMethod inst : listenerMethods) {
             LOG.info("Found method " + inst.getMethod().getName() + " in class " +
                     inst.getMethod().getDeclaringClass());

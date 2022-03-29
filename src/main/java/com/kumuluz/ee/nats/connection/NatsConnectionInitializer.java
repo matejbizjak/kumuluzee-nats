@@ -1,5 +1,6 @@
 package com.kumuluz.ee.nats.connection;
 
+import com.kumuluz.ee.nats.NatsExtension;
 import com.kumuluz.ee.nats.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.connection.config.NatsConnectionConfig;
 
@@ -19,6 +20,10 @@ import java.util.concurrent.Executors;
 public class NatsConnectionInitializer implements Extension {
 
     void after(@Observes @Priority(2500) AfterDeploymentValidation adv) {
+        if (!NatsExtension.isExtensionEnabled()) {
+            return;
+        }
+
         NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
         natsConfigLoader.readConfiguration();
         Set<NatsConnectionConfig> configs = natsConfigLoader.getConfigs();

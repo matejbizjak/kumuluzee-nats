@@ -1,5 +1,6 @@
 package com.kumuluz.ee.nats.cdi;
 
+import com.kumuluz.ee.nats.NatsExtension;
 import com.kumuluz.ee.nats.annotations.NatsClient;
 import com.kumuluz.ee.nats.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.proxy.NatsClientProxyFactory;
@@ -39,6 +40,10 @@ public class NatsClientInitializer implements Extension {
     }
 
     public <T> void afterBean(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+        if (!NatsExtension.isExtensionEnabled()) {
+            return;
+        }
+
         for (AnnotatedType annotatedType : this.annotatedTypes) {
             DeltaSpikeProxyContextualLifecycle lifecycle = new DeltaSpikeProxyContextualLifecycle(
                     annotatedType.getJavaClass()
