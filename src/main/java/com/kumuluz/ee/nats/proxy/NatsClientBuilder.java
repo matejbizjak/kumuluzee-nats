@@ -1,7 +1,6 @@
-package com.kumuluz.ee.nats.other;
+package com.kumuluz.ee.nats.proxy;
 
 import com.kumuluz.ee.nats.invoker.NatsClientInvoker;
-import com.kumuluz.ee.nats.proxy.NatsClientProxyFactory;
 import com.kumuluz.ee.nats.util.InterfaceValidationUtil;
 import org.apache.deltaspike.core.api.provider.BeanProvider;
 import org.apache.deltaspike.proxy.spi.DeltaSpikeProxy;
@@ -11,6 +10,10 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * @author Matej Bizjak

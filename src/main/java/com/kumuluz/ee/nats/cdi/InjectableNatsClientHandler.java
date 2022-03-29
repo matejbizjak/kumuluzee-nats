@@ -1,6 +1,6 @@
 package com.kumuluz.ee.nats.cdi;
 
-import com.kumuluz.ee.nats.other.NatsClientBuilder;
+import com.kumuluz.ee.nats.proxy.NatsClientBuilder;
 
 import javax.enterprise.context.Dependent;
 import java.lang.reflect.InvocationHandler;

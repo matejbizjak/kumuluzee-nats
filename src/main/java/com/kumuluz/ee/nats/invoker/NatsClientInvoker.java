@@ -1,9 +1,10 @@
 package com.kumuluz.ee.nats.invoker;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kumuluz.ee.nats.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.annotations.Subject;
 import com.kumuluz.ee.nats.connection.NatsConnection;
+import com.kumuluz.ee.nats.connection.config.SingleNatsConnectionConfig;
+import com.kumuluz.ee.nats.util.SerDes;
 import io.nats.client.Connection;
 import io.nats.client.Message;
 import io.nats.client.impl.NatsMessage;
@@ -12,9 +13,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 /**
@@ -24,7 +23,6 @@ import java.util.logging.Logger;
 public class NatsClientInvoker implements InvocationHandler {
 
     private static final Logger LOG = Logger.getLogger(NatsClientInvoker.class.getName());
-    ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -36,22 +34,22 @@ public class NatsClientInvoker implements InvocationHandler {
         Connection connection = NatsConnection.getConnection(connectionName);
 
         NatsMessage.Builder builder = NatsMessage.builder();
-        builder.data(objectMapper.writeValueAsBytes(payload));
+        builder.data(SerDes.serialize(payload));
         builder.subject(subjectName);
         Message message = builder.build();
 
-        if (method.getReturnType().equals(Void.TYPE)) {  // doesn't expect a response
+        if (method.getReturnType().equals(Void.class) || method.getReturnType().equals(void.class)) {  // doesn't expect a response
             connection.publish(message);
         } else { // wait for response
             CompletableFuture<Message> incoming = connection.request(message);
             Message response = null;
-            try {
-                response = incoming.get(10, TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                LOG.info("Couldn't get a response: " + e.getLocalizedMessage());
-            }
+//            try {
+            response = incoming.get(10, TimeUnit.SECONDS);
+//            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+//                LOG.info("Couldn't get a response: " + e.getLocalizedMessage());
+//            }
             if (response != null) {
-                return objectMapper.readValue(response.getData(), returnType);
+                return SerDes.deserialize(response.getData(), returnType);
             }
         }
         return null;
@@ -71,7 +69,7 @@ public class NatsClientInvoker implements InvocationHandler {
         }
 
         if (connectionName.isEmpty()) {
-            connectionName = "default";
+            connectionName = SingleNatsConnectionConfig.DEFAULT_NAME;
         }
 
         return connectionName;
