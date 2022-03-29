@@ -44,6 +44,7 @@ public class NatsConfigLoader {
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
                 SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
                 readAndSetConfigClass(configurationUtil, singleConfig, natsCorePrefix);
+                configs.add(singleConfig);
             } else {
                 throw configNotFoundException(natsCorePrefix).get();
             }
@@ -99,6 +100,10 @@ public class NatsConfigLoader {
         credentials.ifPresent(natsConnectionConfig::setCredentials);
 
         // TLS
+        Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
+        if (!tlsConf.isPresent()) {
+            return;
+        }
         NatsConnectionConfig.TLS tls = new NatsConnectionConfig.TLS();
         // trust-store-type
         Optional<String> trustStoreType = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-type");

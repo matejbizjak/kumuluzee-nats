@@ -27,9 +27,10 @@ public class NatsConnectionInitializer implements Extension {
         NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
         natsConfigLoader.readConfiguration();
         Set<NatsConnectionConfig> configs = natsConfigLoader.getConfigs();
-
-        ExecutorService executorService = Executors.newFixedThreadPool(configs.size());
-        configs.forEach(config -> executorService.execute(() -> NatsConnection.establishConnection(config)));
+        if (configs.size() > 0) {
+            ExecutorService executorService = Executors.newFixedThreadPool(configs.size());
+            configs.forEach(config -> executorService.execute(() -> NatsConnection.establishConnection(config)));
+        }
 //        configs.forEach(NatsConnection::establishConnection);
     }
 }
