@@ -22,11 +22,11 @@ public class NatsConnectionCoordinator {
         if (configs.size() > 0) {
             ExecutorService executorService = Executors.newFixedThreadPool(configs.size());
             configs.forEach(config -> executorService.submit(() -> NatsConnection.establishConnection(config)));
-            awaitTerminationAfterShutdown(executorService);
+            waitForCompletion(executorService);
         }
     }
 
-    private static void awaitTerminationAfterShutdown(ExecutorService threadPool) {
+    private static void waitForCompletion(ExecutorService threadPool) {
         threadPool.shutdown();
         try {
             if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {

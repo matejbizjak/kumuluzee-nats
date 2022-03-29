@@ -13,7 +13,6 @@ import com.kumuluz.ee.nats.util.SerDes;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 
-import javax.annotation.Priority;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
 import javax.enterprise.inject.spi.BeanManager;
@@ -52,7 +51,7 @@ public class NatsListenerInitializer implements Extension {
         }
     }
 
-    public void after(@Observes @Priority(2600) AfterDeploymentValidation adv, BeanManager beanManager) {
+    public void after(@Observes AfterDeploymentValidation adv, BeanManager beanManager) {
         if (!NatsExtension.isExtensionEnabled()) {
             return;
         }

@@ -61,7 +61,7 @@ public class NatsConfigLoader {
         List<String> addresses = new ArrayList<>();
         if (addressesSize.isPresent()) {
             for (int i = 0; i < addressesSize.get(); i++) {
-                Optional<String> address = configurationUtil.get(currentPrefix + "[" + i + "]");
+                Optional<String> address = configurationUtil.get(currentPrefix + ".addresses" + "[" + i + "]");
                 address.ifPresent(addresses::add);
             }
         }
