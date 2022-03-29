@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 
 /**
  * Finds methods which are annotated with a Subject annotations and their class is annotated with NatsListener annotation.
- * And initializes them as listeners to NATS connections.
+ * Also initializes them as listeners to NATS connections.
  *
  * @author Matej Bizjak
  */
@@ -41,7 +41,7 @@ public class NatsListenerInitializer implements Extension {
         Class<?> aClass = processBean.getBean().getBeanClass();
         if (aClass.isAnnotationPresent(NatsListener.class)) {
             NatsListener natsListenerAnnotation = aClass.getAnnotation(NatsListener.class);
-            for (Method method : aClass.getMethods()) {
+            for (Method method : aClass.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Subject.class)) {
                     Subject subjectAnnotation = method.getAnnotation(Subject.class);
                     listenerMethods.add(new ListenerMethod(processBean.getBean(), method, subjectAnnotation
