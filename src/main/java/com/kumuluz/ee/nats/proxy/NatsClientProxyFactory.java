@@ -11,6 +11,7 @@ import java.util.ArrayList;
  */
 
 public class NatsClientProxyFactory extends DeltaSpikeProxyFactory {
+
     private static final NatsClientProxyFactory INSTANCE = new NatsClientProxyFactory();
 
     public static NatsClientProxyFactory getInstance() {
@@ -20,7 +21,6 @@ public class NatsClientProxyFactory extends DeltaSpikeProxyFactory {
     @Override
     protected ArrayList<Method> getDelegateMethods(Class<?> targetClass, ArrayList<Method> allMethods) {
         ArrayList<Method> methods = new ArrayList<>();
-
         for (Method method : allMethods) {
             if (Modifier.isAbstract(method.getModifiers())) {
                 methods.add(method);

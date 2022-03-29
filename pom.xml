@@ -111,16 +111,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.deltaspike.modules</groupId>
-            <artifactId>deltaspike-proxy-module-api</artifactId>
+            <artifactId>deltaspike-partial-bean-module-impl</artifactId>
             <version>${deltaspike.version}</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.deltaspike.modules</groupId>-->
-<!--            <artifactId>deltaspike-partial-bean-module-impl</artifactId>-->
-<!--            <version>${deltaspike.version}</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
     </dependencies>
 
     <!--    <build>-->

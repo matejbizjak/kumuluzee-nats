@@ -15,10 +15,6 @@ import java.lang.reflect.Method;
  * @author Matej Bizjak
  */
 
-/**
- * @author Matej Bizjak
- */
-
 public class NatsClientBuilder {
     private static NatsClientBuilder instance = new NatsClientBuilder();
 

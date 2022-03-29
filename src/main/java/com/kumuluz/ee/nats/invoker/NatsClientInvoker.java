@@ -14,15 +14,12 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * @author Matej Bizjak
  */
 
 public class NatsClientInvoker implements InvocationHandler {
-
-    private static final Logger LOG = Logger.getLogger(NatsClientInvoker.class.getName());
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
