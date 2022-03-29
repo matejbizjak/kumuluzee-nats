@@ -5,6 +5,7 @@ import com.kumuluz.ee.nats.NatsExtension;
 import com.kumuluz.ee.nats.annotations.NatsListener;
 import com.kumuluz.ee.nats.annotations.Subject;
 import com.kumuluz.ee.nats.connection.NatsConnection;
+import com.kumuluz.ee.nats.connection.NatsConnectionCoordinator;
 import com.kumuluz.ee.nats.connection.config.SingleNatsConnectionConfig;
 import com.kumuluz.ee.nats.exception.NatsClientDefinitionException;
 import com.kumuluz.ee.nats.exception.NatsListenerException;
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
 
 /**
  * Finds methods which are annotated with a Subject annotations and their class is annotated with NatsListener annotation.
- * Also initializes them as listeners to NATS connections.
+ * Also initializes them as listeners to previously created NATS connections.
  *
  * @author Matej Bizjak
  */
@@ -55,6 +56,9 @@ public class NatsListenerInitializer implements Extension {
         if (!NatsExtension.isExtensionEnabled()) {
             return;
         }
+
+        NatsConnectionCoordinator.establishAll();  // establish connections
+        // then, create subscriptions
 
         for (ListenerMethod inst : listenerMethods) {
             LOG.info("Found method " + inst.getMethod().getName() + " in class " +
