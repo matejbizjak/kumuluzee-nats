@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 
 public class SerDes {
-    static ObjectMapper objectMapper = new ObjectMapper();
+    static ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public static byte[] serialize(Object object) throws JsonProcessingException {
         return objectMapper.writeValueAsBytes(object);

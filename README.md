@@ -6,3 +6,5 @@ Import:
     <version>0.1-SNAPSHOT</version>
 </dependency>
 ````
+
+Make sure your classes have a default constructor. If not, they will not be de/serialized successfully.
