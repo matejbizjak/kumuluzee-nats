@@ -18,7 +18,7 @@ public class NatsConnectionCoordinator {
     public static void establishAll() {
         NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
         natsConfigLoader.readConfiguration();
-        Set<NatsConnectionConfig> configs = natsConfigLoader.getConfigs();
+        Set<NatsConnectionConfig> configs = natsConfigLoader.getConnectionConfigs();
         if (configs.size() > 0) {
             ExecutorService executorService = Executors.newFixedThreadPool(configs.size());
             configs.forEach(config -> executorService.submit(() -> NatsConnection.establishConnection(config)));

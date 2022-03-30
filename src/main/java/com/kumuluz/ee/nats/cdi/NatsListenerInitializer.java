@@ -76,9 +76,9 @@ public class NatsListenerInitializer implements Extension {
             NatsListener natsListenerAnnotation = inst.getNatsListenerAnnotation();
 
             String subjectName = subjectAnnotation.value();
-            if (subjectName.isEmpty()) {
-                throw new NatsListenerException("The subject is not valid.");  // TODO preveri če dela tudi s praznim subject-om
-            }
+//            if (subjectName.isEmpty()) {
+//                throw new NatsListenerException("The subject is not valid.");  // TODO preveri če dela tudi s praznim subject-om
+//            }
             String connectionName = subjectAnnotation.connection();
             if (connectionName.isEmpty()) {
                 connectionName = natsListenerAnnotation.connection();
@@ -115,7 +115,7 @@ public class NatsListenerInitializer implements Extension {
                 try {
                     responseMsg = method.invoke(reference, args);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new NatsListenerException("Method could not be invoked.", e);
+                    throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
                 }
 
                 if (!isVoid && msg.getReplyTo() != null && !msg.getReplyTo().isEmpty()) {

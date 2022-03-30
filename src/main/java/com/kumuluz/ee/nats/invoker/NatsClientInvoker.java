@@ -3,15 +3,17 @@ package com.kumuluz.ee.nats.invoker;
 import com.kumuluz.ee.nats.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.annotations.Subject;
 import com.kumuluz.ee.nats.connection.NatsConnection;
+import com.kumuluz.ee.nats.connection.config.NatsConfigLoader;
+import com.kumuluz.ee.nats.connection.config.NatsGeneralConfig;
 import com.kumuluz.ee.nats.connection.config.SingleNatsConnectionConfig;
 import com.kumuluz.ee.nats.util.SerDes;
 import io.nats.client.Connection;
 import io.nats.client.Message;
 import io.nats.client.impl.NatsMessage;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,8 +25,9 @@ public class NatsClientInvoker implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
         String connectionName = getAnnotatedConnection(method);
-        String subjectName = getAnnotatedSubject(method);
+        String subjectName = getAnnotatedSubject(method, args);
         Object payload = getPayload(method, args);
         Class<?> returnType = method.getReturnType();
 
@@ -41,7 +44,7 @@ public class NatsClientInvoker implements InvocationHandler {
             CompletableFuture<Message> incoming = connection.request(message);
             Message response = null;
 //            try {
-            response = incoming.get(10, TimeUnit.SECONDS);
+            response = incoming.get(generalConfig.getResponseTimeout(), TimeUnit.SECONDS);
 //            } catch (InterruptedException | ExecutionException | TimeoutException e) {
 //                LOG.info("Couldn't get a response: " + e.getLocalizedMessage());
 //            }
@@ -72,24 +75,21 @@ public class NatsClientInvoker implements InvocationHandler {
         return connectionName;
     }
 
-    private String getAnnotatedSubject(Method method) {
-        String subjectName = null;
-
-        // method annotation variables
+    private String getAnnotatedSubject(Method method, Object[] args) {
+        String subject = null;
+        // method annotation
         Subject subjectAnnotation = method.getAnnotation(Subject.class);
         if (subjectAnnotation != null) {
-            subjectName = subjectAnnotation.value();
+            subject = subjectAnnotation.value();
         }
-        // method parameter variables
-        for (Annotation[] annotations : method.getParameterAnnotations()) {
-            for (Annotation annotation : annotations) {
-                if (annotation.annotationType().equals(Subject.class)) {
-                    subjectAnnotation = (Subject) annotation;
-                    subjectName = subjectAnnotation.value();
-                }
+        // parameter annotation - overrides the method annotation value if both exists
+        Parameter[] parameters = method.getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            if (parameters[i].isAnnotationPresent(Subject.class)) {
+                return (String) args[i];
             }
         }
-        return subjectName;
+        return subject;
     }
 
     private Object getPayload(Method method, Object[] args) {

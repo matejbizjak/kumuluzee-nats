@@ -13,7 +13,8 @@ import java.util.function.Supplier;
 public class NatsConfigLoader {
 
     private static NatsConfigLoader instance;
-    private static final Set<NatsConnectionConfig> configs = new HashSet<>();
+    private static NatsGeneralConfig generalConfig;
+    private static final Set<NatsConnectionConfig> connectionConfigs = new HashSet<>();
 
     public static NatsConfigLoader getInstance() {
         if (instance == null) {
@@ -22,12 +23,20 @@ public class NatsConfigLoader {
         return instance;
     }
 
-    public Set<NatsConnectionConfig> getConfigs() {
-        return configs;
+    public NatsGeneralConfig getGeneralConfig() {
+        return generalConfig;
+    }
+
+    public Set<NatsConnectionConfig> getConnectionConfigs() {
+        return connectionConfigs;
     }
 
     public void readConfiguration() {
         ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
+        // general settings
+        generalConfig = new NatsGeneralConfig();
+        readAndSetGeneralConfigClass(configurationUtil);
+        // connection settings
         String clusterPrefix = "kumuluzee.nats-core.servers";
         Optional<Integer> size = configurationUtil.getListSize(clusterPrefix);
         if (size.isPresent()) {  // cluster configuration
@@ -36,15 +45,15 @@ public class NatsConfigLoader {
                 String name = configurationUtil.get(currentPrefix + ".name")
                         .orElseThrow(configNotFoundException(currentPrefix + ".name"));
                 ClusterNatsConnectionConfig clusterConfig = new ClusterNatsConnectionConfig(name);
-                readAndSetConfigClass(configurationUtil, clusterConfig, currentPrefix);
-                configs.add(clusterConfig);
+                readAndSetConnectionConfigClass(configurationUtil, clusterConfig, currentPrefix);
+                connectionConfigs.add(clusterConfig);
             }
         } else {
             String natsCorePrefix = "kumuluzee.nats-core";
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
                 SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
-                readAndSetConfigClass(configurationUtil, singleConfig, natsCorePrefix);
-                configs.add(singleConfig);
+                readAndSetConnectionConfigClass(configurationUtil, singleConfig, natsCorePrefix);
+                connectionConfigs.add(singleConfig);
             } else {
                 throw configNotFoundException(natsCorePrefix).get();
             }
@@ -55,7 +64,14 @@ public class NatsConfigLoader {
         return () -> new IllegalStateException("Configuration key '" + configKey + "' required but not found.");
     }
 
-    private void readAndSetConfigClass(ConfigurationUtil configurationUtil, NatsConnectionConfig natsConnectionConfig, String currentPrefix) {
+    private void readAndSetGeneralConfigClass(ConfigurationUtil configurationUtil) {
+        String prefix = "kumuluzee.nats-core";
+        // response-timeout
+        Optional<Integer> responseTimeout = configurationUtil.getInteger(prefix + ".response-timeout");
+        responseTimeout.ifPresent(generalConfig::setResponseTimeout);
+    }
+
+    private void readAndSetConnectionConfigClass(ConfigurationUtil configurationUtil, NatsConnectionConfig natsConnectionConfig, String currentPrefix) {
         // addresses
         Optional<Integer> addressesSize = configurationUtil.getListSize(currentPrefix + ".addresses");
         List<String> addresses = new ArrayList<>();
