@@ -76,9 +76,6 @@ public class NatsListenerInitializer implements Extension {
             NatsListener natsListenerAnnotation = inst.getNatsListenerAnnotation();
 
             String subjectName = subjectAnnotation.value();
-//            if (subjectName.isEmpty()) {
-//                throw new NatsListenerException("The subject is not valid.");  // TODO preveri če dela tudi s praznim subject-om
-//            }
             String connectionName = subjectAnnotation.connection();
             if (connectionName.isEmpty()) {
                 connectionName = natsListenerAnnotation.connection();
