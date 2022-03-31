@@ -236,7 +236,6 @@ public abstract class NatsConnectionConfig {
         }
 
         private SSLContext createTlsContext() throws IOException, GeneralSecurityException {
-            // TODO preveri kodo
             SSLContext ctx = SSLContext.getInstance(DEFAULT_SSL_PROTOCOL);
 
             TrustManagerFactory factory =
