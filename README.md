@@ -46,7 +46,7 @@ The latter is used when we want to set the subject dynamically.
 - connection (overrides the connection from `@RegisterNatsClient`)
 - queue
 
-If those optional values are not set, NATS client will use the default values. TODO
+If those optional values are not set, NATS client will use the default values.
 
 #### Return type
 
