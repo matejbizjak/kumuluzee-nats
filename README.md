@@ -42,9 +42,8 @@ Each method must be annotated with `@Subject`, but there are two options:
 
 The latter is used when we want to set the subject dynamically.
 
-`@Subject` also has 2 optional parameters:
+`@Subject` also has 1 optional parameter when used under `@RegisterNatsClient`:
 - connection (overrides the connection from `@RegisterNatsClient`)
-- queue
 
 If those optional values are not set, NATS client will use the default values.
 
@@ -54,7 +53,7 @@ The return type of the methods specifies the response (message) object the clien
 
 Please, make sure that the custom classes you use have a default constructor. If not, they will not be de/serialized successfully. 
 
-### Building NATS client instance
+### Building a NATS client instance
 
 The implementation of the NATS client interfaces is automatically generated during the runtime. We can simply inject the client to our service:
 
@@ -64,7 +63,7 @@ The implementation of the NATS client interfaces is automatically generated duri
 private SimpleClient simpleClient;
 ```
 
-### Using the NATS client
+### Using a NATS client
 
 After injecting the client to our service, we can call the methods in the interface.
 
@@ -77,6 +76,45 @@ String msgResponse = simpleClient.sendSimpleDynamicSubjectResponse("dynamic", "s
 ```java
 String msgResponse = simpleClient.sendSimpleResponse("another simple string");
 ```
+
+### Defining a NATS listener
+
+```java
+@NatsListener(connection = "default")
+public class SimpleListener {
+
+    @Subject(value = "simple1")
+    public void receive(String value) {
+        System.out.println(value);
+    }
+
+    @Subject(value = "simple2", queue = "group1")
+    public String receiveAndReturn1(String value) {
+        System.out.println(value);
+        return value.toUpperCase();
+    }
+
+    @Subject(value = "simple2", queue = "group1")
+    public String receiveAndReturn2(String value) {
+        System.out.println(value);
+        return value.toLowerCase();
+    }
+
+    @Subject(value = "dynamic")
+    public String receiveDynamicSubject(String value) {
+        System.out.println(value);
+        return value.toUpperCase() + "_DYNAMIC_SUBJECT";
+    }
+}
+```
+
+To listen for the NATS messages we need to annotate a class with `@NatsListener` and its methods with `@Subject`. 
+
+`@Subject` also has 2 optional parameters when used under `@NatsListener`:
+- connection (overrides the connection from `@RegisterNatsClient`)
+- queue
+
+If the sender expects a response, the method can return an expected object as a response.
 
 ## Configuration
 
