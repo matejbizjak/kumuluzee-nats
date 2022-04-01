@@ -5,8 +5,6 @@ import io.nats.client.Connection;
 import io.nats.client.Nats;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -33,7 +31,7 @@ public class NatsConnection {
             Connection connection = Nats.connect(config.toOptionsBuilder().build());
             connections.put(config.getName(), connection);
             LOG.info(String.format("Connection to a NATS server/cluster named '%s' was created successfully", config.getName()));
-        } catch (IOException | GeneralSecurityException | InterruptedException e) {
+        } catch (Exception e) {
             LOG.severe(String.format("Cannot create a connection to a NATS server/cluster named '%s': %s", config.getName(), e.getLocalizedMessage()));
         }
     }

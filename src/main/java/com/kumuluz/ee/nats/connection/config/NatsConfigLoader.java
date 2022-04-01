@@ -133,6 +133,15 @@ public class NatsConfigLoader {
         // certificate-path
         Optional<String> certificatePath = configurationUtil.get(currentPrefix + ".tls" + ".certificate-path");
         certificatePath.ifPresent(tls::setCertificatePath);
+        // key-store-path
+        Optional<String> keyStorePath = configurationUtil.get(currentPrefix + ".tls" + ".key-store-path");
+        keyStorePath.ifPresent(tls::setKeyStorePath);
+        // key-store-password
+        Optional<String> keyStorePassword = configurationUtil.get(currentPrefix + ".tls" + ".key-store-password");
+        keyStorePassword.ifPresent(tls::setKeyStorePassword);
+        // key-store-type
+        Optional<String> keyStoreType = configurationUtil.get(currentPrefix + ".tls" + ".key-store-type");
+        keyStoreType.ifPresent(tls::setKeyStoreType);
         natsConnectionConfig.setTls(tls);
     }
 }

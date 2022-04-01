@@ -3,8 +3,7 @@ package com.kumuluz.ee.nats.connection.config;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.*;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -161,7 +160,7 @@ public abstract class NatsConnectionConfig {
      * @throws IOException if there is a problem reading a file or setting up the SSL context
      * @throws GeneralSecurityException if there is a problem setting up the SSL context
      */
-    public Builder toOptionsBuilder() throws IOException, GeneralSecurityException {
+    public Builder toOptionsBuilder() throws Exception {
         Builder builder = new Builder();
 
         builder = builder.servers(this.addresses.toArray(new String[0]));
@@ -203,6 +202,12 @@ public abstract class NatsConnectionConfig {
 
         private String certificatePath;
 
+        private String keyStorePath;
+
+        private String keyStorePassword;
+
+        private String keyStoreType;
+
         public String getTrustStorePath() {
             return trustStorePath;
         }
@@ -235,30 +240,72 @@ public abstract class NatsConnectionConfig {
             this.certificatePath = certificatePath;
         }
 
-        private SSLContext createTlsContext() throws IOException, GeneralSecurityException {
-            SSLContext ctx = SSLContext.getInstance(DEFAULT_SSL_PROTOCOL);
+        public String getKeyStorePath() {
+            return keyStorePath;
+        }
 
-            TrustManagerFactory factory =
-                    TrustManagerFactory.getInstance(Optional.ofNullable(trustStoreType).orElse("SunX509"));
-            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (trustStorePath != null && !trustStorePath.isEmpty()) {
-                try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(trustStorePath))) {
-                    ks.load(in, Optional.ofNullable(trustStorePassword).map(String::toCharArray).orElse(new char[0]));
-                }
-            } else {
-                ks.load(null);
-            }
+        public void setKeyStorePath(String keyStorePath) {
+            this.keyStorePath = keyStorePath;
+        }
+
+        public String getKeyStorePassword() {
+            return keyStorePassword;
+        }
+
+        public void setKeyStorePassword(String keyStorePassword) {
+            this.keyStorePassword = keyStorePassword;
+        }
+
+        public String getKeyStoreType() {
+            return keyStoreType;
+        }
+
+        public void setKeyStoreType(String keyStoreType) {
+            this.keyStoreType = keyStoreType;
+        }
+
+        private SSLContext createTlsContext() throws Exception {
+            SSLContext ctx = SSLContext.getInstance(DEFAULT_SSL_PROTOCOL);
+            ctx.init(createKeyManagers(), createTrustManagers(), new SecureRandom());
+            return ctx;
+        }
+
+        private KeyManager[] createKeyManagers() throws Exception {
+            KeyStore store = loadStore(keyStorePath, keyStorePassword);
+            KeyManagerFactory factory = KeyManagerFactory.getInstance(Optional.ofNullable(keyStoreType).orElse("SunX509"));
+            factory.init(store, Optional.ofNullable(keyStorePassword).map(String::toCharArray).orElse(new char[0]));
+            return factory.getKeyManagers();
+        }
+
+        private TrustManager[] createTrustManagers() throws Exception {
+            KeyStore store = loadStore(trustStorePath, trustStorePassword);
+            TrustManagerFactory factory = TrustManagerFactory.getInstance(Optional.ofNullable(trustStoreType).orElse("SunX509"));
+
             if (certificatePath != null && !certificatePath.isEmpty()) {
                 try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(certificatePath))) {
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
                     X509Certificate cert = (X509Certificate) cf.generateCertificate(in);
-                    ks.setCertificateEntry("nats", cert);
+                    store.setCertificateEntry("nats", cert);
                 }
             }
-            factory.init(ks);
-            ctx.init(null, factory.getTrustManagers(), new SecureRandom());
 
-            return ctx;
+            factory.init(store);
+            return factory.getTrustManagers();
+        }
+
+        private KeyStore loadStore(String path, String password) throws Exception {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            if (path != null && !path.isEmpty()) {
+                BufferedInputStream in = new BufferedInputStream(new FileInputStream(path));
+                try {
+                    store.load(in, Optional.ofNullable(password).map(String::toCharArray).orElse(new char[0]));
+                } finally {
+                    in.close();
+                }
+            } else {
+                store.load(null);
+            }
+            return store;
         }
     }
 }
