@@ -10,6 +10,7 @@
     <modules>
         <module>core</module>
         <module>common</module>
+        <module>jetstream</module>
     </modules>
 
     <name>KumuluzEE NATS</name>
