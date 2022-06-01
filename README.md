@@ -1,6 +1,7 @@
 # KumuluzEE NATS Core
 
-TODO
+TODO:
+- change package from `com.kumuluz.ee.nats` to `com.kumuluz.ee.nats.core`
 
 The extension is using a [NATS.java](https://github.com/nats-io/nats.java) Java client to communicate with NATS servers. 
 
@@ -114,7 +115,7 @@ To listen for the NATS messages we need to annotate a class with `@NatsListener`
 - connection (overrides the connection from `@RegisterNatsClient`)
 - queue
 
-If the sender expects a response, the method can return an expected object as a response.
+If the sender expects a response, the method can return **the expected** object as a response.
 
 ## Configuration
 
@@ -202,7 +203,7 @@ The prefix of all following properties must be `kumuluzee.nats-core`.
 
 The extension is enabled by default.
 
-- Server url: nats://localhost:4222
+- Server url: nats://localhost
 - Server port: 4222
 
 For other default values take a look [here](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/Options.java).
@@ -252,3 +253,31 @@ kumuluzee:
 ```
 
 For Mutual TLS you also need to specify a key store.
+
+
+## Poskus za asinhrono čakanje na odgovor
+
+NatsClientInvoker.java:
+```java
+...
+else if (returnType.equals(Future.class)) { // wait for response asynchronously
+    CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+    // v0.2
+    Dispatcher dispatcher = connection.createDispatcher((msg) -> {});
+    // Problem je v naslednji vrstici, ker je message.getReplyTo() == null in ga ne moreš uporabiti, ker ga uporablja NATS za interne zadeve.
+    // The Message object allows you to set a replyTo, but in requests, the replyTo is reserved for internal use as the address for the server to respond to the client with the consumer's reply.
+    Subscription subscription = dispatcher.subscribe(message.getReplyTo(), (msg) -> {
+        try {
+            Object receivedMsg = SerDes.deserialize(msg.getData()
+                    , (Class<?>) ((ParameterizedType) method.getParameterTypes()[0].getGenericSuperclass()).getActualTypeArguments()[0]);
+            completableFuture.complete(receivedMsg);
+        } catch (IOException e) {
+            throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
+                    , method.getParameterTypes()[0].getSimpleName()), e);
+        }
+    });
+    connection.publish(message);
+    dispatcher.unsubscribe(subscription);  // TODO
+    return completableFuture;
+}
+```
