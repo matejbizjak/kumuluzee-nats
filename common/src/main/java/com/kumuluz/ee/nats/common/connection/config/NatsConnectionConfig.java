@@ -2,6 +2,7 @@ package com.kumuluz.ee.nats.common.connection.config;
 
 import io.nats.client.Nats;
 import io.nats.client.Options;
+import io.nats.client.api.StreamConfiguration;
 
 import javax.net.ssl.*;
 import java.io.BufferedInputStream;
@@ -50,6 +51,8 @@ public abstract class NatsConnectionConfig {
     private String credentials;
 
     private TLS tls;
+
+    private List<StreamConfiguration> streamConfigurations;
 
     public NatsConnectionConfig(String name) {
         this.name = name;
@@ -155,9 +158,17 @@ public abstract class NatsConnectionConfig {
         this.tls = tls;
     }
 
+    public List<StreamConfiguration> getStreamConfigurations() {
+        return streamConfigurations;
+    }
+
+    public void setStreamConfigurations(List<StreamConfiguration> streamConfigurations) {
+        this.streamConfigurations = streamConfigurations;
+    }
+
     /**
      * @return NATS options builder based on this set of properties
-     * @throws IOException if there is a problem reading a file or setting up the SSL context
+     * @throws IOException              if there is a problem reading a file or setting up the SSL context
      * @throws GeneralSecurityException if there is a problem setting up the SSL context
      */
     public Builder toOptionsBuilder() throws Exception {

@@ -20,11 +20,11 @@ import java.util.Set;
  * @author Matej Bizjak
  */
 
-public class NatsClientInitializer implements Extension {
+public class NatsClientInitializerExtension implements Extension {
 
     private final Set<AnnotatedType> annotatedTypes;
 
-    public NatsClientInitializer() {
+    public NatsClientInitializerExtension() {
         this.annotatedTypes = new HashSet<>();
     }
 
@@ -39,7 +39,7 @@ public class NatsClientInitializer implements Extension {
         pat.veto();
     }
 
-    public <T> void afterBean(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+    public <T> void after(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
         if (!NatsCoreExtension.isExtensionEnabled()) {
             return;
         }

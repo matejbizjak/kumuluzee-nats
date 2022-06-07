@@ -34,7 +34,7 @@ public class NatsCoreExtension implements Extension {
 
     public static boolean isExtensionEnabled() {
         ConfigurationUtil config = ConfigurationUtil.getInstance();
-        return config.getBoolean("kumuluzee.nats-core.enabled")
+        return config.getBoolean("kumuluzee.nats.enabled")
                 .orElse(true);
     }
 }

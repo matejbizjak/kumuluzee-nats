@@ -1,2 +1,2 @@
-com.kumuluz.ee.nats.core.cdi.NatsClientInitializer
-com.kumuluz.ee.nats.core.cdi.NatsListenerInitializer
+com.kumuluz.ee.nats.core.cdi.NatsClientInitializerExtension
+com.kumuluz.ee.nats.core.cdi.NatsListenerInitializerExtension

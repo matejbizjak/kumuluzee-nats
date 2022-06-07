@@ -3,7 +3,7 @@ package com.kumuluz.ee.nats.common.connection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
 
-import java.util.Set;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,10 +18,10 @@ public class NatsConnectionCoordinator {
     public static void establishAll() {
         NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
         natsConfigLoader.readConfiguration();
-        Set<NatsConnectionConfig> configs = natsConfigLoader.getConnectionConfigs();
-        if (configs.size() > 0) {
-            ExecutorService executorService = Executors.newFixedThreadPool(configs.size());
-            configs.forEach(config -> executorService.submit(() -> NatsConnection.establishConnection(config)));
+        HashMap<String, NatsConnectionConfig> connectionConfigs = natsConfigLoader.getConnectionConfigs();
+        if (connectionConfigs.size() > 0) {
+            ExecutorService executorService = Executors.newFixedThreadPool(connectionConfigs.size());
+            connectionConfigs.forEach((name, config) -> executorService.submit(() -> NatsConnection.establishConnection(config)));
             waitForCompletion(executorService);
         }
     }

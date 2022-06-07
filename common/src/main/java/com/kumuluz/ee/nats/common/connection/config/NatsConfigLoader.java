@@ -1,9 +1,16 @@
 package com.kumuluz.ee.nats.common.connection.config;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
+import io.nats.client.api.DiscardPolicy;
+import io.nats.client.api.RetentionPolicy;
+import io.nats.client.api.StorageType;
+import io.nats.client.api.StreamConfiguration;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -14,7 +21,7 @@ public class NatsConfigLoader {
 
     private static NatsConfigLoader instance;
     private static NatsGeneralConfig generalConfig;
-    private static final Set<NatsConnectionConfig> connectionConfigs = new HashSet<>();
+    private static final HashMap<String, NatsConnectionConfig> connectionConfigs = new HashMap<>();
 
     public static NatsConfigLoader getInstance() {
         if (instance == null) {
@@ -27,8 +34,12 @@ public class NatsConfigLoader {
         return generalConfig;
     }
 
-    public Set<NatsConnectionConfig> getConnectionConfigs() {
+    public HashMap<String, NatsConnectionConfig> getConnectionConfigs() {
         return connectionConfigs;
+    }
+
+    public NatsConnectionConfig getConfigForConnection(String connectionName) {
+        return connectionConfigs.get(connectionName);
     }
 
     public void readConfiguration() {
@@ -37,7 +48,7 @@ public class NatsConfigLoader {
         generalConfig = new NatsGeneralConfig();
         readAndSetGeneralConfigClass(configurationUtil);
         // connection settings
-        String clusterPrefix = "kumuluzee.nats-core.servers";
+        String clusterPrefix = "kumuluzee.nats.servers";
         Optional<Integer> size = configurationUtil.getListSize(clusterPrefix);
         if (size.isPresent()) {  // cluster configuration
             for (int i = 0; i < size.get(); i++) {
@@ -46,14 +57,14 @@ public class NatsConfigLoader {
                         .orElseThrow(configNotFoundException(currentPrefix + ".name"));
                 ClusterNatsConnectionConfig clusterConfig = new ClusterNatsConnectionConfig(name);
                 readAndSetConnectionConfigClass(configurationUtil, clusterConfig, currentPrefix);
-                connectionConfigs.add(clusterConfig);
+                connectionConfigs.put(name, clusterConfig);
             }
         } else {
-            String natsCorePrefix = "kumuluzee.nats-core";
+            String natsCorePrefix = "kumuluzee.nats";
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
                 SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
                 readAndSetConnectionConfigClass(configurationUtil, singleConfig, natsCorePrefix);
-                connectionConfigs.add(singleConfig);
+                connectionConfigs.put(singleConfig.getName(), singleConfig);
             } else {
                 throw configNotFoundException(natsCorePrefix).get();
             }
@@ -65,7 +76,7 @@ public class NatsConfigLoader {
     }
 
     private void readAndSetGeneralConfigClass(ConfigurationUtil configurationUtil) {
-        String prefix = "kumuluzee.nats-core";
+        String prefix = "kumuluzee.nats";
         // response-timeout
         Optional<Integer> responseTimeout = configurationUtil.getInteger(prefix + ".response-timeout");
         responseTimeout.ifPresent(generalConfig::setResponseTimeout);
@@ -115,6 +126,18 @@ public class NatsConfigLoader {
         Optional<String> credentials = configurationUtil.get(currentPrefix + ".credentials");
         credentials.ifPresent(natsConnectionConfig::setCredentials);
 
+        // (jet)streams
+        Optional<Integer> streamsSize = configurationUtil.getListSize(currentPrefix + ".streams");
+        List<StreamConfiguration> streams = new ArrayList<>();
+        if (streamsSize.isPresent()) {
+            for (int i = 0; i < streamsSize.get(); i++) {
+                streams.add(readStreamsConfiguration(configurationUtil, currentPrefix + ".streams" + "[" + i + "]"));
+            }
+        }
+        if (!streams.isEmpty()) {
+            natsConnectionConfig.setStreamConfigurations(streams);
+        }
+
         // TLS
         Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
         if (!tlsConf.isPresent()) {
@@ -143,5 +166,56 @@ public class NatsConfigLoader {
         Optional<String> keyStoreType = configurationUtil.get(currentPrefix + ".tls" + ".key-store-type");
         keyStoreType.ifPresent(tls::setKeyStoreType);
         natsConnectionConfig.setTls(tls);
+    }
+
+    private StreamConfiguration readStreamsConfiguration(ConfigurationUtil configurationUtil, String currentPrefix) {
+        StreamConfiguration.Builder builder = StreamConfiguration.builder();
+        // name
+        Optional<String> name = configurationUtil.get(currentPrefix + ".name");
+        name.ifPresent(builder::name);
+        // subjects
+        Optional<Integer> subjectsSize = configurationUtil.getListSize(currentPrefix + ".subjects");
+        List<String> subjects = new ArrayList<>();
+        if (subjectsSize.isPresent()) {
+            for (int i = 0; i < subjectsSize.get(); i++) {
+                Optional<String> subject = configurationUtil.get(currentPrefix + ".subjects" + "[" + i + "]");
+                subject.ifPresent(subjects::add);
+            }
+        }
+        if (!subjects.isEmpty()) {
+            builder.subjects(subjects);
+        }
+        // retention policy
+        Optional<String> retentionPolicy = configurationUtil.get(currentPrefix + ".retentionPolicy");
+        retentionPolicy.ifPresent(x -> builder.retentionPolicy(RetentionPolicy.get(retentionPolicy.get())));
+        // max consumers
+        Optional<Long> maxConsumers = configurationUtil.getLong(currentPrefix + ".maxConsumers");
+        maxConsumers.ifPresent(builder::maxConsumers);
+        // max bytes
+        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".maxBytes");
+        maxBytes.ifPresent(builder::maxBytes);
+        // max age
+        Optional<Long> maxAge = configurationUtil.getLong(currentPrefix + ".maxAge");
+        maxAge.ifPresent(builder::maxAge);
+        // max message size
+        Optional<Long> maxMsgSize = configurationUtil.getLong(currentPrefix + ".maxMsgSize");
+        maxMsgSize.ifPresent(builder::maxMsgSize);
+        // storage type
+        Optional<String> storageType = configurationUtil.get(currentPrefix + ".storageType");
+        storageType.ifPresent(x -> builder.storageType(StorageType.get(storageType.get())));
+        // replicas
+        Optional<Integer> replicas = configurationUtil.getInteger(currentPrefix + ".replicas");
+        replicas.ifPresent(builder::replicas);
+        // no ack
+        Optional<Boolean> noAck = configurationUtil.getBoolean(currentPrefix + ".noAck");
+        noAck.ifPresent(builder::noAck);
+        // template owner
+        Optional<String> templateOwner = configurationUtil.get(currentPrefix + ".templateOwner");
+        templateOwner.ifPresent(builder::templateOwner);
+        // discard policy
+        Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discardPolicy");
+        discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(discardPolicy.get())));
+
+        return builder.build();
     }
 }

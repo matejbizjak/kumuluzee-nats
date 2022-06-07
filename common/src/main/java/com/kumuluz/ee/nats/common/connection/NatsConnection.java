@@ -6,7 +6,6 @@ import io.nats.client.Nats;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -15,7 +14,7 @@ import java.util.logging.Logger;
 
 @ApplicationScoped
 public class NatsConnection {
-    private static final Map<String, Connection> connections = new HashMap<>();
+    private static final HashMap<String, Connection> connections = new HashMap<>();
     private static final Logger LOG = Logger.getLogger(NatsConnection.class.getName());
 
     public static Connection getConnection(String name) {
@@ -34,5 +33,13 @@ public class NatsConnection {
         } catch (Exception e) {
             LOG.severe(String.format("Cannot create a connection to a NATS server/cluster named '%s': %s", config.getName(), e.getLocalizedMessage()));
         }
+    }
+
+    public static boolean connectionsAlreadyEstablished() {
+        return connections.size() != 0;
+    }
+
+    public static HashMap<String, Connection> getAllConnections() {
+        return connections;
     }
 }

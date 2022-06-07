@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.NatsConnectionCoordinator;
 import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
+import com.kumuluz.ee.nats.common.exception.NatsListenerException;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.NatsCoreExtension;
 import com.kumuluz.ee.nats.core.annotations.NatsListener;
 import com.kumuluz.ee.nats.core.annotations.Subject;
 import com.kumuluz.ee.nats.core.exception.NatsClientDefinitionException;
-import com.kumuluz.ee.nats.core.exception.NatsListenerException;
 import io.nats.client.Connection;
 import io.nats.client.Dispatcher;
 
@@ -32,12 +32,12 @@ import java.util.logging.Logger;
  * @author Matej Bizjak
  */
 
-public class NatsListenerInitializer implements Extension {
+public class NatsListenerInitializerExtension implements Extension {
 
-    private static final Logger LOG = Logger.getLogger(NatsListenerInitializer.class.getName());
+    private static final Logger LOG = Logger.getLogger(NatsListenerInitializerExtension.class.getName());
     List<ListenerMethod> listenerMethods = new ArrayList<>();
 
-    public <T> void processStreamListeners(@Observes ProcessBean<T> processBean) {
+    public <T> void processListeners(@Observes ProcessBean<T> processBean) {
         Class<?> aClass = processBean.getBean().getBeanClass();
         if (aClass.isAnnotationPresent(NatsListener.class)) {
             NatsListener natsListenerAnnotation = aClass.getAnnotation(NatsListener.class);
@@ -98,7 +98,6 @@ public class NatsListenerInitializer implements Extension {
             Object[] args = new Object[method.getParameterCount()];
 
             Dispatcher dispatcher = connection.createDispatcher(msg -> {
-
                 Object receivedMsg;
                 try {
                     receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);

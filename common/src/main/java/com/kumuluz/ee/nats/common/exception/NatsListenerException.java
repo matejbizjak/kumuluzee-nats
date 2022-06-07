@@ -1,4 +1,8 @@
-package com.kumuluz.ee.nats.core.exception;
+package com.kumuluz.ee.nats.common.exception;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * @author Matej Bizjak

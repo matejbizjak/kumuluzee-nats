@@ -1,0 +1,2 @@
+com.kumuluz.ee.nats.jetstream.consumer.listener.ListenerInitializerExtension
+com.kumuluz.ee.nats.jetstream.consumer.subscription.SubscriptionInitializerExtension
