@@ -6,6 +6,7 @@ import com.kumuluz.ee.nats.common.exception.NatsListenerException;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
+import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
 import com.kumuluz.ee.nats.jetstream.management.StreamManagement;
 import com.kumuluz.ee.nats.jetstream.util.AnnotatedInstance;
 import io.nats.client.*;
@@ -74,8 +75,7 @@ public class ListenerInitializerExtension implements Extension {
             JetStreamListener annotation = inst.getAnnotation();
             Connection connection = NatsConnection.getConnection(annotation.connection());
             try {
-                JetStream jetStream = connection.jetStream();
-
+                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
                 Dispatcher dispatcher = connection.createDispatcher();
 
                 MessageHandler handler = msg -> {
@@ -89,6 +89,7 @@ public class ListenerInitializerExtension implements Extension {
                     }
                     try {
                         method.invoke(reference, args);
+//                        msg.ackSync();  // TODO
                     } catch (InvocationTargetException | IllegalAccessException e) {
                         throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
                     }

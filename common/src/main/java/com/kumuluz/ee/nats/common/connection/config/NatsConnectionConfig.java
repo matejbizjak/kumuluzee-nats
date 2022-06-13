@@ -1,5 +1,6 @@
 package com.kumuluz.ee.nats.common.connection.config;
 
+import io.nats.client.JetStreamOptions;
 import io.nats.client.Nats;
 import io.nats.client.Options;
 import io.nats.client.api.StreamConfiguration;
@@ -16,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static io.nats.client.Options.*;
@@ -53,6 +55,8 @@ public abstract class NatsConnectionConfig {
     private TLS tls;
 
     private List<StreamConfiguration> streamConfigurations;
+
+    private Map<String, JetStreamOptions> jetStreamContextOptions;
 
     public NatsConnectionConfig(String name) {
         this.name = name;
@@ -164,6 +168,14 @@ public abstract class NatsConnectionConfig {
 
     public void setStreamConfigurations(List<StreamConfiguration> streamConfigurations) {
         this.streamConfigurations = streamConfigurations;
+    }
+
+    public Map<String, JetStreamOptions> getJetStreamContextOptions() {
+        return jetStreamContextOptions;
+    }
+
+    public void setJetStreamContextOptions(Map<String, JetStreamOptions> jetStreamContextOptions) {
+        this.jetStreamContextOptions = jetStreamContextOptions;
     }
 
     /**

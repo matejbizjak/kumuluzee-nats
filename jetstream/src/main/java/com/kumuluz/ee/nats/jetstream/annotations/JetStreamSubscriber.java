@@ -11,10 +11,12 @@ import java.lang.annotation.*;
 @Documented
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface JetStreamSubscription {
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface JetStreamSubscriber {
 
-    @Nonbinding String connection() default "";
+    @Nonbinding String connection() default "default";
+
+    @Nonbinding String context() default "default";
 
     @Nonbinding String subject() default "";
 

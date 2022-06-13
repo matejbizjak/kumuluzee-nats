@@ -1,16 +1,14 @@
 package com.kumuluz.ee.nats.common.connection.config;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
+import io.nats.client.JetStreamOptions;
 import io.nats.client.api.DiscardPolicy;
 import io.nats.client.api.RetentionPolicy;
 import io.nats.client.api.StorageType;
 import io.nats.client.api.StreamConfiguration;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -138,6 +136,19 @@ public class NatsConfigLoader {
             natsConnectionConfig.setStreamConfigurations(streams);
         }
 
+        // jetStreamContext options
+        Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetStreamContexts");
+        Map<String, JetStreamOptions> jetStreamContexts = new HashMap<>();
+        if (jetStreamContextsSize.isPresent()) {
+            for (int i = 0; i < jetStreamContextsSize.get(); i++) {
+                NamedJetStreamOptions namedJetStreamOptions = readJetStreamOptions(configurationUtil, currentPrefix + ".jetStreamContexts" + "[" + i + "]");
+                jetStreamContexts.put(namedJetStreamOptions.getName(), namedJetStreamOptions.getJetStreamOptions());
+            }
+        }
+        if (!jetStreamContexts.isEmpty()) {
+            natsConnectionConfig.setJetStreamContextOptions(jetStreamContexts);
+        }
+
         // TLS
         Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
         if (!tlsConf.isPresent()) {
@@ -217,5 +228,55 @@ public class NatsConfigLoader {
         discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(discardPolicy.get())));
 
         return builder.build();
+    }
+
+    private NamedJetStreamOptions readJetStreamOptions(ConfigurationUtil configurationUtil, String currentPrefix) {
+        NamedJetStreamOptions namedJetStreamOptions = new NamedJetStreamOptions();
+        JetStreamOptions.Builder builder = JetStreamOptions.builder();
+        // name
+        Optional<String> name = configurationUtil.get(currentPrefix + ".name");
+        if (!name.isPresent()) {
+            throw configNotFoundException(currentPrefix + ".name").get();
+        }
+        namedJetStreamOptions.setName(name.get());
+        // domain
+        Optional<String> domain = configurationUtil.get(currentPrefix + ".domain");
+        domain.ifPresent(builder::domain);
+        // prefix
+        Optional<String> prefix = configurationUtil.get(currentPrefix + ".prefix");
+        prefix.ifPresent(builder::prefix);
+        // publishNoAck
+        Optional<Boolean> publishNoAck = configurationUtil.getBoolean(currentPrefix + ".publishNoAck");
+        publishNoAck.ifPresent(builder::publishNoAck);
+        // request timeout
+        Optional<Long> requestTimeout = configurationUtil.getLong(currentPrefix + ".requestTimeout");
+        requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.ofSeconds(x)));
+
+        namedJetStreamOptions.setJetStreamOptions(builder.build());
+        return namedJetStreamOptions;
+    }
+
+    private class NamedJetStreamOptions {
+        private String name;
+        private JetStreamOptions jetStreamOptions;
+
+        public NamedJetStreamOptions() {
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public JetStreamOptions getJetStreamOptions() {
+            return jetStreamOptions;
+        }
+
+        public void setJetStreamOptions(JetStreamOptions jetStreamOptions) {
+            this.jetStreamOptions = jetStreamOptions;
+        }
     }
 }

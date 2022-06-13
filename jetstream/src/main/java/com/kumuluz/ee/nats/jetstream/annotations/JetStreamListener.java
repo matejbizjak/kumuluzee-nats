@@ -14,7 +14,9 @@ import java.lang.annotation.*;
 @Target(ElementType.METHOD)
 public @interface JetStreamListener {
 
-    @Nonbinding String connection() default "";
+    @Nonbinding String connection() default "default";
+
+    @Nonbinding String context() default "default";
 
     @Nonbinding String subject() default "";
 

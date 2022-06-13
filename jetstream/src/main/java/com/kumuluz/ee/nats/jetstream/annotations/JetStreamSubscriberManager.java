@@ -12,7 +12,7 @@ import java.lang.annotation.*;
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD})
-public @interface JetStreamProducer {
+public @interface JetStreamSubscriberManager {
 
     @Nonbinding String connection() default "default";
 
