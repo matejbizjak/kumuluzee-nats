@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.jetstream.consumer.subscription;
+package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import io.nats.client.JetStreamSubscription;

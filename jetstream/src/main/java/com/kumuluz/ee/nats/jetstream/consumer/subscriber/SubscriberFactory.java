@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.jetstream.consumer.subscription;
+package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
