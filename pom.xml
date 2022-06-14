@@ -29,8 +29,9 @@
 
         <kumuluzee.version>3.12.2</kumuluzee.version>
 
-        <jnats.version>2.14.0</jnats.version>
+        <jnats.version>2.15.3</jnats.version>
         <deltaspike.version>1.9.5</deltaspike.version>
+        <guava.version>31.1-jre</guava.version>
     </properties>
 
     <!--    <scm>-->
