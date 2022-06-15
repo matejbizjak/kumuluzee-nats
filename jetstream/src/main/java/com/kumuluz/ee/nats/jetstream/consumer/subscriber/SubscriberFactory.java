@@ -2,6 +2,9 @@ package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
 import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
@@ -9,6 +12,7 @@ import io.nats.client.JetStream;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamSubscription;
 import io.nats.client.PullSubscribeOptions;
+import io.nats.client.api.ConsumerConfiguration;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -41,49 +45,45 @@ public class SubscriberFactory {
         return instance;
     }
 
-    private JetStreamSubscription createSubscription(JetStreamSubscriber annotation, JetStream jetStream) {
+    private JetStreamSubscription createSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation, JetStream jetStream) {
         JetStreamSubscription jetStreamSubscription = null;
-        if (annotation.durable().equals("")) {
+        if (jetStreamSubscriberAnnotation.durable().equals("")) {
             LOG.severe("Durable must not be empty for a subscription");
+        }
+        NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
+        ConsumerConfiguration consumerConfiguration;
+        if (consumerConfigAnnotation == null) {
+            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null, jetStreamSubscriberAnnotation.durable());
+        } else {
+            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name(), consumerConfigAnnotation.configOverrides(), jetStreamSubscriberAnnotation.durable());
         }
         PullSubscribeOptions pullSubscribeOptions = PullSubscribeOptions
                 .builder()
-                .durable(annotation.durable())
+                .stream(jetStreamSubscriberAnnotation.stream())
+                .configuration(consumerConfiguration)
                 .build();
+//        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
         try {
-            jetStreamSubscription = jetStream.subscribe(annotation.subject(), pullSubscribeOptions);
+            jetStreamSubscription = jetStream.subscribe(jetStreamSubscriberAnnotation.subject(), pullSubscribeOptions);
             LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully"
-                    , annotation.connection(), annotation.context(), annotation.subject()));
+                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
         } catch (IOException | JetStreamApiException e) {
             LOG.severe(String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
-                    , annotation.connection(), annotation.context(), annotation.subject()));
+                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
         }
         return jetStreamSubscription;
     }
 
-    public JetStreamSubscription getSubscription(JetStreamSubscriber annotation) {
+    public JetStreamSubscription getSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation) {
         if (!NatsJetStreamExtension.isExtensionEnabled()) {
             return null;
         }
 
-        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
-        if (!subscriptions.contains(jetStream, annotation.subject())) {
-            JetStreamSubscription jetStreamSubscription = createSubscription(annotation, jetStream);
-            subscriptions.put(jetStream, annotation.subject(), jetStreamSubscription);
+        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context());
+        if (!subscriptions.contains(jetStream, jetStreamSubscriberAnnotation.subject())) {
+            JetStreamSubscription jetStreamSubscription = createSubscription(jetStreamSubscriberAnnotation, consumerConfigAnnotation, jetStream);
+            subscriptions.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
         }
-        return subscriptions.get(jetStream, annotation.subject());
+        return subscriptions.get(jetStream, jetStreamSubscriberAnnotation.subject());
     }
-
-//    public Map<String, JetStreamSubscription> getSubscriptions(JetStreamSubscriberManager annotation) {
-//        if (!NatsJetStreamExtension.isExtensionEnabled()) {
-//            return null;
-//        }
-//
-//        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
-//        if (!subscriptions.row(jetStream)) {
-//            JetStreamSubscription jetStreamSubscription = createSubscription(annotation, jetStream);
-//            subscriptions.put(jetStream, annotation.subject(), jetStreamSubscription);
-//        }
-//        return subscriptions.get(jetStream, annotation.subject());
-//    }
 }

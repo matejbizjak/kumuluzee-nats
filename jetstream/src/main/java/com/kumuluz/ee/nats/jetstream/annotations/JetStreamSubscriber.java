@@ -18,9 +18,9 @@ public @interface JetStreamSubscriber {
 
     @Nonbinding String context() default "default";
 
-    @Nonbinding String subject() default "";
+    @Nonbinding String stream() default "";
 
-    @Nonbinding String queue() default "";
+    @Nonbinding String subject() default "";
 
     @Nonbinding boolean autoAck() default true;
 

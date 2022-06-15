@@ -5,6 +5,7 @@ import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.NatsConnectionCoordinator;
 import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
 import com.kumuluz.ee.nats.common.exception.NatsListenerException;
+import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.NatsCoreExtension;
 import com.kumuluz.ee.nats.core.annotations.NatsListener;
@@ -35,7 +36,7 @@ import java.util.logging.Logger;
 public class NatsListenerInitializerExtension implements Extension {
 
     private static final Logger LOG = Logger.getLogger(NatsListenerInitializerExtension.class.getName());
-    List<ListenerMethod> listenerMethods = new ArrayList<>();
+    List<AnnotatedInstance<Subject, NatsListener>> instanceList = new ArrayList<>();
 
     public <T> void processListeners(@Observes ProcessBean<T> processBean) {
         Class<?> aClass = processBean.getBean().getBeanClass();
@@ -44,7 +45,7 @@ public class NatsListenerInitializerExtension implements Extension {
             for (Method method : aClass.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Subject.class)) {
                     Subject subjectAnnotation = method.getAnnotation(Subject.class);
-                    listenerMethods.add(new ListenerMethod(processBean.getBean(), method, subjectAnnotation
+                    instanceList.add(new AnnotatedInstance<>(processBean.getBean(), method, subjectAnnotation
                             , natsListenerAnnotation));
                 }
             }
@@ -59,12 +60,12 @@ public class NatsListenerInitializerExtension implements Extension {
         NatsConnectionCoordinator.establishAll();  // establish connections
         // then, create subscriptions
 
-        for (ListenerMethod inst : listenerMethods) {
+        for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
             LOG.info("Found method " + inst.getMethod().getName() + " in class " +
                     inst.getMethod().getDeclaringClass());
         }
 
-        for (ListenerMethod inst : listenerMethods) {
+        for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() != 1) {
@@ -72,8 +73,8 @@ public class NatsListenerInitializerExtension implements Extension {
                         , method));
             }
 
-            Subject subjectAnnotation = inst.getSubjectAnnotation();
-            NatsListener natsListenerAnnotation = inst.getNatsListenerAnnotation();
+            Subject subjectAnnotation = inst.getAnnotation1();
+            NatsListener natsListenerAnnotation = inst.getAnnotation2();
 
             String subjectName = subjectAnnotation.value();
             String connectionName = subjectAnnotation.connection();

@@ -1,14 +1,17 @@
 package com.kumuluz.ee.nats.jetstream.consumer.listener;
 
+import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.NatsConnectionCoordinator;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
 import com.kumuluz.ee.nats.common.exception.NatsListenerException;
+import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
 import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
 import com.kumuluz.ee.nats.jetstream.management.StreamManagement;
-import com.kumuluz.ee.nats.jetstream.util.AnnotatedInstance;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 
@@ -31,14 +34,17 @@ import java.util.logging.Logger;
 public class ListenerInitializerExtension implements Extension {
 
     private static final Logger LOG = Logger.getLogger(ListenerInitializerExtension.class.getName());
-
-    List<AnnotatedInstance<JetStreamListener>> instanceList = new ArrayList<>();
+    List<AnnotatedInstance<JetStreamListener, ConsumerConfig>> instanceList = new ArrayList<>();
 
     public <T> void processStreamListeners(@Observes ProcessBean<T> processBean) {
         for (Method method : processBean.getBean().getBeanClass().getMethods()) {
             if (method.getAnnotation(JetStreamListener.class) != null) {
-                JetStreamListener annotation = method.getAnnotation(JetStreamListener.class);
-                instanceList.add(new AnnotatedInstance<>(processBean.getBean(), method, annotation));
+                JetStreamListener jetStreamListenerAnnotation = method.getAnnotation(JetStreamListener.class);
+                ConsumerConfig consumerConfigAnnotaion = null;
+                if (method.getAnnotation(ConsumerConfig.class) != null) {
+                    consumerConfigAnnotaion = method.getAnnotation(ConsumerConfig.class);
+                }
+                instanceList.add(new AnnotatedInstance<>(processBean.getBean(), method, jetStreamListenerAnnotation, consumerConfigAnnotaion));
             }
         }
     }
@@ -49,18 +55,19 @@ public class ListenerInitializerExtension implements Extension {
         }
 
         // establish connections
-        if (!NatsConnection.connectionsAlreadyEstablished()) {  // Nats Core extension might have been used  TODO stestiraj če uporabiš oba extensiona - lahko moreš nastavit prioriteto enemu višjo
+        if (!NatsConnection.connectionsAlreadyEstablished()) {  // Nats Core extension might have been used
+            // TODO stestiraj če uporabiš oba extensiona - lahko moreš nastavit prioriteto enemu višjo
             NatsConnectionCoordinator.establishAll();
         }
         StreamManagement.establishAll();
         // then, create subscriptions
 
-        for (AnnotatedInstance<JetStreamListener> inst : instanceList) {
+        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
             LOG.info("Found method " + inst.getMethod().getName() + " in class " +
                     inst.getMethod().getDeclaringClass());
         }
 
-        for (AnnotatedInstance<JetStreamListener> inst : instanceList) {
+        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() != 1) {
@@ -72,10 +79,11 @@ public class ListenerInitializerExtension implements Extension {
                     , beanManager.createCreationalContext(inst.getBean()));
             Object[] args = new Object[method.getParameterCount()];
 
-            JetStreamListener annotation = inst.getAnnotation();
-            Connection connection = NatsConnection.getConnection(annotation.connection());
+            JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
+            ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
+            Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
             try {
-                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
+                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection(), jetStreamListenerAnnotation.context());
                 Dispatcher dispatcher = connection.createDispatcher();
 
                 MessageHandler handler = msg -> {
@@ -95,24 +103,27 @@ public class ListenerInitializerExtension implements Extension {
                     }
                 };
 
-                ConsumerConfiguration consumerConfiguration = ConsumerConfiguration
-                        .builder()
-                        .build(); // TODO
+                NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
+                ConsumerConfiguration consumerConfiguration;
+                if (consumerConfigAnnotation == null) {
+                    // TODO a se sam generira durable?
+                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null, jetStreamListenerAnnotation.durable());
+                } else {
+                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name()
+                            , consumerConfigAnnotation.configOverrides(), jetStreamListenerAnnotation.durable());
+                }
 
                 PushSubscribeOptions.Builder builder = PushSubscribeOptions.builder();
                 builder.configuration(consumerConfiguration);
-                builder.ordered(annotation.ordered());
-                builder.deliverSubject(annotation.deliverSubject());
-                builder.deliverGroup(annotation.deliverGroup());
-                builder.bind(annotation.bind());
-                builder.stream(annotation.stream());
-                builder.durable(annotation.durable());  // TODO durable consumer mora biti vnaprej specificiran. glej NatsJsPushSubBindDurable v Java nats examplih. to verjetno ni smiselno, da se dela prek extensiona
+                builder.ordered(jetStreamListenerAnnotation.ordered());
+                builder.bind(jetStreamListenerAnnotation.bind());
+                builder.stream(jetStreamListenerAnnotation.stream());
                 PushSubscribeOptions pushSubscribeOptions = builder.build();
 
-                jetStream.subscribe(annotation.subject(), annotation.queue(), dispatcher, handler, true, pushSubscribeOptions);  // TODO autoAck je zdaj fiksno na true
+                jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue(), dispatcher, handler, true, pushSubscribeOptions);  // TODO autoAck je zdaj fiksno na true
 
             } catch (JetStreamApiException | IOException e) {
-                LOG.severe(String.format("Cannot create a JetStream context for connection: %s", annotation.connection()));
+                LOG.severe(String.format("Cannot create a JetStream context for connection: %s", jetStreamListenerAnnotation.connection()));
             }
         }
     }

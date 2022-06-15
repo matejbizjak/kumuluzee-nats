@@ -2,12 +2,11 @@ package com.kumuluz.ee.nats.common.connection.config;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
 import io.nats.client.JetStreamOptions;
-import io.nats.client.api.DiscardPolicy;
-import io.nats.client.api.RetentionPolicy;
-import io.nats.client.api.StorageType;
-import io.nats.client.api.StreamConfiguration;
+import io.nats.client.api.*;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -20,6 +19,7 @@ public class NatsConfigLoader {
     private static NatsConfigLoader instance;
     private static NatsGeneralConfig generalConfig;
     private static final HashMap<String, NatsConnectionConfig> connectionConfigs = new HashMap<>();
+    private final ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
 
     public static NatsConfigLoader getInstance() {
         if (instance == null) {
@@ -41,10 +41,9 @@ public class NatsConfigLoader {
     }
 
     public void readConfiguration() {
-        ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
         // general settings
         generalConfig = new NatsGeneralConfig();
-        readAndSetGeneralConfigClass(configurationUtil);
+        readAndSetGeneralConfigClass();
         // connection settings
         String clusterPrefix = "kumuluzee.nats.servers";
         Optional<Integer> size = configurationUtil.getListSize(clusterPrefix);
@@ -54,14 +53,14 @@ public class NatsConfigLoader {
                 String name = configurationUtil.get(currentPrefix + ".name")
                         .orElseThrow(configNotFoundException(currentPrefix + ".name"));
                 ClusterNatsConnectionConfig clusterConfig = new ClusterNatsConnectionConfig(name);
-                readAndSetConnectionConfigClass(configurationUtil, clusterConfig, currentPrefix);
+                readAndSetConnectionConfigClass(clusterConfig, currentPrefix);
                 connectionConfigs.put(name, clusterConfig);
             }
         } else {
             String natsCorePrefix = "kumuluzee.nats";
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
                 SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
-                readAndSetConnectionConfigClass(configurationUtil, singleConfig, natsCorePrefix);
+                readAndSetConnectionConfigClass(singleConfig, natsCorePrefix);
                 connectionConfigs.put(singleConfig.getName(), singleConfig);
             } else {
                 throw configNotFoundException(natsCorePrefix).get();
@@ -73,14 +72,115 @@ public class NatsConfigLoader {
         return () -> new IllegalStateException("Configuration key '" + configKey + "' required but not found.");
     }
 
-    private void readAndSetGeneralConfigClass(ConfigurationUtil configurationUtil) {
+    private void readAndSetGeneralConfigClass() {
         String prefix = "kumuluzee.nats";
         // response-timeout
         Optional<Integer> responseTimeout = configurationUtil.getInteger(prefix + ".response-timeout");
         responseTimeout.ifPresent(generalConfig::setResponseTimeout);
+        // consumer configurations
+        Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumerConfiguration");
+        List<NatsConsumerConfiguration> consumerConfigurations = new ArrayList<>();
+        if (consumerConfigSize.isPresent()) {
+            for (int i = 0; i < consumerConfigSize.get(); i++) {
+                consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumerConfiguration" + "[" + i + "]"));
+            }
+        }
+        if (!consumerConfigurations.isEmpty()) {
+            generalConfig.setConsumerConfigurations(consumerConfigurations);
+        }
     }
 
-    private void readAndSetConnectionConfigClass(ConfigurationUtil configurationUtil, NatsConnectionConfig natsConnectionConfig, String currentPrefix) {
+    private NatsConsumerConfiguration readConsumerConfiguration(String currentPrefix) {
+        NatsConsumerConfiguration consumerConfiguration = new NatsConsumerConfiguration();
+        // name
+        Optional<String> name = configurationUtil.get(currentPrefix + ".name");
+        name.ifPresent(consumerConfiguration::setName);
+        // deliver policy
+        Optional<String> deliverPolicy = configurationUtil.get(currentPrefix + ".deliverPolicy");
+        deliverPolicy.ifPresent(x -> consumerConfiguration.setDeliverPolicy(DeliverPolicy.get(x)));
+        // ack policy
+        Optional<String> ackPolicy = configurationUtil.get(currentPrefix + ".ackPolicy");
+        ackPolicy.ifPresent(x -> consumerConfiguration.setAckPolicy(AckPolicy.get(x)));
+        // replay policy
+        Optional<String> replayPolicy = configurationUtil.get(currentPrefix + ".replayPolicy");
+        replayPolicy.ifPresent(x -> consumerConfiguration.setReplayPolicy(ReplayPolicy.get(x)));
+        // description
+        Optional<String> description = configurationUtil.get(currentPrefix + ".description");
+        description.ifPresent(consumerConfiguration::setDescription);
+        // durable
+        Optional<String> durable = configurationUtil.get(currentPrefix + ".durable");
+        durable.ifPresent(consumerConfiguration::setDurable);
+        // deliver subject
+        Optional<String> deliverSubject = configurationUtil.get(currentPrefix + ".deliverSubject");
+        deliverSubject.ifPresent(consumerConfiguration::setDeliverSubject);
+        // deliver group
+        Optional<String> deliverGroup = configurationUtil.get(currentPrefix + ".deliverGroup");
+        deliverGroup.ifPresent(consumerConfiguration::setDeliverGroup);
+        // filter subject
+        Optional<String> filterSubject = configurationUtil.get(currentPrefix + ".filterSubject");
+        filterSubject.ifPresent(consumerConfiguration::setFilterSubject);
+        // sample frequency
+        Optional<String> sampleFrequency = configurationUtil.get(currentPrefix + ".sampleFrequency");
+        sampleFrequency.ifPresent(consumerConfiguration::setSampleFrequency);
+        // start time
+        Optional<String> startTime = configurationUtil.get(currentPrefix + ".startTime");
+        startTime.ifPresent(x -> consumerConfiguration.setStartTime(ZonedDateTime.parse(startTime.get(), DateTimeFormatter.ISO_DATE_TIME)));
+        // ack wait
+        Optional<String> ackWait = configurationUtil.get(currentPrefix + ".ackWait");
+        ackWait.ifPresent(x -> consumerConfiguration.setAckWait(Duration.parse(ackWait.get())));
+        // idle heartbeat
+        Optional<String> idleHeartbeat = configurationUtil.get(currentPrefix + ".idleHeartbeat");
+        idleHeartbeat.ifPresent(x -> consumerConfiguration.setIdleHeartbeat(Duration.parse(idleHeartbeat.get())));
+        // max expires
+        Optional<String> maxExpires = configurationUtil.get(currentPrefix + ".maxExpires");
+        maxExpires.ifPresent(x -> consumerConfiguration.setMaxExpires(Duration.parse(maxExpires.get())));
+        // inactive threshold
+        Optional<String> inactiveThreshold = configurationUtil.get(currentPrefix + ".inactiveThreshold");
+        inactiveThreshold.ifPresent(x -> consumerConfiguration.setInactiveThreshold(Duration.parse(inactiveThreshold.get())));
+        // start seq
+        Optional<Long> startSeq = configurationUtil.getLong(currentPrefix + ".startSeq");
+        startSeq.ifPresent(consumerConfiguration::setStartSeq);
+        // max deliver
+        Optional<Long> maxDeliver = configurationUtil.getLong(currentPrefix + ".maxDeliver");
+        maxDeliver.ifPresent(consumerConfiguration::setMaxDeliver);
+        // rate limit
+        Optional<Long> rateLimit = configurationUtil.getLong(currentPrefix + ".rateLimit");
+        rateLimit.ifPresent(consumerConfiguration::setRateLimit);
+        // max ack pending
+        Optional<Long> maxAckPending = configurationUtil.getLong(currentPrefix + ".maxAckPending");
+        maxAckPending.ifPresent(consumerConfiguration::setMaxAckPending);
+        // max pull waiting
+        Optional<Long> maxPullWaiting = configurationUtil.getLong(currentPrefix + ".maxPullWaiting");
+        maxPullWaiting.ifPresent(consumerConfiguration::setMaxPullWaiting);
+        // max batch
+        Optional<Long> maxBatch = configurationUtil.getLong(currentPrefix + ".maxBatch");
+        maxBatch.ifPresent(consumerConfiguration::setMaxBatch);
+        // max bytes
+        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".maxBytes");
+        maxBytes.ifPresent(consumerConfiguration::setMaxBytes);
+        // flow control
+        Optional<Boolean> flowControl = configurationUtil.getBoolean(currentPrefix + ".flowControl");
+        flowControl.ifPresent(consumerConfiguration::setFlowControl);
+        // headers only
+        Optional<Boolean> headersOnly = configurationUtil.getBoolean(currentPrefix + ".headersOnly");
+        headersOnly.ifPresent(consumerConfiguration::setHeadersOnly);
+        // backoff
+        Optional<Integer> backoffListSize = configurationUtil.getListSize(currentPrefix + ".backoff");
+        List<Duration> backoffList = new ArrayList<>();
+        if (backoffListSize.isPresent()) {
+            for (int i = 0; i < backoffListSize.get(); i++) {
+                Optional<String> backoff = configurationUtil.get(currentPrefix + ".backoff" + "[" + i + "]");
+                backoff.ifPresent(x -> backoffList.add(Duration.parse(x)));
+            }
+        }
+        if (!backoffList.isEmpty()) {
+            consumerConfiguration.setBackoff(backoffList);
+        }
+
+        return consumerConfiguration;
+    }
+
+    private void readAndSetConnectionConfigClass(NatsConnectionConfig natsConnectionConfig, String currentPrefix) {
         // addresses
         Optional<Integer> addressesSize = configurationUtil.getListSize(currentPrefix + ".addresses");
         List<String> addresses = new ArrayList<>();
@@ -129,7 +229,7 @@ public class NatsConfigLoader {
         List<StreamConfiguration> streams = new ArrayList<>();
         if (streamsSize.isPresent()) {
             for (int i = 0; i < streamsSize.get(); i++) {
-                streams.add(readStreamsConfiguration(configurationUtil, currentPrefix + ".streams" + "[" + i + "]"));
+                streams.add(readStreamsConfiguration(currentPrefix + ".streams" + "[" + i + "]"));
             }
         }
         if (!streams.isEmpty()) {
@@ -141,7 +241,7 @@ public class NatsConfigLoader {
         Map<String, JetStreamOptions> jetStreamContexts = new HashMap<>();
         if (jetStreamContextsSize.isPresent()) {
             for (int i = 0; i < jetStreamContextsSize.get(); i++) {
-                NamedJetStreamOptions namedJetStreamOptions = readJetStreamOptions(configurationUtil, currentPrefix + ".jetStreamContexts" + "[" + i + "]");
+                NamedJetStreamOptions namedJetStreamOptions = readJetStreamOptions(currentPrefix + ".jetStreamContexts" + "[" + i + "]");
                 jetStreamContexts.put(namedJetStreamOptions.getName(), namedJetStreamOptions.getJetStreamOptions());
             }
         }
@@ -179,7 +279,7 @@ public class NatsConfigLoader {
         natsConnectionConfig.setTls(tls);
     }
 
-    private StreamConfiguration readStreamsConfiguration(ConfigurationUtil configurationUtil, String currentPrefix) {
+    private StreamConfiguration readStreamsConfiguration(String currentPrefix) {
         StreamConfiguration.Builder builder = StreamConfiguration.builder();
         // name
         Optional<String> name = configurationUtil.get(currentPrefix + ".name");
@@ -230,7 +330,7 @@ public class NatsConfigLoader {
         return builder.build();
     }
 
-    private NamedJetStreamOptions readJetStreamOptions(ConfigurationUtil configurationUtil, String currentPrefix) {
+    private NamedJetStreamOptions readJetStreamOptions(String currentPrefix) {
         NamedJetStreamOptions namedJetStreamOptions = new NamedJetStreamOptions();
         JetStreamOptions.Builder builder = JetStreamOptions.builder();
         // name
@@ -256,7 +356,7 @@ public class NatsConfigLoader {
         return namedJetStreamOptions;
     }
 
-    private class NamedJetStreamOptions {
+    private static class NamedJetStreamOptions {
         private String name;
         private JetStreamOptions jetStreamOptions;
 
@@ -277,6 +377,30 @@ public class NatsConfigLoader {
 
         public void setJetStreamOptions(JetStreamOptions jetStreamOptions) {
             this.jetStreamOptions = jetStreamOptions;
+        }
+    }
+
+    private static class NamedMap {
+        private String name;
+        private Map<String, String> map;
+
+        public NamedMap() {
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public Map<String, String> getMap() {
+            return map;
+        }
+
+        public void setMap(Map<String, String> map) {
+            this.map = map;
         }
     }
 }

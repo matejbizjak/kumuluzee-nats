@@ -18,6 +18,8 @@ public @interface JetStreamListener {
 
     @Nonbinding String context() default "default";
 
+    @Nonbinding String stream() default "";
+
     @Nonbinding String subject() default "";
 
     @Nonbinding String queue() default "";
@@ -26,13 +28,7 @@ public @interface JetStreamListener {
 
     @Nonbinding boolean bind() default false;
 
-    @Nonbinding String stream() default "";
-
     @Nonbinding String durable() default "";
-
-    @Nonbinding String deliverGroup() default "";
-
-    @Nonbinding String deliverSubject() default "";
 
     @Nonbinding boolean ordered() default false;
 }

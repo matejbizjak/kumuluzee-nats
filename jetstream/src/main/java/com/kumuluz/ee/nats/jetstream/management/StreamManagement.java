@@ -6,11 +6,13 @@ import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamManagement;
+import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.api.StreamInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  * Helper for managing streams
@@ -19,6 +21,8 @@ import java.util.HashMap;
  */
 
 public class StreamManagement {
+
+    private static final Logger LOG = Logger.getLogger(StreamManagement.class.getName());
 
     public static void establishAll() {
         HashMap<String, Connection> connections = NatsConnection.getAllConnections();
@@ -52,8 +56,8 @@ public class StreamManagement {
     public static StreamInfo createStream(JetStreamManagement jetStreamManagement, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
         StreamInfo streamInfo = jetStreamManagement.addStream(streamConfiguration);
-        System.out.printf("Created stream '%s' with subject(s) %s\n",
-                streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects());
+        LOG.info(String.format("Created stream '%s' with subject(s) %s\n",
+                streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
         return streamInfo;
     }
 
@@ -80,11 +84,11 @@ public class StreamManagement {
         if (needToUpdate) {
             streamConfigurationDb = StreamConfiguration.builder(streamConfigurationDb).subjects(streamConfigurationDb.getSubjects()).build();
             streamInfo = jetStreamManagement.updateStream(streamConfigurationDb);
-            System.out.printf("Existing stream '%s' was updated, has subject(s) %s\n",
-                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects());
+            LOG.info(String.format("Existing stream '%s' was updated, has subject(s) %s\n",
+                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
         } else {
-            System.out.printf("Existing stream '%s' already contained subject(s) %s\n",
-                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects());
+            LOG.info(String.format("Existing stream '%s' already contained subject(s) %s\n",
+                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
         }
         return streamInfo;
     }
@@ -92,5 +96,17 @@ public class StreamManagement {
     public static StreamInfo createStreamOrUpdateSubjects(Connection nc, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
         return createStreamOrUpdateSubjects(nc.jetStreamManagement(), streamConfiguration);
+    }
+
+    public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {
+        Connection nc = NatsConnection.getConnection(connectionName);
+        try {
+            nc.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
+            LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s"
+                    , connectionName, streamName));
+        } catch (IOException | JetStreamApiException e) {
+            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s"
+                    , connectionName, streamName));
+        }
     }
 }
