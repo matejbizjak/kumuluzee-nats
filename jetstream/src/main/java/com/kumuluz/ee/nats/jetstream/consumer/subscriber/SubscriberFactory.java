@@ -48,7 +48,10 @@ public class SubscriberFactory {
     private JetStreamSubscription createSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation, JetStream jetStream) {
         JetStreamSubscription jetStreamSubscription = null;
         if (jetStreamSubscriberAnnotation.durable().equals("")) {
-            LOG.severe("Durable must not be empty for a subscription");
+            LOG.severe("Durable must be set for pull based subscriptions");
+            LOG.severe(String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
+                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
+            return null;
         }
         NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
         ConsumerConfiguration consumerConfiguration;
@@ -70,6 +73,7 @@ public class SubscriberFactory {
         } catch (IOException | JetStreamApiException e) {
             LOG.severe(String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
+            LOG.severe(e.getLocalizedMessage());
         }
         return jetStreamSubscription;
     }
@@ -82,7 +86,9 @@ public class SubscriberFactory {
         JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context());
         if (!subscriptions.contains(jetStream, jetStreamSubscriberAnnotation.subject())) {
             JetStreamSubscription jetStreamSubscription = createSubscription(jetStreamSubscriberAnnotation, consumerConfigAnnotation, jetStream);
-            subscriptions.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
+            if (jetStreamSubscription != null) {
+                subscriptions.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
+            }
         }
         return subscriptions.get(jetStream, jetStreamSubscriberAnnotation.subject());
     }

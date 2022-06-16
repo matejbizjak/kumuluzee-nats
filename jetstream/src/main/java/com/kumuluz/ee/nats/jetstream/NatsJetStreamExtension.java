@@ -29,7 +29,6 @@ public class NatsJetStreamExtension implements Extension {
 
     public static boolean isExtensionEnabled() {
         ConfigurationUtil config = ConfigurationUtil.getInstance();
-        return config.getBoolean("kumuluzee.nats.enabled").orElse(true)
-                && config.getBoolean("kumuluzee.nats.jetStream").orElse(true);
+        return config.getBoolean("kumuluzee.nats.enabled").orElse(true);
     }
 }

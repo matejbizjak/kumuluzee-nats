@@ -17,17 +17,13 @@ public class SubscriberInitializer {
 
     @Produces
     @JetStreamSubscriber
+    @ConsumerConfig
     public static JetStreamSubscription getSubscription(InjectionPoint injectionPoint) {
         JetStreamSubscriber jetStreamSubscriberAnnotation = injectionPoint.getAnnotated().getAnnotation(JetStreamSubscriber.class);
-        return SubscriberFactory.getInstance().getSubscription(jetStreamSubscriberAnnotation, null);
-    }
-
-    @Produces
-    @JetStreamSubscriber
-    @ConsumerConfig
-    public static JetStreamSubscription getSubscription2(InjectionPoint injectionPoint) {
-        JetStreamSubscriber jetStreamSubscriberAnnotation = injectionPoint.getAnnotated().getAnnotation(JetStreamSubscriber.class);
-        ConsumerConfig consumerConfigAnnotation = injectionPoint.getAnnotated().getAnnotation(ConsumerConfig.class);
+        ConsumerConfig consumerConfigAnnotation = null;
+        if (injectionPoint.getAnnotated().isAnnotationPresent(ConsumerConfig.class)) {
+            consumerConfigAnnotation = injectionPoint.getAnnotated().getAnnotation(ConsumerConfig.class);
+        }
         return SubscriberFactory.getInstance().getSubscription(jetStreamSubscriberAnnotation, consumerConfigAnnotation);
     }
 }

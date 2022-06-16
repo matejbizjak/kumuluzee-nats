@@ -296,6 +296,9 @@ public class NatsConfigLoader {
         if (!subjects.isEmpty()) {
             builder.subjects(subjects);
         }
+        // description
+        Optional<String> description = configurationUtil.get(currentPrefix + ".description");
+        description.ifPresent(builder::description);
         // retention policy
         Optional<String> retentionPolicy = configurationUtil.get(currentPrefix + ".retentionPolicy");
         retentionPolicy.ifPresent(x -> builder.retentionPolicy(RetentionPolicy.get(retentionPolicy.get())));
