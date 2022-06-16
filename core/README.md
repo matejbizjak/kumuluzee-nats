@@ -1,8 +1,5 @@
 # KumuluzEE NATS Core
 
-TODO:
-- change package from `com.kumuluz.ee.nats` to `com.kumuluz.ee.nats.core`
-
 The extension is using a [NATS.java](https://github.com/nats-io/nats.java) Java client to communicate with NATS servers. 
 
 ## Usage:
@@ -10,9 +7,9 @@ The extension is using a [NATS.java](https://github.com/nats-io/nats.java) Java 
 NATS Core extension can be added via the following Maven dependency:
 ````xml
 <dependency>
-    <groupId>com.kumuluz.ee.nats-core</groupId>
+    <groupId>com.kumuluz.ee.nats</groupId>
     <artifactId>kumuluzee-nats-core</artifactId>
-    <version>${nats-core.version}</version>
+    <version>${nats.version}</version>
 </dependency>
 ````
 
@@ -121,7 +118,7 @@ If the sender expects a response, the method can return **the expected** object 
 
 The configuration is completely optional. If no values are set, the extension will use the default values.
 
-The prefix of all following properties must be `kumuluzee.nats-core`.
+The prefix of all following properties must be `kumuluzee.nats`.
 
 [//]: # ()
 [//]: # (#### Single connection)
@@ -199,7 +196,7 @@ The prefix of all following properties must be `kumuluzee.nats-core`.
 | servers.tls.key-store-path       | java.lang.String | Path to the key store                                                                              |
 | servers.tls.key-store-password   | java.lang.String | The password to unlock the key store                                                               |
 
-### Default values
+#### Default values
 
 The extension is enabled by default.
 
@@ -246,26 +243,30 @@ kumuluzee:
           - tls://localhost:4224
         tls:
           trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks
-          trust-store-password: password2
-#          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
-          key-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\keystore.jks
-          key-store-password: password
+        trust-store-password: password2
+        #          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
+        key-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\keystore.jks
+        key-store-password: password
 ```
 
 For Mutual TLS you also need to specify a key store.
 
+---
 
-## Poskus za asinhrono čakanje na odgovor
+## Notes
+
+### Poskus za asinhrono čakanje na odgovor
 
 NatsClientInvoker.java:
+
 ```java
 ...
-else if (returnType.equals(Future.class)) { // wait for response asynchronously
-    CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-    // v0.2
-    Dispatcher dispatcher = connection.createDispatcher((msg) -> {});
-    // Problem je v naslednji vrstici, ker je message.getReplyTo() == null in ga ne moreš uporabiti, ker ga uporablja NATS za interne zadeve.
-    // The Message object allows you to set a replyTo, but in requests, the replyTo is reserved for internal use as the address for the server to respond to the client with the consumer's reply.
+        else if(returnType.equals(Future.class)){ // wait for response asynchronously
+        CompletableFuture<Object> completableFuture=new CompletableFuture<>();
+        // v0.2
+        Dispatcher dispatcher=connection.createDispatcher((msg)->{});
+        // Problem je v naslednji vrstici, ker je message.getReplyTo() == null in ga ne moreš uporabiti, ker ga uporablja NATS za interne zadeve.
+        // The Message object allows you to set a replyTo, but in requests, the replyTo is reserved for internal use as the address for the server to respond to the client with the consumer's reply.
     Subscription subscription = dispatcher.subscribe(message.getReplyTo(), (msg) -> {
         try {
             Object receivedMsg = SerDes.deserialize(msg.getData()
