@@ -308,6 +308,9 @@ public class NatsConfigLoader {
         // max age
         Optional<Long> maxAge = configurationUtil.getLong(currentPrefix + ".maxAge");
         maxAge.ifPresent(builder::maxAge);
+        // max messages
+        Optional<Long> maxMsgs = configurationUtil.getLong(currentPrefix + ".maxMsgs");
+        maxMsgs.ifPresent(builder::maxMessages);
         // max message size
         Optional<Long> maxMsgSize = configurationUtil.getLong(currentPrefix + ".maxMsgSize");
         maxMsgSize.ifPresent(builder::maxMsgSize);
@@ -326,6 +329,9 @@ public class NatsConfigLoader {
         // discard policy
         Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discardPolicy");
         discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(discardPolicy.get())));
+        // duplicate window
+        Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicateWindow");
+        duplicateWindow.ifPresent(x -> builder.duplicateWindow(Duration.parse(duplicateWindow.get())));
 
         return builder.build();
     }
