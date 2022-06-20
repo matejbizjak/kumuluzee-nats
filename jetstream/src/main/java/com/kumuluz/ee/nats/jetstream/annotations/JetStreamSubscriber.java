@@ -22,7 +22,7 @@ public @interface JetStreamSubscriber {
 
     @Nonbinding String subject() default "";
 
-    @Nonbinding boolean autoAck() default true;
-
     @Nonbinding String durable() default "";
+
+    @Nonbinding boolean bind() default false;
 }

@@ -56,14 +56,16 @@ public class SubscriberFactory {
         NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
         ConsumerConfiguration consumerConfiguration;
         if (consumerConfigAnnotation == null) {
-            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null, jetStreamSubscriberAnnotation.durable());
+            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
         } else {
-            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name(), consumerConfigAnnotation.configOverrides(), jetStreamSubscriberAnnotation.durable());
+            consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name(), consumerConfigAnnotation.configOverrides());
         }
         PullSubscribeOptions pullSubscribeOptions = PullSubscribeOptions
                 .builder()
                 .stream(jetStreamSubscriberAnnotation.stream())
                 .configuration(consumerConfiguration)
+                .durable(jetStreamSubscriberAnnotation.durable())
+                .bind(jetStreamSubscriberAnnotation.bind())
                 .build();
 //        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
         try {

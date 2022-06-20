@@ -1,3 +1,4 @@
+[//]: # (@formatter:off)
 # KumuluzEE NATS Core
 
 The extension is using a [NATS.java](https://github.com/nats-io/nats.java) Java client to communicate with NATS servers. 
@@ -116,7 +117,9 @@ If the sender expects a response, the method can return **the expected** object 
 
 ## Configuration
 
-The configuration is completely optional. If no values are set, the extension will use the default values.
+In order for a NATS client application to connect to the NATS service, and then subscribe or publish messages to
+subjects, it needs to be able to be configured with the details of how to connect to the NATS service infrastructure and
+of how to authenticate with it. However, the configuration is completely optional. If no values are set, the extension will use the default values.
 
 The prefix of all following properties must be `kumuluzee.nats`.
 

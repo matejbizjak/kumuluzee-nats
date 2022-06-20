@@ -24,7 +24,7 @@ public @interface JetStreamListener {
 
     @Nonbinding String queue() default "";
 
-    @Nonbinding boolean autoAck() default false; // TODO
+    @Nonbinding boolean doubleAck() default false;
 
     @Nonbinding boolean bind() default false;
 

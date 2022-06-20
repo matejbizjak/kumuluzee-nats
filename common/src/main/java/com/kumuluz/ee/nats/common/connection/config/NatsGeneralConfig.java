@@ -50,7 +50,7 @@ public class NatsGeneralConfig {
         this.consumerConfigurations = consumerConfigurations;
     }
 
-    public ConsumerConfiguration combineConsumerConfigAndBuild(String name, ConfigurationOverride[] overrides, String durableName) {
+    public ConsumerConfiguration combineConsumerConfigAndBuild(String name, ConfigurationOverride[] overrides) {
         if (name != null && getConsumerConfiguration(name) != null) {
             NatsConsumerConfiguration consumerConfiguration = getConsumerConfiguration(name);
             for (ConfigurationOverride override : overrides) {
@@ -212,9 +212,12 @@ public class NatsGeneralConfig {
                 builder.backoff(consumerConfiguration.getBackoff().toArray(new Duration[0]));
             }
 
-            if (durableName != null) {
-                builder.durable(durableName);
-            }
+//            if (durableName != null) {
+//                builder.durable(durableName);
+//            }
+//            if (groupName != null) {
+//                builder.deliverGroup(groupName);
+//            }
             return builder.build();
         }
         return ConsumerConfiguration.builder().build();

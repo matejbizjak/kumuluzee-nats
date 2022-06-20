@@ -1,3 +1,4 @@
+[//]: # (@formatter:off)
 # KumuluzEE Nats JetStream
 
 TODO: durable lahko zdaj nastaviš na dveh koncih
@@ -14,7 +15,6 @@ from other NATS producers.
 NATS JetStream extension can be added via the following Maven dependency:
 
 ````xml
-
 <dependency>
     <groupId>com.kumuluz.ee.nats</groupId>
     <artifactId>kumuluzee-nats-jetstream</artifactId>
@@ -22,12 +22,11 @@ NATS JetStream extension can be added via the following Maven dependency:
 </dependency>
 ````
 
-TODO If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include
+If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include
 the `kumuluzee-logs`
 implementation and slf4j-log4j adapter dependencies:
 
 ```xml
-
 <dependency>
     <artifactId>kumuluzee-logs-log4j2</artifactId>
     <groupId>com.kumuluz.ee.logs</groupId>
@@ -35,9 +34,9 @@ implementation and slf4j-log4j adapter dependencies:
 </dependency>
 
 <dependency>
-<groupId>org.apache.logging.log4j</groupId>
-<artifactId>log4j-slf4j-impl</artifactId>
-<version>${log4j-slf4j-impl.version}</version>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-slf4j-impl</artifactId>
+    <version>${log4j-slf4j-impl.version}</version>
 </dependency>
 ```
 
@@ -60,19 +59,19 @@ private JetStream jetStream;
 `@JetStreamProducer` has two optional parameters:
 
 - connection (name of the connection)
-- context (name of the context)
+- context (name of the JetStream context)
 
-If parameter values are not set, the default connection and context will be used.
+If parameter values are not set, the default connection and JetStream context will be used.
 
 Now we can use the injected JetStream reference to publish the message, as shown on the example below:
 
 ```java
-Message message=NatsMessage.builder()
+Message message = NatsMessage.builder()
         .subject("subject")
         .data(SerDes.serialize("message"))
         .build();
 
-        PublishAck publishAck=jetStream.publish(message);
+PublishAck publishAck = jetStream.publish(message);
 ```
 
 ### Consuming messages
@@ -90,7 +89,7 @@ There is another **optional** annotation available, which allows us to select a 
 override the configurations.
 That annotation is `@ConsumerConfig`.
 
-In the following example push consumer is listening to the subject "subject" on the default connection and default
+In the following example push consumer is listening to the subject "subject" on the default connection and default JetStream
 context.
 It uses custom consumer configuration named "custom" but overrides the `deliverPolicy` parameter.
 It expects the message of the String data type.
@@ -99,28 +98,31 @@ It expects the message of the String data type.
 @JetStreamListener(subject = "subject")
 @ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliverPolicy", value = "new")})
 public void receive(String value){
-        System.out.println(value);
-        }
+    System.out.println(value);
+}
 ```
 
-`@JetStreamListener` has the following parameters TODO:
+`@JetStreamListener` has the following parameters:
 
 - connection
 - context
-- subject
+- subject (required)
 - stream
-- queue
-- autoAck
-- bind
-- durable
-- ordered
+- queue (queue group to join)
+- doubleAck (for double-acking, see [Exactly once delivery](#exactly-once-delivery))
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer)
+- durable (consumer durable name, overrides the durable name from consumer configurations)
+- ordered (whether this subscription is expected to ensure messages come in order)
+
+Durable means the server will remember where we are if we use that name.
 
 #### Pull consumers
 
 To be able to manually pull messages from the server we need to inject `JetStreamSubscription` reference with the help
 of `@JetStreamSubscriber` annotation.
-We have to use it in conjunction with the `@Inject` annotation, as shown on the example below. Durable must be set for
-pull based consumers!
+We have to use it in conjunction with the `@Inject` annotation, as shown on the example below. 
+
+> :warning: Durable must be set for pull based consumers!
 
 There is another **optional** annotation available, which allows us to select a consumer configuration with an option to
 override the configurations.
@@ -138,27 +140,79 @@ It fetches up to 10 messages with a timeout of 1 second. It expects the data to 
 @ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliverPolicy", value = "new")})
 private JetStreamSubscription jetStreamSubscription;
 
-public void pullMsg(){
-        if(jetStreamSubscription!=null){
-        List<Message> messages=jetStreamSubscription.fetch(10,Duration.ofSeconds(1));
-        for(Message message:messages){
-        try{
-        System.out.println(SerDes.deserialize(message.getData(),String.class));
-        message.ack();
-        }catch(IOException e){
-        ...
+public void pullMsg() {
+    if (jetStreamSubscription != null) {
+        List<Message> messages = jetStreamSubscription.fetch(10, Duration.ofSeconds(1));
+        for (Message message : messages) {
+            try {
+                System.out.println(SerDes.deserialize(message.getData(), String.class));
+                message.ack();
+            } catch (IOException e) {
+                ...
+            }
         }
-        }
-        }
-        }
+    }
+}
 ```
+
+`@JetStreamSubscriber` has the following parameters:
+- connection
+- context
+- stream (The stream to attach to. If not supplied the stream will be looked up by subject)
+- subject (required)
+- durable (required)
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer)
+
+### Exactly Once Delivery
+
+JetStream supports exactly-once delivery guarantees by combining Message Deduplication and double acks.
+
+#### Producer
+
+On the publishing side you can avoid duplicate message ingestion using the Message Deduplication feature.
+
+JetStream support idempotent message writes by ignoring duplicate messages as indicated by the `Nats-Msg-Id header`.
+This tells JetStream to ensure we do not have duplicates of this message - we only consult the message ID not the body.
+
+```java
+String uniqueID = UUID.randomUUID().toString();
+Headers headers = new Headers().add("Nats-Msg-Id", uniqueID);
+
+Message message=NatsMessage.builder()
+        .subject("subject")
+        .data(SerDes.serialize("message"))
+        .headers(headers)
+        .build();
+
+PublishAck publishAck = jetStream.publish(message);
+```
+
+#### Consumer
+
+Consumers can be 100% sure a message was correctly processed by requesting the server Acknowledge having received your acknowledgement (sometimes referred to as double-acking) by calling the message's `AckSync()` (rather than `Ack()`) function which sets a reply subject on the Ack and waits for a response from the server on the reception and processing of the acknowledgement. If the response received from the server indicates success you can be sure that the message will never be re-delivered by the consumer (due to a loss of your acknowledgement).
+
+##### Push consumer
+
+To enable double-acking for push based subscribers, set the `doubleAck`  in `@JetStreamListener` annotation to `true`.
+
+##### Pull consumer
+
+For pull based subscribers, use `AckSync()` function instead of `Ack()`.
+
+## NATS Administration
+
+Streams and durable consumers can be defined administratively outside the application (typically using the [NATS CLI Tool](https://docs.nats.io/using-nats/nats-tools/nats_cli)) in which case the application only needs to know about the well-known names of the durable consumers it wants to use.
+But with KumuluzEE JetStream you can manage streams and consumers programmatically, simply by specifying them in the configurations.
+
+> :warning: You cannot update a consumer (change its configuration) once created.
+
+> :warning: You cannot delete a stream or consumer directly with KumuluzEE JetStream. You can do this manually typically using the [NATS CLI Tool](https://docs.nats.io/using-nats/nats-tools/nats_cli).
 
 ## Configuration
 
 NATS JetStream is very flexible and powerful system which requires a lot of configuration, however most of it is
 completely optional.
-Configurations are stored by default in the `resources/config.yml` file.
-TODO Alternatively, they can also be stored in
+Configurations are read from KumuluzEE configuration file (`resources/config.yml`). Alternatively, they can also be stored in
 a configuration server, such as etcd or Consul (for which the KumuluzEE Config project is required). For more details
 see the [KumuluzEE configuration wiki page](https://github.com/kumuluz/kumuluzee/wiki/Configuration) and
 [KumuluzEE Config](https://github.com/kumuluz/kumuluzee-config).
@@ -223,7 +277,7 @@ see the [KumuluzEE configuration wiki page](https://github.com/kumuluz/kumuluzee
 
 The configuration is split into more parts for easier understanding.
 
-#### Common
+### Common
 
 Prefix: `kumuluzee.nats`
 
@@ -233,7 +287,7 @@ Prefix: `kumuluzee.nats`
 | servers                          | java.util.List   | The list of servers                                                                                |
 | consumerConfiguration            | java.util.List   | The list of consumer configurations                                                                |
 
-#### Servers
+### Servers
 
 Prefix: `kumuluzee.nats.servers`
 
@@ -265,15 +319,13 @@ More info [here](https://docs.nats.io/using-nats/developer/connecting).
 | streams                  | java.util.List   | The list of streams                                                                                |
 | jetStreamContexts        | java.util.List   | The list of JetStream contexts                                                                     |
 
-##### Streams
+### Streams
 
 Prefix: `kumuluzee.nats.servers.streams`
 
 Streams are 'message stores', each stream defines how messages are stored and what the limits (duration, size, interest)
 of the retention are. Streams consume normal NATS subjects, any message published on those subjects will be captured in
-the defined storage system. You can do a normal publish to the subject for unacknowledged delivery, though it's better
-to use the JetStream publish calls instead as the JetStream server will reply with an acknowledgement that it was
-successfully stored.
+the defined storage system.
 
 More info [here](https://docs.nats.io/nats-concepts/jetstream/streams).
 
@@ -295,7 +347,7 @@ More info [here](https://docs.nats.io/nats-concepts/jetstream/streams).
 | discardPolicy   | io.nats.client.api.DiscardPolicy   | When a Stream reaches it's limits either, DiscardNew refuses new messages while DiscardOld (default) deletes old messages                               |
 | duplicateWindow | java.time.Duration                 | The window within which to track duplicate messages, expressed in nanoseconds                                                                           |
 
-##### JetStream Contexts
+### JetStream Contexts
 
 Prefix: `kumuluzee.nats.servers.jetStreamContexts`
 
@@ -312,7 +364,7 @@ Contexts may be prefixed to be used in conjunction with NATS authorization.
 | publishNoAck    | boolean                          | Sets whether the streams in use by contexts created with these options are no-ack streams.                                                                                                                                                                                    |
 | requestTimeout  | java.time.Duration               | Sets the request timeout for JetStream API calls                                                                                                                                                                                                                              |
 
-#### Consumer configuration
+### Consumer configuration
 
 Prefix: `kumuluzee.nats.consumerConfiguration`
 
@@ -356,7 +408,7 @@ More info [here](https://docs.nats.io/nats-concepts/jetstream/consumers).
 | headersOnly        | boolean                                 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | backoff            | java.util.List<java.time.Duration>      | https://github.com/nats-io/nats-server/pull/2812                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
-#### Default values
+### Default values
 
 The extension is enabled by default.
 
@@ -370,85 +422,92 @@ Other default values:
 - [JetStreamOptions](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/JetStreamOptions.java)
 - [StreamConfiguration](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/api/StreamConfiguration.java)
 
-### Examples
+[//]: # ()
+[//]: # (### Examples)
 
-TODO
+[//]: # ()
+[//]: # (TODO)
 
-#### Default server connection with a custom response timeout
+[//]: # ()
+[//]: # (#### Default server connection with a custom response timeout)
 
-```xml
-kumuluzee:
-        nats-core:
-        response-timeout: 5
-```
+[//]: # (```xml)
 
-#### TLS with a single address
+[//]: # (kumuluzee:)
 
-```xml
-kumuluzee:
-        nats-core:
-        response-timeout: 5
-        servers:
-        - name: secure-unverified-client
-        addresses:
-        - tls://localhost:4223
-        tls:
-        #          trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks
-        #          trust-store-password: password2
-        certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
-```
+[//]: # (  nats-core:)
 
-You can either specify the trust store and password, or the server's certificate path.
+[//]: # (    response-timeout: 5)
 
-#### Mutual TLS with a single address
+[//]: # (```)
 
-```xml
-kumuluzee:
-        nats-core:
-        servers:
-        - name: secure
-        addresses:
-        - tls://localhost:4224
-        tls:
-        trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks
-        trust-store-password: password2
-        #          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
-        key-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\keystore.jks
-        key-store-password: password
-```
+[//]: # ()
+[//]: # (#### TLS with a single address)
 
-For Mutual TLS you also need to specify a key store.
+[//]: # ()
+[//]: # (```xml)
 
----
+[//]: # (kumuluzee:)
 
-## Notes
+[//]: # (  nats-core:)
 
-Pazi pri JetStreamSubscriber:
-ConsumerConfiguration je vezana durable.
-Ko enkrat narediš durable z določeno konfiguracijo, ne moreš configuracije spreminjati.
-Lahko jo z Nats CLI, ampak ne preko extensiona. Več si
-preberi [tukaj](https://docs.nats.io/nats-concepts/jetstream/consumers).
+[//]: # (    response-timeout: 5)
 
-You can check on the status of any consumer at any time using `nats consumer info`
-or view the messages in the stream using `nats stream view my_stream`
-or even remove individual messages from the stream using `nats stream rmm`.
-More [here](https://docs.nats.io/nats-concepts/jetstream/js_walkthrough).
+[//]: # (    servers:)
 
-### Exactly once delivery
+[//]: # (      - name: secure-unverified-client)
 
-part1
+[//]: # (        addresses:)
 
-```java
-String uniqueID=UUID.randomUUID().toString();
-        Headers headers=new Headers().add("Nats-Msg-Id",uniqueID);
+[//]: # (          - tls://localhost:4223)
 
-        Message message=NatsMessage.builder()
-        .subject("subject")
-        .data(SerDes.serialize("message"))
-        .headers(headers)
-        .build();
+[//]: # (        tls:)
 
-        PublishAck publishAck=jetStream.publish(message);
-```
+[//]: # (#          trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks)
 
-part2
+[//]: # (#          trust-store-password: password2)
+
+[//]: # (          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (You can either specify the trust store and password, or the server's certificate path.)
+
+[//]: # ()
+[//]: # (#### Mutual TLS with a single address)
+
+[//]: # ()
+[//]: # (```xml)
+
+[//]: # (kumuluzee:)
+
+[//]: # (        nats-core:)
+
+[//]: # (        servers:)
+
+[//]: # (        - name: secure)
+
+[//]: # (        addresses:)
+
+[//]: # (        - tls://localhost:4224)
+
+[//]: # (        tls:)
+
+[//]: # (        trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks)
+
+[//]: # (        trust-store-password: password2)
+
+[//]: # (        #          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem)
+
+[//]: # (        key-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\keystore.jks)
+
+[//]: # (        key-store-password: password)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (For Mutual TLS you also need to specify a key store.)
+
+[//]: # ()
+[//]: # (---)

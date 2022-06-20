@@ -23,8 +23,10 @@ import javax.enterprise.inject.spi.ProcessBean;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 /**
@@ -92,14 +94,22 @@ public class ListenerInitializerExtension implements Extension {
                         receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                         args[0] = receivedMsg;
                     } catch (IOException e) {
+                        msg.nak();
                         throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                                 , method.getParameterTypes()[0].getSimpleName()), e);
                     }
                     try {
                         method.invoke(reference, args);
-//                        msg.ackSync();  // TODO
+                        if (jetStreamListenerAnnotation.doubleAck()) {
+                            msg.ackSync(Duration.ofSeconds(5));
+                        } else {
+                            msg.ack();
+                        }
                     } catch (InvocationTargetException | IllegalAccessException e) {
+                        msg.nak();
                         throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
+                    } catch (TimeoutException e) {
+                        throw new RuntimeException(e);
                     }
                 };
 
@@ -107,20 +117,21 @@ public class ListenerInitializerExtension implements Extension {
                 ConsumerConfiguration consumerConfiguration;
                 if (consumerConfigAnnotation == null) {
                     // TODO a se sam generira durable?
-                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null, jetStreamListenerAnnotation.durable());
+                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
                 } else {
                     consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name()
-                            , consumerConfigAnnotation.configOverrides(), jetStreamListenerAnnotation.durable());
+                            , consumerConfigAnnotation.configOverrides());
                 }
 
-                PushSubscribeOptions.Builder builder = PushSubscribeOptions.builder();
-                builder.configuration(consumerConfiguration);
-                builder.ordered(jetStreamListenerAnnotation.ordered());
-                builder.bind(jetStreamListenerAnnotation.bind());
-                builder.stream(jetStreamListenerAnnotation.stream());
-                PushSubscribeOptions pushSubscribeOptions = builder.build();
+                PushSubscribeOptions pushSubscribeOptions = PushSubscribeOptions.builder()
+                        .configuration(consumerConfiguration)
+                        .ordered(jetStreamListenerAnnotation.ordered())
+                        .bind(jetStreamListenerAnnotation.bind())
+                        .stream(jetStreamListenerAnnotation.stream())
+                        .durable(jetStreamListenerAnnotation.durable())
+                        .build();
 
-                jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue(), dispatcher, handler, true, pushSubscribeOptions);  // TODO autoAck je zdaj fiksno na true
+                jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue(), dispatcher, handler, false, pushSubscribeOptions);
 
             } catch (JetStreamApiException | IOException e) {
                 LOG.severe(String.format("Cannot create a JetStream context for connection: %s", jetStreamListenerAnnotation.connection()));
