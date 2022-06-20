@@ -1,8 +1,6 @@
 [//]: # (@formatter:off)
 # KumuluzEE Nats JetStream
 
-TODO: durable lahko zdaj nastaviš na dveh koncih
-
 The extension is using a [NATS.java](https://github.com/nats-io/nats.java) Java client to communicate with NATS servers.
 
 Publishing and subscribing to JetStream enabled servers is straightforward. A JetStream enabled application will connect
@@ -22,8 +20,7 @@ NATS JetStream extension can be added via the following Maven dependency:
 </dependency>
 ````
 
-If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include
-the `kumuluzee-logs`
+If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include the `kumuluzee-logs`
 implementation and slf4j-log4j adapter dependencies:
 
 ```xml
