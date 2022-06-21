@@ -120,7 +120,7 @@ public void receive(String value){
 
 #### Pull consumers
 
-To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with a help
+To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with the help
 of the `@JetStreamSubscriber` annotation.
 We have to use it in conjunction with the `@Inject` annotation, as shown in the example below. 
 
