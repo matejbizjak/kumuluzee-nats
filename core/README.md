@@ -33,7 +33,7 @@ public interface SimpleClient {
 ```
 
 #### Annotation
-We have to annotate the interface with `@RegisterNatsClient`, where we can specify the connection the client will use.
+We have to annotate an interface with `@RegisterNatsClient`, where we can specify the connection a client will use.
 
 Each method must be annotated with `@Subject`, but there are two options:
 - method annotation
@@ -48,13 +48,13 @@ If those optional values are not set, NATS client will use the default values.
 
 #### Return type
 
-The return type of the methods specifies the response (message) object the client should receive. If the return type is `void` the client does not expect a response. 
+Method's return type specifies the response (message) object a client should receive. If the return type is `void` the client does not expect a response. 
 
-Please, make sure that the custom classes you use have a default constructor. If not, they will not be de/serialized successfully. 
+> :warning: Please, make sure that the custom classes you use have a default constructor. If not, they will not be de/serialized successfully.
 
 ### Building a NATS client instance
 
-The implementation of the NATS client interfaces is automatically generated during the runtime. We can simply inject the client to our service:
+The implementation of the NATS client interfaces is automatically generated during the runtime. We can simply inject a client to our service using `@Inject` and `@NatsClient`:
 
 ```java
 @Inject
@@ -64,7 +64,7 @@ private SimpleClient simpleClient;
 
 ### Using a NATS client
 
-After injecting the client to our service, we can call the methods in the interface.
+After injecting a client to our service, we can call the methods from the interface.
 
 ```java
 simpleClient.sendSimple("simple string");
@@ -111,9 +111,9 @@ To listen for the NATS messages we need to annotate a class with `@NatsListener`
 
 `@Subject` also has 2 optional parameters when used under `@NatsListener`:
 - connection (overrides the connection from `@RegisterNatsClient`)
-- queue
+- queue (only one of the listeners in the same queue reveives the message)
 
-If the sender expects a response, the method can return **the expected** object as a response.
+If sender expects a response, the method can return **the expected** object as a response.
 
 ## Configuration
 
@@ -208,51 +208,9 @@ The extension is enabled by default.
 
 For other default values take a look [here](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/Options.java).
 
-### Examples
+## Sample
 
-#### Default server connection with a custom response timeout
-```xml
-kumuluzee:
-  nats-core:
-    response-timeout: 5
-```
-
-#### TLS with a single address
-
-```xml
-kumuluzee:
-  nats-core:
-    response-timeout: 5
-    servers:
-      - name: secure-unverified-client
-        addresses:
-          - tls://localhost:4223
-        tls:
-#          trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks
-#          trust-store-password: password2
-          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
-```
-
-You can either specify the trust store and password, or the server's certificate path. 
-
-#### Mutual TLS with a single address
-
-```xml
-kumuluzee:
-  nats-core:
-    servers:
-      - name: secure
-        addresses:
-          - tls://localhost:4224
-        tls:
-          trust-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\truststore.jks
-        trust-store-password: password2
-        #          certificate-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\server-cert.pem
-        key-store-path: C:\Users\Matej\IdeaProjects\Nats Core Sample\src\main\resources\certs\keystore.jks
-        key-store-password: password
-```
-
-For Mutual TLS you also need to specify a key store.
+Samples are available [here](https://github.com/matejbizjak/kumuluzee-nats-core-sample).
 
 ---
 

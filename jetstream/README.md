@@ -12,13 +12,13 @@ from other NATS producers.
 
 NATS JetStream extension can be added via the following Maven dependency:
 
-````xml
+```xml
 <dependency>
     <groupId>com.kumuluz.ee.nats</groupId>
     <artifactId>kumuluzee-nats-jetstream</artifactId>
     <version>${nats.version}</version>
 </dependency>
-````
+```
 
 If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include the `kumuluzee-logs`
 implementation and slf4j-log4j adapter dependencies:
@@ -41,9 +41,11 @@ You also need to include a Log4j2 configuration, which should be in a file named
 `src/main/resources`. For more information about KumuluzEE Logs visit the
 [KumuluzEE Logs Github page](https://github.com/kumuluz/kumuluzee-logs).
 
+> If you are unfamiliar with the NATS JetStream, please check the [documentation](https://docs.nats.io/nats-concepts/jetstream) or read the [Configuration](#configuration) section first.
+
 ### Publishing messages
 
-For injecting the JetStream context, the KumuluzEE NATS JetStream provides a `@JetStreamProducer` annotation, which will
+For injecting a JetStream context, the KumuluzEE NATS JetStream provides the `@JetStreamProducer` annotation, which will
 inject the producer reference.
 We have to use it in conjunction with the `@Inject` annotation, as shown on the example below.
 
@@ -60,7 +62,7 @@ private JetStream jetStream;
 
 If parameter values are not set, the default connection and JetStream context will be used.
 
-Now we can use the injected JetStream reference to publish the message, as shown on the example below:
+Now we can use the injected JetStream reference to publish the message, as shown in the example below:
 
 ```java
 Message message = NatsMessage.builder()
@@ -71,24 +73,27 @@ Message message = NatsMessage.builder()
 PublishAck publishAck = jetStream.publish(message);
 ```
 
+We can also use `publishAsync()` to publish asynchronously.
+
 ### Consuming messages
 
-Consumers can either be **push** based where JetStream will deliver the messages as fast as possible to a subject of
+Consumers can either be **push** based where JetStream will deliver the messages as fast as possible (while adhering to the
+rate limit policy) to a subject of
 your choice, or **pull** to have control by asking the server for messages.
 
 #### Push consumers
 
-To specify a push consumer, we need to annotate a method with `@JetStreamListener` annotation.
-Server will push the message to the client, which we can retrieve by the first function parameter.
+To specify a push consumer, we need to annotate a method with the `@JetStreamListener` annotation.
+Server will push the messages to the client, which we can retrieve by the first function parameter.
 Make sure to match the object type to the type of the producer.
 
 There is another **optional** annotation available, which allows us to select a consumer configuration with an option to
 override the configurations.
 That annotation is `@ConsumerConfig`.
 
-In the following example push consumer is listening to the subject "subject" on the default connection and default JetStream
+In the following example push consumer is listening to the subject `subject` on the default connection and default JetStream
 context.
-It uses custom consumer configuration named "custom" but overrides the `deliverPolicy` parameter.
+It uses custom consumer configuration named `custom` but overrides the `deliverPolicy` parameter.
 It expects the message of the String data type.
 
 ```java
@@ -104,19 +109,19 @@ public void receive(String value){
 - connection
 - context
 - subject (required)
-- stream
+- stream (The stream to attach to. If not supplied the stream will be looked up by subject)
 - queue (queue group to join)
 - doubleAck (for double-acking, see [Exactly once delivery](#exactly-once-delivery))
 - bind (whether this subscription is expected to bind to an existing stream and durable consumer)
 - durable (consumer durable name, overrides the durable name from consumer configurations)
 - ordered (whether this subscription is expected to ensure messages come in order)
 
-Durable means the server will remember where we are if we use that name.
+> Durable means the server will remember where we are if we use that name.
 
 #### Pull consumers
 
-To be able to manually pull messages from the server we need to inject `JetStreamSubscription` reference with the help
-of `@JetStreamSubscriber` annotation.
+To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with a help
+of the `@JetStreamSubscriber` annotation.
 We have to use it in conjunction with the `@Inject` annotation, as shown on the example below. 
 
 > :warning: Durable must be set for pull based consumers!
@@ -125,10 +130,10 @@ There is another **optional** annotation available, which allows us to select a 
 override the configurations.
 That annotation is `@ConsumerConfig`.
 
-In the following example pull consumer is listening to the subject "subject" on the default connection and default
+In the following example the pull consumer is listening to the subject `subject` on the default connection and default
 context.
 Durable name is set to `somethingNew`.
-It uses custom consumer configuration named "custom" but overrides the `deliverPolicy` parameter.
+It uses custom consumer configuration named `custom` but overrides the `deliverPolicy` parameter.
 It fetches up to 10 messages with a timeout of 1 second. It expects the data to be of String data type.
 
 ```java
@@ -204,6 +209,8 @@ But with KumuluzEE JetStream you can manage streams and consumers programmatical
 > :warning: You cannot update a consumer (change its configuration) once created.
 
 > :warning: You cannot delete a stream or consumer directly with KumuluzEE JetStream. You can do this manually typically using the [NATS CLI Tool](https://docs.nats.io/using-nats/nats-tools/nats_cli).
+
+NATS supports a number of [other tools](https://docs.nats.io/running-a-nats-service/configuration/resource_management/configuration_mgmt) to assist with configuration management, if you decide not to use KumuluzEE JetStream for that.
 
 ## Configuration
 
@@ -508,3 +515,7 @@ Other default values:
 
 [//]: # ()
 [//]: # (---)
+
+## Sample
+
+Samples are available [here](https://github.com/matejbizjak/kumuluzee-nats-jetstream-sample).
