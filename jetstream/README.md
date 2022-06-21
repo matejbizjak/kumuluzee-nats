@@ -47,7 +47,7 @@ You also need to include a Log4j2 configuration, which should be in a file named
 
 For injecting a JetStream context, the KumuluzEE NATS JetStream provides the `@JetStreamProducer` annotation, which will
 inject the producer reference.
-We have to use it in conjunction with the `@Inject` annotation, as shown on the example below.
+We have to use it in conjunction with the `@Inject` annotation, as shown in the example below.
 
 ```java
 @Inject
@@ -122,7 +122,7 @@ public void receive(String value){
 
 To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with a help
 of the `@JetStreamSubscriber` annotation.
-We have to use it in conjunction with the `@Inject` annotation, as shown on the example below. 
+We have to use it in conjunction with the `@Inject` annotation, as shown in the example below. 
 
 > :warning: Durable must be set for pull based consumers!
 
