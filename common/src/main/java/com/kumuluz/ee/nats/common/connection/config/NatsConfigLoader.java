@@ -85,9 +85,7 @@ public class NatsConfigLoader {
                 consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumerConfiguration" + "[" + i + "]"));
             }
         }
-        if (!consumerConfigurations.isEmpty()) {
-            generalConfig.setConsumerConfigurations(consumerConfigurations);
-        }
+        generalConfig.setConsumerConfigurations(consumerConfigurations);
     }
 
     private NatsConsumerConfiguration readConsumerConfiguration(String currentPrefix) {
@@ -173,9 +171,7 @@ public class NatsConfigLoader {
                 backoff.ifPresent(x -> backoffList.add(Duration.parse(x)));
             }
         }
-        if (!backoffList.isEmpty()) {
-            consumerConfiguration.setBackoff(backoffList);
-        }
+        consumerConfiguration.setBackoff(backoffList);
 
         return consumerConfiguration;
     }
@@ -190,9 +186,8 @@ public class NatsConfigLoader {
                 address.ifPresent(addresses::add);
             }
         }
-        if (!addresses.isEmpty()) {
-            natsConnectionConfig.setAddresses(addresses);
-        }
+        natsConnectionConfig.setAddresses(addresses);
+
         // max-reconnect
         Optional<Integer> maxReconnect = configurationUtil.getInteger(currentPrefix + ".max-reconnect");
         maxReconnect.ifPresent(natsConnectionConfig::setMaxReconnect);
@@ -232,9 +227,7 @@ public class NatsConfigLoader {
                 streams.add(readStreamsConfiguration(currentPrefix + ".streams" + "[" + i + "]"));
             }
         }
-        if (!streams.isEmpty()) {
-            natsConnectionConfig.setStreamConfigurations(streams);
-        }
+        natsConnectionConfig.setStreamConfigurations(streams);
 
         // jetStreamContext options
         Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetStreamContexts");
@@ -245,9 +238,7 @@ public class NatsConfigLoader {
                 jetStreamContexts.put(namedJetStreamOptions.getName(), namedJetStreamOptions.getJetStreamOptions());
             }
         }
-        if (!jetStreamContexts.isEmpty()) {
-            natsConnectionConfig.setJetStreamContextOptions(jetStreamContexts);
-        }
+        natsConnectionConfig.setJetStreamContextOptions(jetStreamContexts);
 
         // TLS
         Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
@@ -293,9 +284,7 @@ public class NatsConfigLoader {
                 subject.ifPresent(subjects::add);
             }
         }
-        if (!subjects.isEmpty()) {
-            builder.subjects(subjects);
-        }
+        builder.subjects(subjects);
         // description
         Optional<String> description = configurationUtil.get(currentPrefix + ".description");
         description.ifPresent(builder::description);
