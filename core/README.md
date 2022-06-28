@@ -14,6 +14,8 @@ NATS Core extension can be added via the following Maven dependency:
 </dependency>
 ````
 
+NATS Core extension can also be used simultaneously alongside NATS JetStream extension.
+
 ### Defining NATS client
 
 To define a NATS client, we need to create an interface:

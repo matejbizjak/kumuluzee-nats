@@ -1,2 +1,3 @@
+com.kumuluz.ee.nats.common.connection.NatsConnectionStreamExtension
 com.kumuluz.ee.nats.core.cdi.NatsClientInitializerExtension
 com.kumuluz.ee.nats.core.cdi.NatsListenerInitializerExtension

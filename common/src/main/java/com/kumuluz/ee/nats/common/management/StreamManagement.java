@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.jetstream.management;
+package com.kumuluz.ee.nats.common.management;
 
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;

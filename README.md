@@ -4,7 +4,7 @@
 > KumuluzEE NATS project for developing microservices using NATS connective technology.
 
 KumuluzEE NATS project for the KumuluzEE microservice framework provides easy-to-use annotations and configuration for developing microservices using NATS connective technology.
-Both NATS Core and NATS JetStream are supported.
+Both NATS Core and NATS JetStream are supported and both can be used simultaneously in the same microservice.
 
 The project is using a [NATS.java](https://github.com/nats-io/nats.java) Java client to communicate with NATS servers.
 

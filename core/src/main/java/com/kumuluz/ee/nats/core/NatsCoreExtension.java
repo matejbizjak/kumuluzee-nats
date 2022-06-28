@@ -12,8 +12,7 @@ import java.util.logging.Logger;
  * @author Matej Bizjak
  */
 
-@EeExtensionDef(group = "nats", name = "NATS Core")
-//@EeComponentDependency(EeComponentType.CDI)
+@EeExtensionDef(group = "nats-core", name = "NATS Core")
 public class NatsCoreExtension implements Extension {
 
     private static final Logger LOGGER = Logger.getLogger(NatsCoreExtension.class.getName());

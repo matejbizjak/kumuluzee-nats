@@ -2,7 +2,6 @@ package com.kumuluz.ee.nats.core.cdi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.NatsConnectionCoordinator;
 import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
 import com.kumuluz.ee.nats.common.exception.NatsListenerException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
@@ -57,9 +56,6 @@ public class NatsListenerInitializerExtension implements Extension {
             return;
         }
 
-        NatsConnectionCoordinator.establishAll();  // establish connections
-        // then, create subscriptions
-
         for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
             LOG.info("Found method " + inst.getMethod().getName() + " in class " +
                     inst.getMethod().getDeclaringClass());
@@ -104,6 +100,7 @@ public class NatsListenerInitializerExtension implements Extension {
                     receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                     args[0] = receivedMsg;
                 } catch (IOException e) {
+                    msg.term();
                     throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                             , method.getParameterTypes()[0].getSimpleName()), e);
                 }

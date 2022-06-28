@@ -5,7 +5,7 @@ import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
-import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
+import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamOptions;
@@ -57,7 +57,7 @@ public class JetStreamContextFactory {
     }
 
     public JetStream getContext(String connectionName, String contextName) {
-        if (!NatsJetStreamExtension.isExtensionEnabled()) {
+        if (!JetStreamExtension.isExtensionEnabled()) {
             return null;
         }
 

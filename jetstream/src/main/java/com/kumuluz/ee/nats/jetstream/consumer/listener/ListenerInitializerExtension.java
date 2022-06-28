@@ -2,16 +2,14 @@ package com.kumuluz.ee.nats.jetstream.consumer.listener;
 
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.NatsConnectionCoordinator;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
 import com.kumuluz.ee.nats.common.exception.NatsListenerException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
-import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
+import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
 import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
-import com.kumuluz.ee.nats.jetstream.management.StreamManagement;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 
@@ -52,20 +50,12 @@ public class ListenerInitializerExtension implements Extension {
     }
 
     public void after(@Observes AfterDeploymentValidation adv, BeanManager beanManager) {
-        if (!NatsJetStreamExtension.isExtensionEnabled()) {
+        if (!JetStreamExtension.isExtensionEnabled()) {
             return;
         }
 
-        // establish connections
-        if (!NatsConnection.connectionsAlreadyEstablished()) {  // Nats Core extension might have been used
-            // TODO stestiraj če uporabiš oba extensiona - lahko moreš nastavit prioriteto enemu višjo
-            NatsConnectionCoordinator.establishAll();
-        }
-        StreamManagement.establishAll();
-        // then, create subscriptions
-
         for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
-            LOG.info("Found method " + inst.getMethod().getName() + " in class " +
+            LOG.info("Found JetStream listener method " + inst.getMethod().getName() + " in class " +
                     inst.getMethod().getDeclaringClass());
         }
 
@@ -94,7 +84,7 @@ public class ListenerInitializerExtension implements Extension {
                         receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                         args[0] = receivedMsg;
                     } catch (IOException e) {
-                        msg.nak();
+                        msg.term();
                         throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                                 , method.getParameterTypes()[0].getSimpleName()), e);
                     }

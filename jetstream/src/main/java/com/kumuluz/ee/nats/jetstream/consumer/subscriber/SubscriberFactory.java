@@ -5,7 +5,7 @@ import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
-import com.kumuluz.ee.nats.jetstream.NatsJetStreamExtension;
+import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
 import io.nats.client.JetStream;
@@ -81,7 +81,7 @@ public class SubscriberFactory {
     }
 
     public JetStreamSubscription getSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation) {
-        if (!NatsJetStreamExtension.isExtensionEnabled()) {
+        if (!JetStreamExtension.isExtensionEnabled()) {
             return null;
         }
 
