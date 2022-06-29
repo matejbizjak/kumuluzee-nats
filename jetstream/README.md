@@ -22,7 +22,7 @@ NATS JetStream extension can be added via the following Maven dependency:
 
 NATS JetStream extension can also be used simultaneously alongside NATS Core extension. 
 
-If you would like to collect Kafka related logs through the KumuluzEE Logs, you have to include the `kumuluzee-logs`
+If you would like to collect NATS related logs through the KumuluzEE Logs, you have to include the `kumuluzee-logs`
 implementation and slf4j-log4j adapter dependencies:
 
 ```xml
