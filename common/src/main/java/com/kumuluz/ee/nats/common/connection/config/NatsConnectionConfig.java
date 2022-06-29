@@ -7,8 +7,9 @@ import io.nats.client.api.StreamConfiguration;
 
 import javax.net.ssl.*;
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -305,7 +306,7 @@ public abstract class NatsConnectionConfig {
             TrustManagerFactory factory = TrustManagerFactory.getInstance(Optional.ofNullable(trustStoreType).orElse("SunX509"));
 
             if (certificatePath != null && !certificatePath.isEmpty()) {
-                try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(certificatePath))) {
+                try (BufferedInputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(certificatePath)))) {
                     CertificateFactory cf = CertificateFactory.getInstance("X.509");
                     X509Certificate cert = (X509Certificate) cf.generateCertificate(in);
                     store.setCertificateEntry("nats", cert);
@@ -319,11 +320,8 @@ public abstract class NatsConnectionConfig {
         private KeyStore loadStore(String path, String password) throws Exception {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
             if (path != null && !path.isEmpty()) {
-                BufferedInputStream in = new BufferedInputStream(new FileInputStream(path));
-                try {
+                try (BufferedInputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(path)))) {
                     store.load(in, Optional.ofNullable(password).map(String::toCharArray).orElse(new char[0]));
-                } finally {
-                    in.close();
                 }
             } else {
                 store.load(null);

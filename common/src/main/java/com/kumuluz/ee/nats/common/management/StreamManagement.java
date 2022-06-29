@@ -72,7 +72,8 @@ public class StreamManagement {
             return createStream(jetStreamManagement, streamConfiguration);
         }
 
-        // check to see if the configuration has all the subject we want
+        // TODO now we only update the subjects, what about other stream settings?
+        // check to see if the configuration has all the subjects we want
         StreamConfiguration streamConfigurationDb = streamInfo.getConfiguration();
         boolean needToUpdate = false;
         for (String subject : streamConfiguration.getSubjects()) {

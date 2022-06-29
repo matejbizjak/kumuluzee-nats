@@ -7,10 +7,6 @@ import java.lang.reflect.Method;
  * @author Matej Bizjak
  */
 
-/**
- * @author Matej Bizjak
- */
-
 public class AnnotatedInstance<T, S> {
 
     private Bean bean;

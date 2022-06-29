@@ -84,7 +84,7 @@ public class ListenerInitializerExtension implements Extension {
                         receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                         args[0] = receivedMsg;
                     } catch (IOException e) {
-                        msg.term();
+                        msg.term();  // TODO je to ok?
                         throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                                 , method.getParameterTypes()[0].getSimpleName()), e);
                     }
@@ -106,7 +106,6 @@ public class ListenerInitializerExtension implements Extension {
                 NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
                 ConsumerConfiguration consumerConfiguration;
                 if (consumerConfigAnnotation == null) {
-                    // TODO a se sam generira durable?
                     consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
                 } else {
                     consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name()

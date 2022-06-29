@@ -35,10 +35,6 @@ public class NatsConnection {
         }
     }
 
-    public static boolean connectionsAlreadyEstablished() {
-        return connections.size() != 0;
-    }
-
     public static HashMap<String, Connection> getAllConnections() {
         return connections;
     }

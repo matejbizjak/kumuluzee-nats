@@ -4,10 +4,6 @@ package com.kumuluz.ee.nats.common.exception;
  * @author Matej Bizjak
  */
 
-/**
- * @author Matej Bizjak
- */
-
 public class NatsListenerException extends RuntimeException {
 
     public NatsListenerException() {

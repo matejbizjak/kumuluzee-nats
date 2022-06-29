@@ -377,28 +377,4 @@ public class NatsConfigLoader {
             this.jetStreamOptions = jetStreamOptions;
         }
     }
-
-    private static class NamedMap {
-        private String name;
-        private Map<String, String> map;
-
-        public NamedMap() {
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public Map<String, String> getMap() {
-            return map;
-        }
-
-        public void setMap(Map<String, String> map) {
-            this.map = map;
-        }
-    }
 }

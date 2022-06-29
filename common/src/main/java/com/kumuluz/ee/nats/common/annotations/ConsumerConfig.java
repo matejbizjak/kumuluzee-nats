@@ -14,7 +14,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ConsumerConfig {
 
-    @Nonbinding String name() default "default";
+    @Nonbinding String name() default "";
 
     @Nonbinding ConfigurationOverride[] configOverrides() default {};
 
