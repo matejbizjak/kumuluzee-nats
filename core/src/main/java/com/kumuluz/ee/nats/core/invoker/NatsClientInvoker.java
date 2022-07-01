@@ -2,7 +2,6 @@ package com.kumuluz.ee.nats.core.invoker;
 
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
 import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
@@ -14,6 +13,8 @@ import io.nats.client.impl.NatsMessage;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +26,6 @@ public class NatsClientInvoker implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
         String connectionName = getAnnotatedConnection(method);
         String subjectName = getAnnotatedSubject(method, args);
         Object payload = getPayload(method, args);
@@ -42,7 +42,7 @@ public class NatsClientInvoker implements InvocationHandler {
             connection.publish(message);
         } else { // wait for response
             CompletableFuture<Message> incoming = connection.request(message);
-            Message response = incoming.get(generalConfig.getResponseTimeout(), TimeUnit.SECONDS);
+            Message response = incoming.get(getAnnotatedResponseTimeout(method).get(ChronoUnit.SECONDS), TimeUnit.SECONDS);
             if (response != null) {
                 return SerDes.deserialize(response.getData(), returnType);
             }
@@ -85,6 +85,25 @@ public class NatsClientInvoker implements InvocationHandler {
             }
         }
         return subject;
+    }
+
+    private Duration getAnnotatedResponseTimeout(Method method) {
+        Duration responseTimeout = null;
+
+        RegisterNatsClient registerNatsClientAnnotation = method.getDeclaringClass().getAnnotation(RegisterNatsClient.class);
+        if (!registerNatsClientAnnotation.responseTimeout().isEmpty()) {
+            responseTimeout = Duration.parse(registerNatsClientAnnotation.responseTimeout());
+        }
+
+        Subject subjectAnnotation = method.getAnnotation(Subject.class);
+        if (subjectAnnotation != null && !subjectAnnotation.responseTimeout().isEmpty()) {
+            responseTimeout = Duration.parse(subjectAnnotation.responseTimeout());
+        }
+
+        if (responseTimeout == null) {
+            responseTimeout = NatsConfigLoader.getInstance().getGeneralConfig().getResponseTimeout();
+        }
+        return responseTimeout;
     }
 
     private Object getPayload(Method method, Object[] args) {

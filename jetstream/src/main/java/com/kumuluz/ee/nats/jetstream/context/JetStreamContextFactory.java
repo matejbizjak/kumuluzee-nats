@@ -48,7 +48,7 @@ public class JetStreamContextFactory {
         JetStreamOptions jetStreamOptions = config.getJetStreamContextOptions().get(contextName);
         Connection connection = NatsConnection.getConnection(connectionName);
         try {
-            jetStream = connection.jetStream(jetStreamOptions);
+            jetStream = connection.jetStream(jetStreamOptions);  // TODO a moram tukaj preverit, če je connection null?
             LOG.info(String.format("JetStream context %s for a connection %s was created successfully", contextName, connectionName));
         } catch (IOException e) {
             LOG.severe(String.format("Cannot create a JetStream context %s for a connection %s", contextName, connectionName));

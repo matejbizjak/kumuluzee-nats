@@ -100,15 +100,15 @@ public class NatsListenerInitializerExtension implements Extension {
                     receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                     args[0] = receivedMsg;
                 } catch (IOException e) {
-                    msg.term();  // TODO je to ok?
                     throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                             , method.getParameterTypes()[0].getSimpleName()), e);
                 }
 
                 Object responseMsg;
                 try {
-                    responseMsg = method.invoke(reference, args);
+                    responseMsg = method.invoke(reference, args);  // TODO dodaj kot argument za in progress - nov objekt
                 } catch (IllegalAccessException | InvocationTargetException e) {
+                    // TODO glej da se ne zapre dispatcher
                     throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
                 }
 

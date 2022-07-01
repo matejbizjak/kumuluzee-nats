@@ -28,4 +28,9 @@ public @interface Subject {
      * @return The queue of the consumer.
      */
     @Nonbinding String queue() default "";
+
+    /**
+     * @return Time to wait for the response.
+     */
+    @Nonbinding String responseTimeout() default "";
 }

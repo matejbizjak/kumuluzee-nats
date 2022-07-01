@@ -72,31 +72,61 @@ public class StreamManagement {
             return createStream(jetStreamManagement, streamConfiguration);
         }
 
-        // TODO now we only update the subjects, what about other stream settings?
-        // check to see if the configuration has all the subjects we want
-        StreamConfiguration streamConfigurationDb = streamInfo.getConfiguration();
-        boolean needToUpdate = false;
-        for (String subject : streamConfiguration.getSubjects()) {
-            if (!streamConfigurationDb.getSubjects().contains(subject)) {
-                needToUpdate = true;
-                streamConfigurationDb.getSubjects().add(subject);
-            }
+//        // check to see if the configuration has all the subjects we want
+//        StreamConfiguration streamConfigurationDb = streamInfo.getConfiguration();
+//        boolean needToUpdate = false;
+//        for (String subject : streamConfiguration.getSubjects()) {
+//            if (!streamConfigurationDb.getSubjects().contains(subject)) {
+//                needToUpdate = true;
+//                streamConfigurationDb.getSubjects().add(subject);
+//            }
+//        }
+//        if (needToUpdate) {
+//            streamConfigurationDb = StreamConfiguration.builder(streamConfigurationDb).subjects(streamConfigurationDb.getSubjects()).build();
+//            streamInfo = jetStreamManagement.updateStream(streamConfigurationDb);
+//            LOG.info(String.format("Existing stream '%s' was updated, has subject(s) %s\n",
+//                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
+//        } else {
+//            LOG.info(String.format("Existing stream '%s' already contained subject(s) %s\n",
+//                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
+//        }
+
+        if (configurationsChanged(streamInfo.getConfiguration(), streamConfiguration)) {
+            streamInfo = jetStreamManagement.updateStream(streamConfiguration);
+            LOG.info(String.format("Existing stream '%s' was updated.", streamConfiguration.getName()));
         }
-        if (needToUpdate) {
-            streamConfigurationDb = StreamConfiguration.builder(streamConfigurationDb).subjects(streamConfigurationDb.getSubjects()).build();
-            streamInfo = jetStreamManagement.updateStream(streamConfigurationDb);
-            LOG.info(String.format("Existing stream '%s' was updated, has subject(s) %s\n",
-                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
-        } else {
-            LOG.info(String.format("Existing stream '%s' already contained subject(s) %s\n",
-                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
-        }
+
         return streamInfo;
     }
 
     public static StreamInfo createStreamOrUpdateSubjects(Connection nc, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
         return createStreamOrUpdateSubjects(nc.jetStreamManagement(), streamConfiguration);
+    }
+
+    private static boolean configurationsChanged(StreamConfiguration db, StreamConfiguration req) {
+        return !(db.getSubjects().equals(req.getSubjects())
+                && emptyIfNull(db.getDescription()).equals(emptyIfNull(req.getDescription()))
+                && db.getRetentionPolicy().equals(req.getRetentionPolicy())
+                && db.getMaxConsumers() == req.getMaxConsumers()
+                && db.getMaxBytes() == req.getMaxBytes()
+                && db.getMaxAge() == req.getMaxAge()
+                && db.getMaxMsgs() == req.getMaxMsgs()
+                && db.getMaxMsgSize() == req.getMaxMsgSize()
+                && db.getStorageType().equals(req.getStorageType())
+                && db.getReplicas() == req.getReplicas()
+                && db.getNoAck() == req.getNoAck()
+                && emptyIfNull(db.getTemplateOwner()).equals(emptyIfNull(req.getTemplateOwner()))
+                && db.getDiscardPolicy().equals(req.getDiscardPolicy())
+                && db.getDuplicateWindow().equals(req.getDuplicateWindow())
+        );
+    }
+
+    private static String emptyIfNull(String string) {
+        if (string == null) {
+            return "";
+        }
+        return string;
     }
 
     public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {

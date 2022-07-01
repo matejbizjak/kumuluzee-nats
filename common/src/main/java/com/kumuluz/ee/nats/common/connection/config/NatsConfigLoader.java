@@ -74,15 +74,21 @@ public class NatsConfigLoader {
 
     private void readAndSetGeneralConfigClass() {
         String prefix = "kumuluzee.nats";
-        // response-timeout
-        Optional<Integer> responseTimeout = configurationUtil.getInteger(prefix + ".response-timeout");
-        responseTimeout.ifPresent(generalConfig::setResponseTimeout);
+        // response timeout
+        Optional<String> responseTimeout = configurationUtil.get(prefix + ".response-timeout");
+        responseTimeout.ifPresent(x -> generalConfig.setResponseTimeout(Duration.parse("PT" + x)));
+        // ack confirmation timeout
+        Optional<String> ackConfirmationTimeout = configurationUtil.get(prefix + ".ack-confirmation-timeout");
+        ackConfirmationTimeout.ifPresent(x -> generalConfig.setAckConfirmationTimeout(Duration.parse("PT" + x)));
+        // ack confirmation retries
+        Optional<Integer> ackConfirmationRetries = configurationUtil.getInteger(prefix + ".ack-confirmation-retries");
+        ackConfirmationRetries.ifPresent(generalConfig::setAckConfirmationRetries);
         // consumer configurations
-        Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumerConfiguration");
+        Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumer-configuration");
         List<NatsConsumerConfiguration> consumerConfigurations = new ArrayList<>();
         if (consumerConfigSize.isPresent()) {
             for (int i = 0; i < consumerConfigSize.get(); i++) {
-                consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumerConfiguration" + "[" + i + "]"));
+                consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumer-configuration" + "[" + i + "]"));
             }
         }
         generalConfig.setConsumerConfigurations(consumerConfigurations);
@@ -94,13 +100,13 @@ public class NatsConfigLoader {
         Optional<String> name = configurationUtil.get(currentPrefix + ".name");
         name.ifPresent(consumerConfiguration::setName);
         // deliver policy
-        Optional<String> deliverPolicy = configurationUtil.get(currentPrefix + ".deliverPolicy");
+        Optional<String> deliverPolicy = configurationUtil.get(currentPrefix + ".deliver-policy");
         deliverPolicy.ifPresent(x -> consumerConfiguration.setDeliverPolicy(DeliverPolicy.get(x)));
         // ack policy
-        Optional<String> ackPolicy = configurationUtil.get(currentPrefix + ".ackPolicy");
+        Optional<String> ackPolicy = configurationUtil.get(currentPrefix + ".ack-policy");
         ackPolicy.ifPresent(x -> consumerConfiguration.setAckPolicy(AckPolicy.get(x)));
         // replay policy
-        Optional<String> replayPolicy = configurationUtil.get(currentPrefix + ".replayPolicy");
+        Optional<String> replayPolicy = configurationUtil.get(currentPrefix + ".replay-policy");
         replayPolicy.ifPresent(x -> consumerConfiguration.setReplayPolicy(ReplayPolicy.get(x)));
         // description
         Optional<String> description = configurationUtil.get(currentPrefix + ".description");
@@ -109,58 +115,58 @@ public class NatsConfigLoader {
         Optional<String> durable = configurationUtil.get(currentPrefix + ".durable");
         durable.ifPresent(consumerConfiguration::setDurable);
         // deliver subject
-        Optional<String> deliverSubject = configurationUtil.get(currentPrefix + ".deliverSubject");
+        Optional<String> deliverSubject = configurationUtil.get(currentPrefix + ".deliver-subject");
         deliverSubject.ifPresent(consumerConfiguration::setDeliverSubject);
         // deliver group
-        Optional<String> deliverGroup = configurationUtil.get(currentPrefix + ".deliverGroup");
+        Optional<String> deliverGroup = configurationUtil.get(currentPrefix + ".deliver-group");
         deliverGroup.ifPresent(consumerConfiguration::setDeliverGroup);
         // filter subject
-        Optional<String> filterSubject = configurationUtil.get(currentPrefix + ".filterSubject");
+        Optional<String> filterSubject = configurationUtil.get(currentPrefix + ".filter-subject");
         filterSubject.ifPresent(consumerConfiguration::setFilterSubject);
         // sample frequency
-        Optional<String> sampleFrequency = configurationUtil.get(currentPrefix + ".sampleFrequency");
+        Optional<String> sampleFrequency = configurationUtil.get(currentPrefix + ".sample-frequency");
         sampleFrequency.ifPresent(consumerConfiguration::setSampleFrequency);
         // start time
-        Optional<String> startTime = configurationUtil.get(currentPrefix + ".startTime");
-        startTime.ifPresent(x -> consumerConfiguration.setStartTime(ZonedDateTime.parse(startTime.get(), DateTimeFormatter.ISO_DATE_TIME)));
+        Optional<String> startTime = configurationUtil.get(currentPrefix + ".start-time");
+        startTime.ifPresent(x -> consumerConfiguration.setStartTime(ZonedDateTime.parse(x, DateTimeFormatter.ISO_DATE_TIME)));
         // ack wait
-        Optional<String> ackWait = configurationUtil.get(currentPrefix + ".ackWait");
-        ackWait.ifPresent(x -> consumerConfiguration.setAckWait(Duration.parse(ackWait.get())));
+        Optional<String> ackWait = configurationUtil.get(currentPrefix + ".ack-wait");
+        ackWait.ifPresent(x -> consumerConfiguration.setAckWait(Duration.parse("PT" + x)));
         // idle heartbeat
-        Optional<String> idleHeartbeat = configurationUtil.get(currentPrefix + ".idleHeartbeat");
-        idleHeartbeat.ifPresent(x -> consumerConfiguration.setIdleHeartbeat(Duration.parse(idleHeartbeat.get())));
+        Optional<String> idleHeartbeat = configurationUtil.get(currentPrefix + ".idle-heartbeat");
+        idleHeartbeat.ifPresent(x -> consumerConfiguration.setIdleHeartbeat(Duration.parse("PT" + x)));
         // max expires
-        Optional<String> maxExpires = configurationUtil.get(currentPrefix + ".maxExpires");
-        maxExpires.ifPresent(x -> consumerConfiguration.setMaxExpires(Duration.parse(maxExpires.get())));
+        Optional<String> maxExpires = configurationUtil.get(currentPrefix + ".max-expires");
+        maxExpires.ifPresent(x -> consumerConfiguration.setMaxExpires(Duration.parse("PT" + x)));
         // inactive threshold
-        Optional<String> inactiveThreshold = configurationUtil.get(currentPrefix + ".inactiveThreshold");
-        inactiveThreshold.ifPresent(x -> consumerConfiguration.setInactiveThreshold(Duration.parse(inactiveThreshold.get())));
+        Optional<String> inactiveThreshold = configurationUtil.get(currentPrefix + ".inactive-threshold");
+        inactiveThreshold.ifPresent(x -> consumerConfiguration.setInactiveThreshold(Duration.parse("PT" + x)));
         // start seq
-        Optional<Long> startSeq = configurationUtil.getLong(currentPrefix + ".startSeq");
+        Optional<Long> startSeq = configurationUtil.getLong(currentPrefix + ".start-seq");
         startSeq.ifPresent(consumerConfiguration::setStartSeq);
         // max deliver
-        Optional<Long> maxDeliver = configurationUtil.getLong(currentPrefix + ".maxDeliver");
+        Optional<Long> maxDeliver = configurationUtil.getLong(currentPrefix + ".max-deliver");
         maxDeliver.ifPresent(consumerConfiguration::setMaxDeliver);
         // rate limit
-        Optional<Long> rateLimit = configurationUtil.getLong(currentPrefix + ".rateLimit");
+        Optional<Long> rateLimit = configurationUtil.getLong(currentPrefix + ".rate-limit");
         rateLimit.ifPresent(consumerConfiguration::setRateLimit);
         // max ack pending
-        Optional<Long> maxAckPending = configurationUtil.getLong(currentPrefix + ".maxAckPending");
+        Optional<Long> maxAckPending = configurationUtil.getLong(currentPrefix + ".max-ack-pending");
         maxAckPending.ifPresent(consumerConfiguration::setMaxAckPending);
         // max pull waiting
-        Optional<Long> maxPullWaiting = configurationUtil.getLong(currentPrefix + ".maxPullWaiting");
+        Optional<Long> maxPullWaiting = configurationUtil.getLong(currentPrefix + ".max-pull-waiting");
         maxPullWaiting.ifPresent(consumerConfiguration::setMaxPullWaiting);
         // max batch
-        Optional<Long> maxBatch = configurationUtil.getLong(currentPrefix + ".maxBatch");
+        Optional<Long> maxBatch = configurationUtil.getLong(currentPrefix + ".max-batch");
         maxBatch.ifPresent(consumerConfiguration::setMaxBatch);
         // max bytes
-        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".maxBytes");
+        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".max-bytes");
         maxBytes.ifPresent(consumerConfiguration::setMaxBytes);
         // flow control
-        Optional<Boolean> flowControl = configurationUtil.getBoolean(currentPrefix + ".flowControl");
+        Optional<Boolean> flowControl = configurationUtil.getBoolean(currentPrefix + ".flow-control");
         flowControl.ifPresent(consumerConfiguration::setFlowControl);
         // headers only
-        Optional<Boolean> headersOnly = configurationUtil.getBoolean(currentPrefix + ".headersOnly");
+        Optional<Boolean> headersOnly = configurationUtil.getBoolean(currentPrefix + ".headers-only");
         headersOnly.ifPresent(consumerConfiguration::setHeadersOnly);
         // backoff
         Optional<Integer> backoffListSize = configurationUtil.getListSize(currentPrefix + ".backoff");
@@ -168,7 +174,7 @@ public class NatsConfigLoader {
         if (backoffListSize.isPresent()) {
             for (int i = 0; i < backoffListSize.get(); i++) {
                 Optional<String> backoff = configurationUtil.get(currentPrefix + ".backoff" + "[" + i + "]");
-                backoff.ifPresent(x -> backoffList.add(Duration.parse(x)));
+                backoff.ifPresent(x -> backoffList.add(Duration.parse("PT" + x)));
             }
         }
         consumerConfiguration.setBackoff(backoffList);
@@ -188,25 +194,25 @@ public class NatsConfigLoader {
         }
         natsConnectionConfig.setAddresses(addresses);
 
-        // max-reconnect
+        // max reconnect
         Optional<Integer> maxReconnect = configurationUtil.getInteger(currentPrefix + ".max-reconnect");
         maxReconnect.ifPresent(natsConnectionConfig::setMaxReconnect);
-        // reconnect-wait
-        Optional<Integer> reconnectWait = configurationUtil.getInteger(currentPrefix + ".reconnect-wait");
-        reconnectWait.ifPresent(integer -> natsConnectionConfig.setReconnectWait(Duration.ofSeconds(integer)));
-        // connection-timeout
-        Optional<Integer> connectionTimeout = configurationUtil.getInteger(currentPrefix + ".connection-timeout");
-        connectionTimeout.ifPresent(integer -> natsConnectionConfig.setConnectionTimeout(Duration.ofSeconds(integer)));
-        // ping-interval
-        Optional<Integer> pingInterval = configurationUtil.getInteger(currentPrefix + ".ping-interval");
-        pingInterval.ifPresent(integer -> natsConnectionConfig.setPingInterval(Duration.ofSeconds(integer)));
-        // reconnect-buffer-size
+        // reconnect wait
+        Optional<String> reconnectWait = configurationUtil.get(currentPrefix + ".reconnect-wait");
+        reconnectWait.ifPresent(x -> natsConnectionConfig.setReconnectWait(Duration.parse("PT" + x)));
+        // connection timeout
+        Optional<String> connectionTimeout = configurationUtil.get(currentPrefix + ".connection-timeout");
+        connectionTimeout.ifPresent(x -> natsConnectionConfig.setConnectionTimeout(Duration.parse("PT" + x)));
+        // ping interval
+        Optional<String> pingInterval = configurationUtil.get(currentPrefix + ".ping-interval");
+        pingInterval.ifPresent(x -> natsConnectionConfig.setPingInterval(Duration.parse("PT" + x)));
+        // reconnect-buffer size
         Optional<Long> reconnectBufferSize = configurationUtil.getLong(currentPrefix + ".reconnect-buffer-size");
         reconnectBufferSize.ifPresent(natsConnectionConfig::setReconnectBufferSize);
-        // inbox-prefix
+        // inbox prefix
         Optional<String> inboxPrefix = configurationUtil.get(currentPrefix + ".inbox-prefix");
         inboxPrefix.ifPresent(natsConnectionConfig::setInboxPrefix);
-        // no-echo
+        // no echo
         Optional<Boolean> noEcho = configurationUtil.getBoolean(currentPrefix + ".no-echo");
         noEcho.ifPresent(natsConnectionConfig::setNoEcho);
         // username
@@ -230,11 +236,11 @@ public class NatsConfigLoader {
         natsConnectionConfig.setStreamConfigurations(streams);
 
         // jetStreamContext options
-        Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetStreamContexts");
+        Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetstream-contexts");
         Map<String, JetStreamOptions> jetStreamContexts = new HashMap<>();
         if (jetStreamContextsSize.isPresent()) {
             for (int i = 0; i < jetStreamContextsSize.get(); i++) {
-                NamedJetStreamOptions namedJetStreamOptions = readJetStreamOptions(currentPrefix + ".jetStreamContexts" + "[" + i + "]");
+                NamedJetStreamOptions namedJetStreamOptions = readJetStreamOptions(currentPrefix + ".jetstream-contexts" + "[" + i + "]");
                 jetStreamContexts.put(namedJetStreamOptions.getName(), namedJetStreamOptions.getJetStreamOptions());
             }
         }
@@ -246,25 +252,25 @@ public class NatsConfigLoader {
             return;
         }
         NatsConnectionConfig.TLS tls = new NatsConnectionConfig.TLS();
-        // trust-store-type
+        // trust store type
         Optional<String> trustStoreType = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-type");
         trustStoreType.ifPresent(tls::setTrustStoreType);
-        // trust-store-path
+        // trust store path
         Optional<String> trustStorePath = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-path");
         trustStorePath.ifPresent(tls::setTrustStorePath);
-        // trust-store-password
+        // trust store password
         Optional<String> trustStorePassword = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-password");
         trustStorePassword.ifPresent(tls::setTrustStorePassword);
-        // certificate-path
+        // certificate path
         Optional<String> certificatePath = configurationUtil.get(currentPrefix + ".tls" + ".certificate-path");
         certificatePath.ifPresent(tls::setCertificatePath);
-        // key-store-path
+        // key store path
         Optional<String> keyStorePath = configurationUtil.get(currentPrefix + ".tls" + ".key-store-path");
         keyStorePath.ifPresent(tls::setKeyStorePath);
-        // key-store-password
+        // key store password
         Optional<String> keyStorePassword = configurationUtil.get(currentPrefix + ".tls" + ".key-store-password");
         keyStorePassword.ifPresent(tls::setKeyStorePassword);
-        // key-store-type
+        // key store type
         Optional<String> keyStoreType = configurationUtil.get(currentPrefix + ".tls" + ".key-store-type");
         keyStoreType.ifPresent(tls::setKeyStoreType);
         natsConnectionConfig.setTls(tls);
@@ -289,41 +295,50 @@ public class NatsConfigLoader {
         Optional<String> description = configurationUtil.get(currentPrefix + ".description");
         description.ifPresent(builder::description);
         // retention policy
-        Optional<String> retentionPolicy = configurationUtil.get(currentPrefix + ".retentionPolicy");
-        retentionPolicy.ifPresent(x -> builder.retentionPolicy(RetentionPolicy.get(retentionPolicy.get())));
+        Optional<String> retentionPolicy = configurationUtil.get(currentPrefix + ".retention-policy");
+        retentionPolicy.ifPresent(x -> builder.retentionPolicy(RetentionPolicy.get(x)));
         // max consumers
-        Optional<Long> maxConsumers = configurationUtil.getLong(currentPrefix + ".maxConsumers");
+        Optional<Long> maxConsumers = configurationUtil.getLong(currentPrefix + ".max-consumers");
         maxConsumers.ifPresent(builder::maxConsumers);
         // max bytes
-        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".maxBytes");
+        Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".max-bytes");
         maxBytes.ifPresent(builder::maxBytes);
         // max age
-        Optional<Long> maxAge = configurationUtil.getLong(currentPrefix + ".maxAge");
+        Optional<Long> maxAge = configurationUtil.getLong(currentPrefix + ".max-age");
         maxAge.ifPresent(builder::maxAge);
         // max messages
-        Optional<Long> maxMsgs = configurationUtil.getLong(currentPrefix + ".maxMsgs");
+        Optional<Long> maxMsgs = configurationUtil.getLong(currentPrefix + ".max-msgs");
         maxMsgs.ifPresent(builder::maxMessages);
         // max message size
-        Optional<Long> maxMsgSize = configurationUtil.getLong(currentPrefix + ".maxMsgSize");
+        Optional<Long> maxMsgSize = configurationUtil.getLong(currentPrefix + ".max-msg-size");
         maxMsgSize.ifPresent(builder::maxMsgSize);
         // storage type
-        Optional<String> storageType = configurationUtil.get(currentPrefix + ".storageType");
-        storageType.ifPresent(x -> builder.storageType(StorageType.get(storageType.get())));
+        Optional<String> storageType = configurationUtil.get(currentPrefix + ".storage-type");
+        storageType.ifPresent(x -> builder.storageType(StorageType.get(x)));
         // replicas
         Optional<Integer> replicas = configurationUtil.getInteger(currentPrefix + ".replicas");
         replicas.ifPresent(builder::replicas);
         // no ack
-        Optional<Boolean> noAck = configurationUtil.getBoolean(currentPrefix + ".noAck");
+        Optional<Boolean> noAck = configurationUtil.getBoolean(currentPrefix + ".no-ack");
         noAck.ifPresent(builder::noAck);
         // template owner
-        Optional<String> templateOwner = configurationUtil.get(currentPrefix + ".templateOwner");
+        Optional<String> templateOwner = configurationUtil.get(currentPrefix + ".template-owner");
         templateOwner.ifPresent(builder::templateOwner);
         // discard policy
-        Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discardPolicy");
-        discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(discardPolicy.get())));
+        Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discard-policy");
+        discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(x)));
         // duplicate window
-        Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicateWindow");
-        duplicateWindow.ifPresent(x -> builder.duplicateWindow(Duration.parse(duplicateWindow.get())));
+//        Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicateWindow");
+//        duplicateWindow.ifPresent(x -> builder.duplicateWindow(Duration.parse(duplicateWindow.get())));
+        Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicate-window");
+        if (duplicateWindow.isPresent()) {
+            builder.duplicateWindow(Duration.parse("PT" + duplicateWindow.get()));
+        } else {
+            // This is a default value on the server anyway but StreamConfiguration builder defaults it to ZERO
+            // which is then overwritten on the server by 2 min. To make StreamManagement.configurationsChanged() work
+            // properly we set it to 2 min at the beginning. https://github.com/nats-io/nats.java/issues/682
+            builder.duplicateWindow(Duration.ofMinutes(2));
+        }
 
         return builder.build();
     }
@@ -344,11 +359,11 @@ public class NatsConfigLoader {
         Optional<String> prefix = configurationUtil.get(currentPrefix + ".prefix");
         prefix.ifPresent(builder::prefix);
         // publishNoAck
-        Optional<Boolean> publishNoAck = configurationUtil.getBoolean(currentPrefix + ".publishNoAck");
+        Optional<Boolean> publishNoAck = configurationUtil.getBoolean(currentPrefix + ".publish-no-ack");
         publishNoAck.ifPresent(builder::publishNoAck);
         // request timeout
-        Optional<Long> requestTimeout = configurationUtil.getLong(currentPrefix + ".requestTimeout");
-        requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.ofSeconds(x)));
+        Optional<String> requestTimeout = configurationUtil.get(currentPrefix + ".request-timeout");
+        requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.parse("PT" + x)));
 
         namedJetStreamOptions.setJetStreamOptions(builder.build());
         return namedJetStreamOptions;

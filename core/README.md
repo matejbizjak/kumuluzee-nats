@@ -27,24 +27,29 @@ public interface SimpleClient {
     @Subject(value = "simple1")
     void sendSimple(String value);
 
-    String sendSimpleDynamicSubjectResponse(@Subject String subject, String value);
-
     @Subject(value = "simple2")
     String sendSimpleResponse(String value);
+    
+    String sendSimpleDynamicSubjectResponse(@Subject String subject, String value);
+    
+    @Subject(connection = "secure", responseTimeout = "5s")
+    String sendSimpleDynamicSubjectResponse2(@Subject String subject, String value);
 }
 ```
 
 #### Annotation
-We have to annotate an interface with `@RegisterNatsClient`, where we can specify the connection a client will use.
+We have to annotate an interface with `@RegisterNatsClient`, where we can specify the connection a client will use and a response timeout (maximum time to wait for response).
 
 Each method must be annotated with `@Subject`, but there are two options:
 - method annotation
 - parameter annotation
 
 The latter is used when we want to set the subject dynamically.
+We can use both annotation types on the same method, which is useful when want to use dynamic subject while also specifying the connection or the response timeout. 
 
-`@Subject` also has 1 optional parameter when used under `@RegisterNatsClient`:
+`@Subject` also has 2 optional parameters when used under `@RegisterNatsClient`:
 - connection (overrides the connection from `@RegisterNatsClient`)
+- responseTimeout (overrides the responseTimeout from `@RegisterNatsClient`)
 
 If those optional values are not set, NATS client will use the default values.
 
@@ -72,10 +77,13 @@ After injecting a client to our service, we can call the methods from the interf
 simpleClient.sendSimple("simple string");
 ```
 ```java
+String msgResponse = simpleClient.sendSimpleResponse("another simple string");
+```
+```java
 String msgResponse = simpleClient.sendSimpleDynamicSubjectResponse("dynamic", "simple string with dynamic subject");
 ```
 ```java
-String msgResponse = simpleClient.sendSimpleResponse("another simple string");
+String msgResponse = simpleClient.sendSimpleDynamicSubjectResponse2("dynamic", "simple string with dynamic subject and overrided settings");
 ```
 
 ### Defining a NATS listener
@@ -178,28 +186,28 @@ The prefix of all following properties must be `kumuluzee.nats`.
 [//]: # ()
 [//]: # (#### Cluster connection)
 
-| Property                         | Type             | Description                                                                                        |
-|----------------------------------|------------------|----------------------------------------------------------------------------------------------------|
-| enabled                          | boolean          | Enables/disables the extension                                                                     |
-| response-timeout                 | int              | Timeout for the response of the message                                                            |
-| servers                          | java.util.List   | The list of servers                                                                                |
-| servers.name                     | java.lang.String | The name of the connection to the server                                                           |
-| servers.addresses                | java.util.List   | The list of the addresses                                                                          |
-| servers.username                 | java.lang.String | The username                                                                                       |
-| servers.password                 | java.lang.String | The password                                                                                       |
-| servers.max-reconnect            | int              | Times to try reconnect                                                                             |
-| servers.reconnect-wait           | int              | Number of seconds to wait before reconnecting                                                      |
-| servers.connection-timeout       | int              | Timeout for the initial connection (in seconds)                                                    |
-| servers.ping-interval            | int              | Time between server pings                                                                          |
-| servers.reconnect-buffer-size    | long             | Size of the buffer (in bytes) used to store publish messages during reconnect                      |
-| servers.inbox-prefix             | java.lang.String | Custom prefix for request/reply inboxes                                                            |
-| servers.no-echo                  | boolean          | Enable or disable echo messages, messages that are sent by this connection back to this connection |
-| servers.credentials              | java.lang.String | Path to the credentials file to use for the authentication with an account enabled server          |
-| servers.tls.trust-store-path     | java.lang.String | Path to the trust store                                                                            |
-| servers.tls.trust-store-password | java.lang.String | The password to unlock the trust store                                                             |
-| servers.tls.certificate-path     | java.lang.String | Path to the server's certificate                                                                   |
-| servers.tls.key-store-path       | java.lang.String | Path to the key store                                                                              |
-| servers.tls.key-store-password   | java.lang.String | The password to unlock the key store                                                               |
+| Property                         | Type                | Description                                                                                        |
+|----------------------------------|---------------------|----------------------------------------------------------------------------------------------------|
+| enabled                          | boolean             | Enables/disables the extension                                                                     |
+| response-timeout                 | java.time.Duration  | Timeout for the response of the message                                                            |
+| servers                          | java.util.List      | The list of servers                                                                                |
+| servers.name                     | java.lang.String    | The name of the connection to the server                                                           |
+| servers.addresses                | java.util.List      | The list of the addresses                                                                          |
+| servers.username                 | java.lang.String    | The username                                                                                       |
+| servers.password                 | java.lang.String    | The password                                                                                       |
+| servers.max-reconnect            | int                 | Times to try reconnect                                                                             |
+| servers.reconnect-wait           | java.time.Duration  | Time to wait before reconnecting                                                                   |
+| servers.connection-timeout       | java.time.Duration  | Timeout for the initial connection                                                                 |
+| servers.ping-interval            | java.time.Duration  | Time between server pings                                                                          |
+| servers.reconnect-buffer-size    | long                | Size of the buffer (in bytes) used to store publish messages during reconnect                      |
+| servers.inbox-prefix             | java.lang.String    | Custom prefix for request/reply inboxes                                                            |
+| servers.no-echo                  | boolean             | Enable or disable echo messages, messages that are sent by this connection back to this connection |
+| servers.credentials              | java.lang.String    | Path to the credentials file to use for the authentication with an account enabled server          |
+| servers.tls.trust-store-path     | java.lang.String    | Path to the trust store                                                                            |
+| servers.tls.trust-store-password | java.lang.String    | The password to unlock the trust store                                                             |
+| servers.tls.certificate-path     | java.lang.String    | Path to the server's certificate                                                                   |
+| servers.tls.key-store-path       | java.lang.String    | Path to the key store                                                                              |
+| servers.tls.key-store-password   | java.lang.String    | The password to unlock the key store                                                               |
 
 #### Default values
 

@@ -71,6 +71,7 @@ public class ListenerInitializerExtension implements Extension {
                     , beanManager.createCreationalContext(inst.getBean()));
             Object[] args = new Object[method.getParameterCount()];
 
+            NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
             JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
             ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
             Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
@@ -84,26 +85,24 @@ public class ListenerInitializerExtension implements Extension {
                         receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                         args[0] = receivedMsg;
                     } catch (IOException e) {
-                        msg.term();  // TODO je to ok?
+                        exponentialNak(msg);
                         throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
                                 , method.getParameterTypes()[0].getSimpleName()), e);
                     }
                     try {
                         method.invoke(reference, args);
                         if (jetStreamListenerAnnotation.doubleAck()) {
-                            msg.ackSync(Duration.ofSeconds(5));
+                            ackSyncWithRetries(msg, generalConfig);
                         } else {
                             msg.ack();
                         }
                     } catch (InvocationTargetException | IllegalAccessException e) {
-                        msg.nak();
+                        exponentialNak(msg);
+                        // TODO glej da se ne zapre dispatcher
                         throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
-                    } catch (TimeoutException e) {
-                        throw new RuntimeException(e);
                     }
                 };
 
-                NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
                 ConsumerConfiguration consumerConfiguration;
                 if (consumerConfigAnnotation == null) {
                     consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
@@ -126,5 +125,28 @@ public class ListenerInitializerExtension implements Extension {
                 LOG.severe(String.format("Cannot create a JetStream context for connection: %s", jetStreamListenerAnnotation.connection()));
             }
         }
+    }
+
+    private void ackSyncWithRetries(Message msg, NatsGeneralConfig generalConfig) {
+        for (int retries = 0; ; retries++) {
+            try {
+                msg.ackSync(generalConfig.getAckConfirmationTimeout());
+                return;
+            } catch (InterruptedException | TimeoutException e) {
+                if (retries < generalConfig.getAckConfirmationRetries()) {
+                    try {
+                        Thread.sleep(generalConfig.getAckConfirmationTimeout().toMillis());
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                } else {
+                    throw new RuntimeException(e);  // TODO exceiptions -> log v celem fajlu?
+                }
+            }
+        }
+    }
+
+    private void exponentialNak(Message msg) {
+        msg.nakWithDelay(Duration.ofSeconds((long) Math.pow(5, msg.metaData().deliveredCount())));
     }
 }

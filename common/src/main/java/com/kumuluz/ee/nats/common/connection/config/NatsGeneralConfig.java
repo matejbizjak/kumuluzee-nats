@@ -20,18 +20,22 @@ import java.util.stream.Collectors;
 
 public class NatsGeneralConfig {
 
-    private int responseTimeout = 10;
+    private Duration responseTimeout = Duration.ofSeconds(5);
+
+    private Duration ackConfirmationTimeout = Duration.ofSeconds(5);
+
+    private int ackConfirmationRetries = 5;
 
     private List<NatsConsumerConfiguration> consumerConfigurations;
 
     public NatsGeneralConfig() {
     }
 
-    public int getResponseTimeout() {
+    public Duration getResponseTimeout() {
         return responseTimeout;
     }
 
-    public void setResponseTimeout(int responseTimeout) {
+    public void setResponseTimeout(Duration responseTimeout) {
         this.responseTimeout = responseTimeout;
     }
 
@@ -40,6 +44,22 @@ public class NatsGeneralConfig {
                 .filter(x -> Objects.equals(x.getName(), name))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public Duration getAckConfirmationTimeout() {
+        return ackConfirmationTimeout;
+    }
+
+    public void setAckConfirmationTimeout(Duration ackConfirmationTimeout) {
+        this.ackConfirmationTimeout = ackConfirmationTimeout;
+    }
+
+    public int getAckConfirmationRetries() {
+        return ackConfirmationRetries;
+    }
+
+    public void setAckConfirmationRetries(int ackConfirmationRetries) {
+        this.ackConfirmationRetries = ackConfirmationRetries;
     }
 
     public List<NatsConsumerConfiguration> getConsumerConfigurations() {

@@ -15,6 +15,7 @@ import io.nats.client.PullSubscribeOptions;
 import io.nats.client.api.ConsumerConfiguration;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -68,14 +69,13 @@ public class SubscriberFactory {
                 .bind(jetStreamSubscriberAnnotation.bind())
                 .build();
 //        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
-        try {
+        try {  // TODO throw exception - ob zagonu
             jetStreamSubscription = jetStream.subscribe(jetStreamSubscriberAnnotation.subject(), pullSubscribeOptions);
             LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully"
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
         } catch (IOException | JetStreamApiException e) {
-            LOG.severe(String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
-                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
-            LOG.severe(e.getLocalizedMessage());
+            LOG.log(Level.SEVERE, String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
+                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()), e);  // TODO delaj na ta način
         }
         return jetStreamSubscription;
     }
