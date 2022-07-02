@@ -23,7 +23,6 @@ import java.util.logging.Logger;
  */
 
 public class SubscriberFactory {
-    // TODO preimenuj vse fajle, da bo jetstream spredaj
     private static final Logger LOG = Logger.getLogger(SubscriberFactory.class.getName());
 
     private static SubscriberFactory instance;
