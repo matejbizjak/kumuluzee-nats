@@ -106,7 +106,7 @@ public class NatsListenerInitializerExtension implements Extension {
 
                 Object responseMsg;
                 try {
-                    responseMsg = method.invoke(reference, args);  // TODO dodaj kot argument za in progress - nov objekt
+                    responseMsg = method.invoke(reference, args);
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     // TODO glej da se ne zapre dispatcher
                     throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);

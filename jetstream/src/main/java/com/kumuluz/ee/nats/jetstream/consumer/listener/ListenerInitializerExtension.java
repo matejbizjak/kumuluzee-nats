@@ -10,6 +10,7 @@ import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
 import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
+import com.kumuluz.ee.nats.jetstream.util.JetStreamMessage;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 
@@ -62,8 +63,8 @@ public class ListenerInitializerExtension implements Extension {
         for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
             Method method = inst.getMethod();
 
-            if (method.getParameterCount() != 1) {
-                throw new NatsListenerException(String.format("Listener method must have exactly 1 parameter! Cause: %s"
+            if (method.getParameterCount() < 1 || method.getParameterCount() > 2) {
+                throw new NatsListenerException(String.format("Listener method must have exactly 1 or 2 parameters! Cause: %s"
                         , method));
             }
 
@@ -84,6 +85,9 @@ public class ListenerInitializerExtension implements Extension {
                     try {
                         receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                         args[0] = receivedMsg;
+                        if (method.getParameterCount() == 2) {
+                            args[1] = new JetStreamMessage(msg);
+                        }
                     } catch (IOException e) {
                         exponentialNak(msg);
                         throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"

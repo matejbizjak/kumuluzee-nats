@@ -209,7 +209,7 @@ The prefix of all following properties must be `kumuluzee.nats`.
 | servers.tls.key-store-path       | java.lang.String    | Path to the key store                                                                              |
 | servers.tls.key-store-password   | java.lang.String    | The password to unlock the key store                                                               |
 
-#### Default values
+### Default values
 
 The extension is enabled by default.
 
@@ -217,6 +217,33 @@ The extension is enabled by default.
 - Server port: 4222
 
 For other default values take a look [here](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/Options.java).
+
+### Providing ObjectMapper
+
+KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
+a custom instance implement the `KafkaObjectMapperProvider` interface and register the implementation in a service file.
+For example:
+
+```java
+public class NatsMapperProvider implements NatsObjectMapperProvider {
+    
+    @Override
+    public ObjectMapper provideObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
+}
+```
+
+Do not forget to register the implementation.
+A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
+
+In our example in the resource directory `META-INF/services` add
+a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.
+
+[//]: # (TODO spremeni pot)
+
 
 ## Sample
 

@@ -101,7 +101,7 @@ It expects the message of the String data type.
 ```java
 @JetStreamListener(subject = "subject")
 @ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
-public void receive(String value){
+public void receive(String value) {
     System.out.println(value);
 }
 ```
@@ -119,6 +119,26 @@ public void receive(String value){
 - ordered (whether this subscription is expected to ensure messages come in order)
 
 > Durable means the server will remember where we are if we use that name.
+
+##### Reseting redelivery timer for long operations
+
+A push consumer's method may also contain a second parameter of the type `JetStreamMessage`.
+It allows us to call function `inProgress()`, which indicates that this message is being worked on and resets redelivery timer in the server.
+It is useful when it takes longer to process a message.
+
+```java
+@JetStreamListener(subject = "subject")
+@ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+public void receive(String value, JetStreamMessage msg) {
+    try {
+        // long processing of the message
+        msg.inProgress();
+        // long processing of the message
+    } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+    }
+}
+```
 
 #### Pull consumers
 
