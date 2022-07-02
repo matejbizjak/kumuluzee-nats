@@ -8,6 +8,10 @@ import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
 
 import java.util.logging.Logger;
 
+/**
+ * @author Matej Bizjak
+ */
+
 @EeExtensionDef(group = "nats-jetstream", name = "NATS JetStream")
 public class JetStreamExtension implements Extension {
 

@@ -17,12 +17,15 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * @author Matej Bizjak
  */
 
 public class NatsClientInvoker implements InvocationHandler {
+
+    private static final Logger LOG = Logger.getLogger(NatsClientInvoker.class.getName());
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -32,6 +35,11 @@ public class NatsClientInvoker implements InvocationHandler {
         Class<?> returnType = method.getReturnType();
 
         Connection connection = NatsConnection.getConnection(connectionName);
+        if (connection == null) {
+            LOG.severe(String.format("Cannot invoke NATS Client method %s in class %s for connection %s, because the connection was not established."
+                    , method.getName(), method.getDeclaringClass().getName(), connectionName));
+            return null;
+        }
 
         NatsMessage.Builder builder = NatsMessage.builder();
         builder.data(SerDes.serialize(payload));

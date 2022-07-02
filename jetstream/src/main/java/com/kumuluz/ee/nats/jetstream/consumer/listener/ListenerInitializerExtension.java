@@ -4,7 +4,9 @@ import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
-import com.kumuluz.ee.nats.common.exception.NatsListenerException;
+import com.kumuluz.ee.nats.common.exception.DefinitionException;
+import com.kumuluz.ee.nats.common.exception.InvocationException;
+import com.kumuluz.ee.nats.common.exception.SerializationException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
@@ -26,6 +28,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -56,15 +59,15 @@ public class ListenerInitializerExtension implements Extension {
         }
 
         for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
-            LOG.info("Found JetStream listener method " + inst.getMethod().getName() + " in class " +
-                    inst.getMethod().getDeclaringClass());
+            LOG.info(String.format("Found JetStream listener method %s in class %s.", inst.getMethod().getName()
+                    , inst.getMethod().getDeclaringClass().getName()));
         }
 
         for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() < 1 || method.getParameterCount() > 2) {
-                throw new NatsListenerException(String.format("Listener method must have exactly 1 or 2 parameters! Cause: %s"
+                throw new DefinitionException(String.format("Listener method must have exactly 1 or 2 parameters! Cause: %s"
                         , method));
             }
 
@@ -76,8 +79,14 @@ public class ListenerInitializerExtension implements Extension {
             JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
             ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
             Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
+            if (connection == null) {
+                LOG.severe(String.format("Cannot establish a NATS JetStream listener for method %s class %s and connection %s, because the connection was not established."
+                        , method.getName(), method.getDeclaringClass().getName(), jetStreamListenerAnnotation.connection()));
+                continue;
+            }
             try {
-                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection(), jetStreamListenerAnnotation.context());
+                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection()
+                        , jetStreamListenerAnnotation.context());
                 Dispatcher dispatcher = connection.createDispatcher();
 
                 MessageHandler handler = msg -> {
@@ -90,8 +99,8 @@ public class ListenerInitializerExtension implements Extension {
                         }
                     } catch (IOException e) {
                         exponentialNak(msg);
-                        throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
-                                , method.getParameterTypes()[0].getSimpleName()), e);
+                        throw new SerializationException(String.format("Cannot deserialize the message as class %s!"
+                                , method.getParameterTypes()[0].getName()), e);
                     }
                     try {
                         method.invoke(reference, args);
@@ -103,7 +112,7 @@ public class ListenerInitializerExtension implements Extension {
                     } catch (InvocationTargetException | IllegalAccessException e) {
                         exponentialNak(msg);
                         // TODO glej da se ne zapre dispatcher
-                        throw new NatsListenerException(String.format("Method %s could not be invoked.", method.getName()), e);
+                        throw new InvocationException(String.format("Method %s could not be invoked.", method.getName()), e);
                     }
                 };
 
@@ -123,10 +132,12 @@ public class ListenerInitializerExtension implements Extension {
                         .durable(jetStreamListenerAnnotation.durable())
                         .build();
 
-                jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue(), dispatcher, handler, false, pushSubscribeOptions);
+                jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue()
+                        , dispatcher, handler, false, pushSubscribeOptions);
 
             } catch (JetStreamApiException | IOException e) {
-                LOG.severe(String.format("Cannot create a JetStream context for connection: %s", jetStreamListenerAnnotation.connection()));
+                LOG.log(Level.SEVERE, String.format("Cannot create a JetStream context for connection %s."
+                        , jetStreamListenerAnnotation.connection()), e);
             }
         }
     }
@@ -141,10 +152,10 @@ public class ListenerInitializerExtension implements Extension {
                     try {
                         Thread.sleep(generalConfig.getAckConfirmationTimeout().toMillis());
                     } catch (InterruptedException ex) {
-                        throw new RuntimeException(ex);
+                        LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server.", ex);
                     }
                 } else {
-                    throw new RuntimeException(e);  // TODO exceiptions -> log v celem fajlu?
+                    LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server.", e);
                 }
             }
         }

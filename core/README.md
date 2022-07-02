@@ -272,7 +272,7 @@ NatsClientInvoker.java:
             completableFuture.complete(receivedMsg);
         } catch (IOException e) {
             throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
-                    , method.getParameterTypes()[0].getSimpleName()), e);
+                    , method.getParameterTypes()[0].getName()), e);
         }
     });
     connection.publish(message);

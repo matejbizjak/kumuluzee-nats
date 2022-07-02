@@ -1,7 +1,7 @@
 package com.kumuluz.ee.nats.core.util;
 
+import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.core.annotations.Subject;
-import com.kumuluz.ee.nats.core.exception.NatsClientDefinitionException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -14,7 +14,6 @@ import java.lang.reflect.Parameter;
 public class InterfaceValidationUtil {
 
     public static <T> void validateInterface(Class<T> aClass) {
-
         // method params
         for (Method method : aClass.getMethods()) {
             checkSubjectValue(method);
@@ -39,16 +38,16 @@ public class InterfaceValidationUtil {
         }
 
         if (!isAnnotated) {
-            throw new NatsClientDefinitionException(String.format("NATS client's method is not annotated with @Subject or its value is null! Cause: %s", method));
+            throw new DefinitionException(String.format("NATS client's method is not annotated with @Subject or its value is null! Cause: %s", method));
         }
     }
 
     private static void checkMethodParameters(Method method) {
         if (method.getParameterCount() < 1) {
-            throw new NatsClientDefinitionException(String.format("Not enough method parameters! Cause: %s", method));
+            throw new DefinitionException(String.format("Not enough method parameters! Cause: %s", method));
         } else if (method.getParameterCount() == 1) {
             if (method.getParameters()[0].isAnnotationPresent(Subject.class)) {
-                throw new NatsClientDefinitionException(String.format("Not enough method parameters! Cause: %s", method));
+                throw new DefinitionException(String.format("Not enough method parameters! Cause: %s", method));
             }
         } else if (method.getParameterCount() == 2) {
             int numberOfSubjectAnnotations = 0;
@@ -58,10 +57,10 @@ public class InterfaceValidationUtil {
                 }
             }
             if (numberOfSubjectAnnotations != 1) {
-                throw new NatsClientDefinitionException(String.format("Wrong method parameters! Cause: %s", method));
+                throw new DefinitionException(String.format("Wrong method parameters! Cause: %s", method));
             }
         } else {
-            throw new NatsClientDefinitionException(String.format("Wrong method parameters! Cause: %s", method));
+            throw new DefinitionException(String.format("Wrong method parameters! Cause: %s", method));
         }
     }
 

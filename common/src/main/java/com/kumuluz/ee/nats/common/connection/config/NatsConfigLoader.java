@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.common.connection.config;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
+import com.kumuluz.ee.nats.common.exception.ConfigurationException;
 import io.nats.client.JetStreamOptions;
 import io.nats.client.api.*;
 
@@ -68,8 +69,8 @@ public class NatsConfigLoader {
         }
     }
 
-    private Supplier<IllegalStateException> configNotFoundException(String configKey) {
-        return () -> new IllegalStateException("Configuration key '" + configKey + "' required but not found.");
+    private Supplier<ConfigurationException> configNotFoundException(String configKey) {
+        return () -> new ConfigurationException("Configuration key '" + configKey + "' required but not found.");
     }
 
     private void readAndSetGeneralConfigClass() {

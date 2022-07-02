@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kumuluz.ee.nats.common.exception.DefinitionException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public interface NatsObjectMapperProvider {
         } else if (objectMappers.size() == 1) {
             return objectMappers.get(0);
         } else {
-            throw new RuntimeException("Multiple ObjectMapper providers found.");  // TODO kak drug?
+            throw new DefinitionException("Multiple ObjectMapper providers found.");
         }
     }
 }

@@ -45,13 +45,11 @@ public class SubscriberFactory {
         }
         return instance;
     }
-    // TODO The extension can be disabled by setting the kumuluzee.streaming.kafka.enabled configuration property to false. This disables the consumer and stream processor initialization and makes injection of Producer and StreamsController always return null.
 
     private JetStreamSubscription createSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation, JetStream jetStream) {
         JetStreamSubscription jetStreamSubscription = null;
         if (jetStreamSubscriberAnnotation.durable().equals("")) {
-            LOG.severe("Durable must be set for pull based subscriptions");
-            LOG.severe(String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
+            LOG.severe(String.format("Durable must be set for pull based subscriptions. Cannot create a JetStream subscription for a connection %s context %s and subject %s."
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
             return null;
         }
@@ -70,13 +68,13 @@ public class SubscriberFactory {
                 .bind(jetStreamSubscriberAnnotation.bind())
                 .build();
 //        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
-        try {  // TODO throw exception - ob zagonu
+        try {
             jetStreamSubscription = jetStream.subscribe(jetStreamSubscriberAnnotation.subject(), pullSubscribeOptions);
-            LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully"
+            LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully."
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
         } catch (IOException | JetStreamApiException e) {
-            LOG.log(Level.SEVERE, String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s"
-                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()), e);  // TODO delaj na ta način
+            LOG.log(Level.SEVERE, String.format("Cannot create a JetStream subscription for a connection %s context %s and subject %s."
+                    , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()), e);
         }
         return jetStreamSubscription;
     }
@@ -86,9 +84,14 @@ public class SubscriberFactory {
             return null;
         }
 
-        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context());
+        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection()
+                , jetStreamSubscriberAnnotation.context());
+        if (jetStream == null) {
+            return null;
+        }
         if (!subscriptions.contains(jetStream, jetStreamSubscriberAnnotation.subject())) {
-            JetStreamSubscription jetStreamSubscription = createSubscription(jetStreamSubscriberAnnotation, consumerConfigAnnotation, jetStream);
+            JetStreamSubscription jetStreamSubscription = createSubscription(jetStreamSubscriberAnnotation
+                    , consumerConfigAnnotation, jetStream);
             if (jetStreamSubscription != null) {
                 subscriptions.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
             }

@@ -11,6 +11,7 @@ import io.nats.client.JetStream;
 import io.nats.client.JetStreamOptions;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -47,11 +48,18 @@ public class JetStreamContextFactory {
         NatsConnectionConfig config = configLoader.getConfigForConnection(connectionName);
         JetStreamOptions jetStreamOptions = config.getJetStreamContextOptions().get(contextName);
         Connection connection = NatsConnection.getConnection(connectionName);
-        try {
-            jetStream = connection.jetStream(jetStreamOptions);  // TODO a moram tukaj preverit, če je connection null?
-            LOG.info(String.format("JetStream context %s for a connection %s was created successfully", contextName, connectionName));
-        } catch (IOException e) {
-            LOG.severe(String.format("Cannot create a JetStream context %s for a connection %s", contextName, connectionName));
+        if (connection == null) {
+            LOG.severe(String.format("Cannot create a JetStream context %s for a connection %s because the connection was not established."
+                    , contextName, connectionName));
+        } else {
+            try {
+                jetStream = connection.jetStream(jetStreamOptions);
+                LOG.info(String.format("JetStream context %s for a connection %s was created successfully."
+                        , contextName, connectionName));
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, String.format("Cannot create a JetStream context %s for a connection %s."
+                        , contextName, connectionName), e);
+            }
         }
         return jetStream;
     }
@@ -63,7 +71,9 @@ public class JetStreamContextFactory {
 
         if (!jetStreamContexts.contains(connectionName, contextName)) {
             JetStream jetStream = createContext(connectionName, contextName);
-            jetStreamContexts.put(connectionName, contextName, jetStream);
+            if (jetStream != null) {
+                jetStreamContexts.put(connectionName, contextName, jetStream);
+            }
         }
         return jetStreamContexts.get(connectionName, contextName);
     }

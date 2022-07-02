@@ -12,6 +12,7 @@ import io.nats.client.api.StreamInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -27,7 +28,6 @@ public class StreamManagement {
     public static void establishAll() {
         HashMap<String, Connection> connections = NatsConnection.getAllConnections();
         HashMap<String, NatsConnectionConfig> connectionConfigs = NatsConfigLoader.getInstance().getConnectionConfigs();
-
         connections.forEach(
                 (name, connection) -> connectionConfigs.get(name).getStreamConfigurations().forEach(
                         streamConfiguration -> {
@@ -56,13 +56,13 @@ public class StreamManagement {
     public static StreamInfo createStream(JetStreamManagement jetStreamManagement, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
         StreamInfo streamInfo = jetStreamManagement.addStream(streamConfiguration);
-        LOG.info(String.format("Created stream '%s' with subject(s) %s\n",
+        LOG.info(String.format("Created stream %s with subject(s) %s.",
                 streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
         return streamInfo;
     }
 
-    public static StreamInfo createStream(Connection nc, StreamConfiguration streamConfiguration) throws IOException, JetStreamApiException {
-        return createStream(nc.jetStreamManagement(), streamConfiguration);
+    public static StreamInfo createStream(Connection connection, StreamConfiguration streamConfiguration) throws IOException, JetStreamApiException {
+        return createStream(connection.jetStreamManagement(), streamConfiguration);
     }
 
     public static StreamInfo createStreamOrUpdateSubjects(JetStreamManagement jetStreamManagement, StreamConfiguration streamConfiguration)
@@ -84,24 +84,24 @@ public class StreamManagement {
 //        if (needToUpdate) {
 //            streamConfigurationDb = StreamConfiguration.builder(streamConfigurationDb).subjects(streamConfigurationDb.getSubjects()).build();
 //            streamInfo = jetStreamManagement.updateStream(streamConfigurationDb);
-//            LOG.info(String.format("Existing stream '%s' was updated, has subject(s) %s\n",
+//            LOG.info(String.format("Existing stream %s was updated, has subject(s) %s.",
 //                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
 //        } else {
-//            LOG.info(String.format("Existing stream '%s' already contained subject(s) %s\n",
+//            LOG.info(String.format("Existing stream %s already contained subject(s) %s.",
 //                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
 //        }
 
         if (configurationsChanged(streamInfo.getConfiguration(), streamConfiguration)) {
             streamInfo = jetStreamManagement.updateStream(streamConfiguration);
-            LOG.info(String.format("Existing stream '%s' was updated.", streamConfiguration.getName()));
+            LOG.info(String.format("Existing stream %s was updated.", streamConfiguration.getName()));
         }
 
         return streamInfo;
     }
 
-    public static StreamInfo createStreamOrUpdateSubjects(Connection nc, StreamConfiguration streamConfiguration)
+    public static StreamInfo createStreamOrUpdateSubjects(Connection connection, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
-        return createStreamOrUpdateSubjects(nc.jetStreamManagement(), streamConfiguration);
+        return createStreamOrUpdateSubjects(connection.jetStreamManagement(), streamConfiguration);
     }
 
     private static boolean configurationsChanged(StreamConfiguration db, StreamConfiguration req) {
@@ -130,14 +130,19 @@ public class StreamManagement {
     }
 
     public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {
-        Connection nc = NatsConnection.getConnection(connectionName);
-        try {
-            nc.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
-            LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s"
+        Connection connection = NatsConnection.getConnection(connectionName);
+        if (connection == null) {
+            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s because the connection was not established."
                     , connectionName, streamName));
-        } catch (IOException | JetStreamApiException e) {
-            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s"
-                    , connectionName, streamName));
+        } else {
+            try {
+                connection.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
+                LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s."
+                        , connectionName, streamName));
+            } catch (IOException | JetStreamApiException e) {
+                LOG.log(Level.SEVERE, String.format("Unable to add/update consumer configuration for connection %s and stream %s."
+                        , connectionName, streamName), e);
+            }
         }
     }
 }
