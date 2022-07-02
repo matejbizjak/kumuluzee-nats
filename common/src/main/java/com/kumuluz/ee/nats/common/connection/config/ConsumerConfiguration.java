@@ -12,7 +12,7 @@ import java.util.List;
  * @author Matej Bizjak
  */
 
-public class NatsConsumerConfiguration {
+public class ConsumerConfiguration {
 
     private String name;
 
@@ -64,7 +64,7 @@ public class NatsConsumerConfiguration {
 
     private List<Duration> backoff;
 
-    public NatsConsumerConfiguration() {
+    public ConsumerConfiguration() {
     }
 
     public String getName() {

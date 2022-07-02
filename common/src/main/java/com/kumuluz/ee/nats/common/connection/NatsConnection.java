@@ -1,6 +1,6 @@
 package com.kumuluz.ee.nats.common.connection;
 
-import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
 import io.nats.client.Connection;
 import io.nats.client.Nats;
 
@@ -22,7 +22,7 @@ public class NatsConnection {
         return connections.get(name);
     }
 
-    public static void establishConnection(NatsConnectionConfig config) {
+    public static void establishConnection(ConnectionConfig config) {
         try {
             Connection connection = Nats.connect(config.toOptionsBuilder().build());
             connections.put(config.getName(), connection);

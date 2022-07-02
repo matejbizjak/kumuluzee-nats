@@ -27,7 +27,7 @@ import static io.nats.client.Options.*;
  * @author Matej Bizjak
  */
 
-public abstract class NatsConnectionConfig {
+public abstract class ConnectionConfig {
 
     private final String name;
 
@@ -59,7 +59,7 @@ public abstract class NatsConnectionConfig {
 
     private Map<String, JetStreamOptions> jetStreamContextOptions;
 
-    public NatsConnectionConfig(String name) {
+    public ConnectionConfig(String name) {
         this.name = name;
     }
 

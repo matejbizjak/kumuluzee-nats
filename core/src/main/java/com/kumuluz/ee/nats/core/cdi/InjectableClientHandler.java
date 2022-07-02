@@ -1,6 +1,6 @@
 package com.kumuluz.ee.nats.core.cdi;
 
-import com.kumuluz.ee.nats.core.proxy.NatsClientBuilder;
+import com.kumuluz.ee.nats.core.proxy.ClientBuilder;
 
 import javax.enterprise.context.Dependent;
 import java.lang.reflect.InvocationHandler;
@@ -14,7 +14,7 @@ import java.util.Map;
  */
 
 @Dependent
-public class InjectableNatsClientHandler implements InvocationHandler {
+public class InjectableClientHandler implements InvocationHandler {
 
     private final Map<Class, Object> natsClientInvokerCache = new HashMap<>();
 
@@ -23,9 +23,9 @@ public class InjectableNatsClientHandler implements InvocationHandler {
         Object natsClientInvoker = natsClientInvokerCache.get(method.getDeclaringClass());
 
         if (natsClientInvoker == null) {
-            NatsClientBuilder natsClientBuilder = NatsClientBuilder.getInstance();
+            ClientBuilder clientBuilder = ClientBuilder.getInstance();
 
-            natsClientInvoker = natsClientBuilder.build(method.getDeclaringClass());
+            natsClientInvoker = clientBuilder.build(method.getDeclaringClass());
             natsClientInvokerCache.put(method.getDeclaringClass(), natsClientInvoker);
         }
 

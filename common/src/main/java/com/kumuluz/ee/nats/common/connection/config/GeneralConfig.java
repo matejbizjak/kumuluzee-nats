@@ -2,7 +2,6 @@ package com.kumuluz.ee.nats.common.connection.config;
 
 import com.kumuluz.ee.nats.common.annotations.ConfigurationOverride;
 import io.nats.client.api.AckPolicy;
-import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.DeliverPolicy;
 import io.nats.client.api.ReplayPolicy;
 
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
  * @author Matej Bizjak
  */
 
-public class NatsGeneralConfig {
+public class GeneralConfig {
 
     private Duration responseTimeout = Duration.ofSeconds(5);
 
@@ -26,9 +25,9 @@ public class NatsGeneralConfig {
 
     private int ackConfirmationRetries = 5;
 
-    private List<NatsConsumerConfiguration> consumerConfigurations;
+    private List<ConsumerConfiguration> consumerConfigurations;
 
-    public NatsGeneralConfig() {
+    public GeneralConfig() {
     }
 
     public Duration getResponseTimeout() {
@@ -39,7 +38,7 @@ public class NatsGeneralConfig {
         this.responseTimeout = responseTimeout;
     }
 
-    public NatsConsumerConfiguration getConsumerConfiguration(String name) {
+    public ConsumerConfiguration getConsumerConfiguration(String name) {
         return consumerConfigurations.stream()
                 .filter(x -> Objects.equals(x.getName(), name))
                 .findFirst()
@@ -62,17 +61,17 @@ public class NatsGeneralConfig {
         this.ackConfirmationRetries = ackConfirmationRetries;
     }
 
-    public List<NatsConsumerConfiguration> getConsumerConfigurations() {
+    public List<ConsumerConfiguration> getConsumerConfigurations() {
         return consumerConfigurations;
     }
 
-    public void setConsumerConfigurations(List<NatsConsumerConfiguration> consumerConfigurations) {
+    public void setConsumerConfigurations(List<ConsumerConfiguration> consumerConfigurations) {
         this.consumerConfigurations = consumerConfigurations;
     }
 
-    public ConsumerConfiguration combineConsumerConfigAndBuild(String name, ConfigurationOverride[] overrides) {
+    public io.nats.client.api.ConsumerConfiguration combineConsumerConfigAndBuild(String name, ConfigurationOverride[] overrides) {
         if (name != null && getConsumerConfiguration(name) != null) {
-            NatsConsumerConfiguration consumerConfiguration = getConsumerConfiguration(name);
+            ConsumerConfiguration consumerConfiguration = getConsumerConfiguration(name);
             for (ConfigurationOverride override : overrides) {
                 String key = override.key();
                 String value = override.value();
@@ -158,7 +157,7 @@ public class NatsGeneralConfig {
                         break;
                 }
             }
-            ConsumerConfiguration.Builder builder = ConsumerConfiguration.builder();
+            io.nats.client.api.ConsumerConfiguration.Builder builder = io.nats.client.api.ConsumerConfiguration.builder();
             if (consumerConfiguration.getDeliverPolicy() != null) {
                 builder.deliverPolicy(consumerConfiguration.getDeliverPolicy());
             }
@@ -240,6 +239,6 @@ public class NatsGeneralConfig {
 //            }
             return builder.build();
         }
-        return ConsumerConfiguration.builder().build();
+        return io.nats.client.api.ConsumerConfiguration.builder().build();
     }
 }

@@ -1,9 +1,9 @@
 package com.kumuluz.ee.nats.core.cdi;
 
-import com.kumuluz.ee.nats.core.NatsCoreExtension;
+import com.kumuluz.ee.nats.core.CoreExtension;
 import com.kumuluz.ee.nats.core.annotations.NatsClient;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
-import com.kumuluz.ee.nats.core.proxy.NatsClientProxyFactory;
+import com.kumuluz.ee.nats.core.proxy.ClientProxyFactory;
 import org.apache.deltaspike.core.api.literal.AnyLiteral;
 import org.apache.deltaspike.core.api.literal.DefaultLiteral;
 import org.apache.deltaspike.core.util.bean.BeanBuilder;
@@ -20,11 +20,11 @@ import java.util.Set;
  * @author Matej Bizjak
  */
 
-public class NatsClientInitializerExtension implements Extension {
+public class ClientInitializerExtension implements Extension {
 
     private final Set<AnnotatedType> annotatedTypes;
 
-    public NatsClientInitializerExtension() {
+    public ClientInitializerExtension() {
         this.annotatedTypes = new HashSet<>();
     }
 
@@ -40,15 +40,15 @@ public class NatsClientInitializerExtension implements Extension {
     }
 
     public <T> void after(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
-        if (!NatsCoreExtension.isExtensionEnabled()) {
+        if (!CoreExtension.isExtensionEnabled()) {
             return;
         }
 
         for (AnnotatedType annotatedType : this.annotatedTypes) {
             DeltaSpikeProxyContextualLifecycle lifecycle = new DeltaSpikeProxyContextualLifecycle(
                     annotatedType.getJavaClass()
-                    , InjectableNatsClientHandler.class
-                    , NatsClientProxyFactory.getInstance()
+                    , InjectableClientHandler.class
+                    , ClientProxyFactory.getInstance()
                     , beanManager
             );
 

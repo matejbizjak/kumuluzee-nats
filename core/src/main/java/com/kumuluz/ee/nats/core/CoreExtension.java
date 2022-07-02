@@ -13,9 +13,9 @@ import java.util.logging.Logger;
  */
 
 @EeExtensionDef(group = "nats-core", name = "NATS Core")
-public class NatsCoreExtension implements Extension {
+public class CoreExtension implements Extension {
 
-    private static final Logger LOGGER = Logger.getLogger(NatsCoreExtension.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(CoreExtension.class.getName());
 
     @Override
     public void load() {

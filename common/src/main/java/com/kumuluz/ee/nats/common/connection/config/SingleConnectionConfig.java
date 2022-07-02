@@ -4,11 +4,11 @@ package com.kumuluz.ee.nats.common.connection.config;
  * @author Matej Bizjak
  */
 
-public class SingleNatsConnectionConfig extends NatsConnectionConfig{
+public class SingleConnectionConfig extends ConnectionConfig {
 
     public static final String DEFAULT_NAME = "default";
 
-    public SingleNatsConnectionConfig() {
+    public SingleConnectionConfig() {
         super(DEFAULT_NAME);
     }
 }

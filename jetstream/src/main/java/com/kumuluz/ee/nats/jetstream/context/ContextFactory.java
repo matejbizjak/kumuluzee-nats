@@ -3,8 +3,8 @@ package com.kumuluz.ee.nats.jetstream.context;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
@@ -18,24 +18,24 @@ import java.util.logging.Logger;
  * @author Matej Bizjak
  */
 
-public class JetStreamContextFactory {
+public class ContextFactory {
 
-    private static final Logger LOG = Logger.getLogger(JetStreamContextFactory.class.getName());
+    private static final Logger LOG = Logger.getLogger(ContextFactory.class.getName());
 
-    private static JetStreamContextFactory instance;
+    private static ContextFactory instance;
 
     private static final Table<String, String, JetStream> jetStreamContexts = HashBasedTable.create();
 
-    public JetStreamContextFactory() {
+    public ContextFactory() {
     }
 
     private static synchronized void init() {
         if (instance == null) {
-            instance = new JetStreamContextFactory();
+            instance = new ContextFactory();
         }
     }
 
-    public static JetStreamContextFactory getInstance() {
+    public static ContextFactory getInstance() {
         if (instance == null) {
             init();
         }
@@ -44,8 +44,8 @@ public class JetStreamContextFactory {
 
     private JetStream createContext(String connectionName, String contextName) {
         JetStream jetStream = null;
-        NatsConfigLoader configLoader = NatsConfigLoader.getInstance();
-        NatsConnectionConfig config = configLoader.getConfigForConnection(connectionName);
+        ConfigLoader configLoader = ConfigLoader.getInstance();
+        ConnectionConfig config = configLoader.getConfigForConnection(connectionName);
         JetStreamOptions jetStreamOptions = config.getJetStreamContextOptions().get(contextName);
         Connection connection = NatsConnection.getConnection(connectionName);
         if (connection == null) {

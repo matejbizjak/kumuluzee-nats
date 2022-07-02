@@ -10,11 +10,11 @@ import java.util.ArrayList;
  * @author Matej Bizjak
  */
 
-public class NatsClientProxyFactory extends DeltaSpikeProxyFactory {
+public class ClientProxyFactory extends DeltaSpikeProxyFactory {
 
-    private static final NatsClientProxyFactory INSTANCE = new NatsClientProxyFactory();
+    private static final ClientProxyFactory INSTANCE = new ClientProxyFactory();
 
-    public static NatsClientProxyFactory getInstance() {
+    public static ClientProxyFactory getInstance() {
         return INSTANCE;
     }
 

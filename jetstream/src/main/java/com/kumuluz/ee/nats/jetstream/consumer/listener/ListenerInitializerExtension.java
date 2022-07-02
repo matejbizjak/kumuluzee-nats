@@ -2,8 +2,8 @@ package com.kumuluz.ee.nats.jetstream.consumer.listener;
 
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.GeneralConfig;
 import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
@@ -11,7 +11,7 @@ import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
-import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
+import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
 import com.kumuluz.ee.nats.jetstream.util.JetStreamMessage;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
@@ -75,7 +75,7 @@ public class ListenerInitializerExtension implements Extension {
                     , beanManager.createCreationalContext(inst.getBean()));
             Object[] args = new Object[method.getParameterCount()];
 
-            NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
+            GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
             JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
             ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
             Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
@@ -85,7 +85,7 @@ public class ListenerInitializerExtension implements Extension {
                 continue;
             }
             try {
-                JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection()
+                JetStream jetStream = ContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection()
                         , jetStreamListenerAnnotation.context());
                 Dispatcher dispatcher = connection.createDispatcher();
 
@@ -142,7 +142,7 @@ public class ListenerInitializerExtension implements Extension {
         }
     }
 
-    private void ackSyncWithRetries(Message msg, NatsGeneralConfig generalConfig) {
+    private void ackSyncWithRetries(Message msg, GeneralConfig generalConfig) {
         for (int retries = 0; ; retries++) {
             try {
                 msg.ackSync(generalConfig.getAckConfirmationTimeout());

@@ -1,8 +1,8 @@
 package com.kumuluz.ee.nats.core.invoker;
 
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.SingleConnectionConfig;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.core.annotations.Subject;
@@ -23,9 +23,9 @@ import java.util.logging.Logger;
  * @author Matej Bizjak
  */
 
-public class NatsClientInvoker implements InvocationHandler {
+public class ClientInvoker implements InvocationHandler {
 
-    private static final Logger LOG = Logger.getLogger(NatsClientInvoker.class.getName());
+    private static final Logger LOG = Logger.getLogger(ClientInvoker.class.getName());
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -72,7 +72,7 @@ public class NatsClientInvoker implements InvocationHandler {
         }
 
         if (connectionName.isEmpty()) {
-            connectionName = SingleNatsConnectionConfig.DEFAULT_NAME;
+            connectionName = SingleConnectionConfig.DEFAULT_NAME;
         }
 
         return connectionName;
@@ -109,7 +109,7 @@ public class NatsClientInvoker implements InvocationHandler {
         }
 
         if (responseTimeout == null) {
-            responseTimeout = NatsConfigLoader.getInstance().getGeneralConfig().getResponseTimeout();
+            responseTimeout = ConfigLoader.getInstance().getGeneralConfig().getResponseTimeout();
         }
         return responseTimeout;
     }

@@ -1,8 +1,8 @@
 package com.kumuluz.ee.nats.common.management;
 
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.NatsConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamManagement;
@@ -27,7 +27,7 @@ public class StreamManagement {
 
     public static void establishAll() {
         HashMap<String, Connection> connections = NatsConnection.getAllConnections();
-        HashMap<String, NatsConnectionConfig> connectionConfigs = NatsConfigLoader.getInstance().getConnectionConfigs();
+        HashMap<String, ConnectionConfig> connectionConfigs = ConfigLoader.getInstance().getConnectionConfigs();
         connections.forEach(
                 (name, connection) -> connectionConfigs.get(name).getStreamConfigurations().forEach(
                         streamConfiguration -> {

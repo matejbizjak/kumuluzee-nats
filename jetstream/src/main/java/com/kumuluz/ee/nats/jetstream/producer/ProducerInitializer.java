@@ -1,7 +1,7 @@
 package com.kumuluz.ee.nats.jetstream.producer;
 
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamProducer;
-import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
+import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
 import io.nats.client.JetStream;
 
 import javax.enterprise.context.Dependent;
@@ -21,6 +21,6 @@ public class ProducerInitializer {
     @JetStreamProducer
     public static JetStream getProducer(InjectionPoint injectionPoint) {
         JetStreamProducer annotation = injectionPoint.getAnnotated().getAnnotation(JetStreamProducer.class);
-        return JetStreamContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
+        return ContextFactory.getInstance().getContext(annotation.connection(), annotation.context());
     }
 }

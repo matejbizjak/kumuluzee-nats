@@ -2,13 +2,13 @@ package com.kumuluz.ee.nats.core.cdi;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.SingleNatsConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.SingleConnectionConfig;
 import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.SerDes;
-import com.kumuluz.ee.nats.core.NatsCoreExtension;
+import com.kumuluz.ee.nats.core.CoreExtension;
 import com.kumuluz.ee.nats.core.annotations.NatsListener;
 import com.kumuluz.ee.nats.core.annotations.Subject;
 import io.nats.client.Connection;
@@ -33,9 +33,9 @@ import java.util.logging.Logger;
  * @author Matej Bizjak
  */
 
-public class NatsListenerInitializerExtension implements Extension {
+public class ListenerInitializerExtension implements Extension {
 
-    private static final Logger LOG = Logger.getLogger(NatsListenerInitializerExtension.class.getName());
+    private static final Logger LOG = Logger.getLogger(ListenerInitializerExtension.class.getName());
     List<AnnotatedInstance<Subject, NatsListener>> instanceList = new ArrayList<>();
 
     public <T> void processListeners(@Observes ProcessBean<T> processBean) {
@@ -53,7 +53,7 @@ public class NatsListenerInitializerExtension implements Extension {
     }
 
     public void after(@Observes AfterDeploymentValidation adv, BeanManager beanManager) {
-        if (!NatsCoreExtension.isExtensionEnabled()) {
+        if (!CoreExtension.isExtensionEnabled()) {
             return;
         }
 
@@ -77,7 +77,7 @@ public class NatsListenerInitializerExtension implements Extension {
             if (connectionName.isEmpty()) {
                 connectionName = natsListenerAnnotation.connection();
                 if (connectionName.isEmpty()) {
-                    connectionName = SingleNatsConnectionConfig.DEFAULT_NAME;
+                    connectionName = SingleConnectionConfig.DEFAULT_NAME;
                 }
             }
             String queueName = subjectAnnotation.queue();

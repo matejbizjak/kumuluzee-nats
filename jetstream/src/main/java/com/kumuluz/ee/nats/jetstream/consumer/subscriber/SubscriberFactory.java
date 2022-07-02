@@ -3,11 +3,11 @@ package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
-import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
-import com.kumuluz.ee.nats.common.connection.config.NatsGeneralConfig;
+import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.GeneralConfig;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
-import com.kumuluz.ee.nats.jetstream.context.JetStreamContextFactory;
+import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamSubscription;
@@ -53,7 +53,7 @@ public class SubscriberFactory {
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
             return null;
         }
-        NatsGeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
+        GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
         ConsumerConfiguration consumerConfiguration;
         if (consumerConfigAnnotation == null) {
             consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
@@ -84,7 +84,7 @@ public class SubscriberFactory {
             return null;
         }
 
-        JetStream jetStream = JetStreamContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection()
+        JetStream jetStream = ContextFactory.getInstance().getContext(jetStreamSubscriberAnnotation.connection()
                 , jetStreamSubscriberAnnotation.context());
         if (jetStream == null) {
             return null;

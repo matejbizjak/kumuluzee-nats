@@ -15,35 +15,35 @@ import java.util.function.Supplier;
  * @author Matej Bizjak
  */
 
-public class NatsConfigLoader {
+public class ConfigLoader {
 
-    private static NatsConfigLoader instance;
-    private static NatsGeneralConfig generalConfig;
-    private static final HashMap<String, NatsConnectionConfig> connectionConfigs = new HashMap<>();
+    private static ConfigLoader instance;
+    private static GeneralConfig generalConfig;
+    private static final HashMap<String, ConnectionConfig> connectionConfigs = new HashMap<>();
     private final ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
 
-    public static NatsConfigLoader getInstance() {
+    public static ConfigLoader getInstance() {
         if (instance == null) {
-            instance = new NatsConfigLoader();
+            instance = new ConfigLoader();
         }
         return instance;
     }
 
-    public NatsGeneralConfig getGeneralConfig() {
+    public GeneralConfig getGeneralConfig() {
         return generalConfig;
     }
 
-    public HashMap<String, NatsConnectionConfig> getConnectionConfigs() {
+    public HashMap<String, ConnectionConfig> getConnectionConfigs() {
         return connectionConfigs;
     }
 
-    public NatsConnectionConfig getConfigForConnection(String connectionName) {
+    public ConnectionConfig getConfigForConnection(String connectionName) {
         return connectionConfigs.get(connectionName);
     }
 
     public void readConfiguration() {
         // general settings
-        generalConfig = new NatsGeneralConfig();
+        generalConfig = new GeneralConfig();
         readAndSetGeneralConfigClass();
         // connection settings
         String clusterPrefix = "kumuluzee.nats.servers";
@@ -53,14 +53,14 @@ public class NatsConfigLoader {
                 String currentPrefix = clusterPrefix + "[" + i + "]";
                 String name = configurationUtil.get(currentPrefix + ".name")
                         .orElseThrow(configNotFoundException(currentPrefix + ".name"));
-                ClusterNatsConnectionConfig clusterConfig = new ClusterNatsConnectionConfig(name);
+                ClusterConnectionConfig clusterConfig = new ClusterConnectionConfig(name);
                 readAndSetConnectionConfigClass(clusterConfig, currentPrefix);
                 connectionConfigs.put(name, clusterConfig);
             }
         } else {
             String natsCorePrefix = "kumuluzee.nats";
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
-                SingleNatsConnectionConfig singleConfig = new SingleNatsConnectionConfig();
+                SingleConnectionConfig singleConfig = new SingleConnectionConfig();
                 readAndSetConnectionConfigClass(singleConfig, natsCorePrefix);
                 connectionConfigs.put(singleConfig.getName(), singleConfig);
             } else {
@@ -86,7 +86,7 @@ public class NatsConfigLoader {
         ackConfirmationRetries.ifPresent(generalConfig::setAckConfirmationRetries);
         // consumer configurations
         Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumer-configuration");
-        List<NatsConsumerConfiguration> consumerConfigurations = new ArrayList<>();
+        List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
         if (consumerConfigSize.isPresent()) {
             for (int i = 0; i < consumerConfigSize.get(); i++) {
                 consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumer-configuration" + "[" + i + "]"));
@@ -95,8 +95,8 @@ public class NatsConfigLoader {
         generalConfig.setConsumerConfigurations(consumerConfigurations);
     }
 
-    private NatsConsumerConfiguration readConsumerConfiguration(String currentPrefix) {
-        NatsConsumerConfiguration consumerConfiguration = new NatsConsumerConfiguration();
+    private ConsumerConfiguration readConsumerConfiguration(String currentPrefix) {
+        ConsumerConfiguration consumerConfiguration = new ConsumerConfiguration();
         // name
         Optional<String> name = configurationUtil.get(currentPrefix + ".name");
         name.ifPresent(consumerConfiguration::setName);
@@ -183,7 +183,7 @@ public class NatsConfigLoader {
         return consumerConfiguration;
     }
 
-    private void readAndSetConnectionConfigClass(NatsConnectionConfig natsConnectionConfig, String currentPrefix) {
+    private void readAndSetConnectionConfigClass(ConnectionConfig connectionConfig, String currentPrefix) {
         // addresses
         Optional<Integer> addressesSize = configurationUtil.getListSize(currentPrefix + ".addresses");
         List<String> addresses = new ArrayList<>();
@@ -193,38 +193,38 @@ public class NatsConfigLoader {
                 address.ifPresent(addresses::add);
             }
         }
-        natsConnectionConfig.setAddresses(addresses);
+        connectionConfig.setAddresses(addresses);
 
         // max reconnect
         Optional<Integer> maxReconnect = configurationUtil.getInteger(currentPrefix + ".max-reconnect");
-        maxReconnect.ifPresent(natsConnectionConfig::setMaxReconnect);
+        maxReconnect.ifPresent(connectionConfig::setMaxReconnect);
         // reconnect wait
         Optional<String> reconnectWait = configurationUtil.get(currentPrefix + ".reconnect-wait");
-        reconnectWait.ifPresent(x -> natsConnectionConfig.setReconnectWait(Duration.parse("PT" + x)));
+        reconnectWait.ifPresent(x -> connectionConfig.setReconnectWait(Duration.parse("PT" + x)));
         // connection timeout
         Optional<String> connectionTimeout = configurationUtil.get(currentPrefix + ".connection-timeout");
-        connectionTimeout.ifPresent(x -> natsConnectionConfig.setConnectionTimeout(Duration.parse("PT" + x)));
+        connectionTimeout.ifPresent(x -> connectionConfig.setConnectionTimeout(Duration.parse("PT" + x)));
         // ping interval
         Optional<String> pingInterval = configurationUtil.get(currentPrefix + ".ping-interval");
-        pingInterval.ifPresent(x -> natsConnectionConfig.setPingInterval(Duration.parse("PT" + x)));
+        pingInterval.ifPresent(x -> connectionConfig.setPingInterval(Duration.parse("PT" + x)));
         // reconnect-buffer size
         Optional<Long> reconnectBufferSize = configurationUtil.getLong(currentPrefix + ".reconnect-buffer-size");
-        reconnectBufferSize.ifPresent(natsConnectionConfig::setReconnectBufferSize);
+        reconnectBufferSize.ifPresent(connectionConfig::setReconnectBufferSize);
         // inbox prefix
         Optional<String> inboxPrefix = configurationUtil.get(currentPrefix + ".inbox-prefix");
-        inboxPrefix.ifPresent(natsConnectionConfig::setInboxPrefix);
+        inboxPrefix.ifPresent(connectionConfig::setInboxPrefix);
         // no echo
         Optional<Boolean> noEcho = configurationUtil.getBoolean(currentPrefix + ".no-echo");
-        noEcho.ifPresent(natsConnectionConfig::setNoEcho);
+        noEcho.ifPresent(connectionConfig::setNoEcho);
         // username
         Optional<String> username = configurationUtil.get(currentPrefix + ".username");
-        username.ifPresent(natsConnectionConfig::setUsername);
+        username.ifPresent(connectionConfig::setUsername);
         // password
         Optional<String> password = configurationUtil.get(currentPrefix + ".password");
-        password.ifPresent(natsConnectionConfig::setPassword);
+        password.ifPresent(connectionConfig::setPassword);
         // credentials
         Optional<String> credentials = configurationUtil.get(currentPrefix + ".credentials");
-        credentials.ifPresent(natsConnectionConfig::setCredentials);
+        credentials.ifPresent(connectionConfig::setCredentials);
 
         // (jet)streams
         Optional<Integer> streamsSize = configurationUtil.getListSize(currentPrefix + ".streams");
@@ -234,7 +234,7 @@ public class NatsConfigLoader {
                 streams.add(readStreamsConfiguration(currentPrefix + ".streams" + "[" + i + "]"));
             }
         }
-        natsConnectionConfig.setStreamConfigurations(streams);
+        connectionConfig.setStreamConfigurations(streams);
 
         // jetStreamContext options
         Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetstream-contexts");
@@ -245,14 +245,14 @@ public class NatsConfigLoader {
                 jetStreamContexts.put(namedJetStreamOptions.getName(), namedJetStreamOptions.getJetStreamOptions());
             }
         }
-        natsConnectionConfig.setJetStreamContextOptions(jetStreamContexts);
+        connectionConfig.setJetStreamContextOptions(jetStreamContexts);
 
         // TLS
         Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
         if (!tlsConf.isPresent()) {
             return;
         }
-        NatsConnectionConfig.TLS tls = new NatsConnectionConfig.TLS();
+        ConnectionConfig.TLS tls = new ConnectionConfig.TLS();
         // trust store type
         Optional<String> trustStoreType = configurationUtil.get(currentPrefix + ".tls" + ".trust-store-type");
         trustStoreType.ifPresent(tls::setTrustStoreType);
@@ -274,7 +274,7 @@ public class NatsConfigLoader {
         // key store type
         Optional<String> keyStoreType = configurationUtil.get(currentPrefix + ".tls" + ".key-store-type");
         keyStoreType.ifPresent(tls::setKeyStoreType);
-        natsConnectionConfig.setTls(tls);
+        connectionConfig.setTls(tls);
     }
 
     private StreamConfiguration readStreamsConfiguration(String currentPrefix) {

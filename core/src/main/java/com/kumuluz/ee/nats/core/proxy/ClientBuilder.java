@@ -1,6 +1,6 @@
 package com.kumuluz.ee.nats.core.proxy;
 
-import com.kumuluz.ee.nats.core.invoker.NatsClientInvoker;
+import com.kumuluz.ee.nats.core.invoker.ClientInvoker;
 import com.kumuluz.ee.nats.core.util.InterfaceValidationUtil;
 import org.apache.deltaspike.core.api.provider.BeanProvider;
 import org.apache.deltaspike.proxy.spi.DeltaSpikeProxy;
@@ -15,20 +15,20 @@ import java.lang.reflect.Method;
  * @author Matej Bizjak
  */
 
-public class NatsClientBuilder {
-    private static NatsClientBuilder instance = new NatsClientBuilder();
+public class ClientBuilder {
+    private static ClientBuilder instance = new ClientBuilder();
 
     private DeltaSpikeProxyInvocationHandler deltaSpikeProxyInvocationHandler;
     private BeanManager beanManager;
 
-    public static NatsClientBuilder getInstance() {
+    public static ClientBuilder getInstance() {
         return instance;
     }
 
     public <T> T build(Class<T> aClass) {
         InterfaceValidationUtil.validateInterface(aClass);
 
-        NatsClientProxyFactory proxyFactory = NatsClientProxyFactory.getInstance();
+        ClientProxyFactory proxyFactory = ClientProxyFactory.getInstance();
         beanManager = CDI.current().getBeanManager();
 
         Class<T> proxyClass = proxyFactory.getProxyClass(beanManager, aClass);
@@ -48,7 +48,7 @@ public class NatsClientBuilder {
 
             deltaSpikeProxy.setDelegateMethods(delegateMethods);
 
-            NatsClientInvoker ncInvoker = new NatsClientInvoker();
+            ClientInvoker ncInvoker = new ClientInvoker();
             deltaSpikeProxy.setDelegateInvocationHandler(ncInvoker);
 
             return instance;
