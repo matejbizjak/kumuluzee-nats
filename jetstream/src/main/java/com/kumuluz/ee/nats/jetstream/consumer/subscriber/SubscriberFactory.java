@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  */
 
 public class SubscriberFactory {
-
+    // TODO preimenuj vse fajle, da bo jetstream spredaj
     private static final Logger LOG = Logger.getLogger(SubscriberFactory.class.getName());
 
     private static SubscriberFactory instance;
@@ -45,6 +45,7 @@ public class SubscriberFactory {
         }
         return instance;
     }
+    // TODO The extension can be disabled by setting the kumuluzee.streaming.kafka.enabled configuration property to false. This disables the consumer and stream processor initialization and makes injection of Producer and StreamsController always return null.
 
     private JetStreamSubscription createSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation, JetStream jetStream) {
         JetStreamSubscription jetStreamSubscription = null;
