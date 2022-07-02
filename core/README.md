@@ -221,7 +221,7 @@ For other default values take a look [here](https://github.com/nats-io/nats.java
 ### Providing ObjectMapper
 
 KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
-a custom instance implement the `KafkaObjectMapperProvider` interface and register the implementation in a service file.
+a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
 For example:
 
 ```java
