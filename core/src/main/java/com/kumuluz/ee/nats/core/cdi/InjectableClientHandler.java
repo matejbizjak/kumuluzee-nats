@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Caches and invokes {@link ClientBuilder}.
+ *
  * @author Matej Bizjak
  */
 

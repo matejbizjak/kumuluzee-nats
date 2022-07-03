@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
+ * Invokes NATS Client for methods of interfaces annotated with {@link RegisterNatsClient}.
+ *
  * @author Matej Bizjak
  */
 

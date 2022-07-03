@@ -1,75 +1,59 @@
 package com.kumuluz.ee.nats.core.cdi;
 
 import com.kumuluz.ee.nats.core.CoreExtension;
-import com.kumuluz.ee.nats.core.annotations.NatsClient;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
-import com.kumuluz.ee.nats.core.proxy.ClientProxyFactory;
-import org.apache.deltaspike.core.api.literal.AnyLiteral;
-import org.apache.deltaspike.core.api.literal.DefaultLiteral;
-import org.apache.deltaspike.core.util.bean.BeanBuilder;
-import org.apache.deltaspike.proxy.api.DeltaSpikeProxyContextualLifecycle;
 
 import javax.enterprise.context.*;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.*;
 import javax.inject.Singleton;
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * CDI {@link Extension} that adds dynamically created beans from interfaces annotated with {@link RegisterNatsClient}.
+ *
  * @author Matej Bizjak
  */
 
 public class ClientInitializerExtension implements Extension {
 
-    private final Set<AnnotatedType> annotatedTypes;
+    private final Set<AnnotatedType> classes;
 
     public ClientInitializerExtension() {
-        this.annotatedTypes = new HashSet<>();
+        this.classes = new HashSet<>();
     }
 
-    public <T> void processAnnotatedType(@Observes @WithAnnotations(RegisterNatsClient.class) ProcessAnnotatedType<T> pat) {
-        Class<T> javaClass = pat.getAnnotatedType().getJavaClass();
+    public <T> void processAnnotatedType(@Observes @WithAnnotations(RegisterNatsClient.class) ProcessAnnotatedType<T> anType) {
+        Class<T> javaClass = anType.getAnnotatedType().getJavaClass();
 
         if (!javaClass.isInterface()) {
             throw new IllegalArgumentException("Nats client need to be an interface: " + javaClass);
         }
 
-        this.addAnnotatedType(pat.getAnnotatedType());
-        pat.veto();
+        this.addAnnotatedType(anType.getAnnotatedType());
+        anType.veto();
     }
 
-    public <T> void after(@Observes AfterBeanDiscovery afterBeanDiscovery, BeanManager beanManager) {
+    public <T> void after(@Observes AfterBeanDiscovery afterBeanDiscovery) {
         if (!CoreExtension.isExtensionEnabled()) {
             return;
         }
 
-        for (AnnotatedType annotatedType : this.annotatedTypes) {
-            DeltaSpikeProxyContextualLifecycle lifecycle = new DeltaSpikeProxyContextualLifecycle(
-                    annotatedType.getJavaClass()
-                    , InjectableClientHandler.class
-                    , ClientProxyFactory.getInstance()
-                    , beanManager
-            );
-
-            BeanBuilder<T> beanBuilder = new BeanBuilder<>(beanManager)
-                    .readFromType(annotatedType)
-                    .qualifiers(new NatsClient.NatsClientLiteral(), new DefaultLiteral(), new AnyLiteral())
-                    .passivationCapable(true)
-                    .scope(resolveScope(annotatedType.getJavaClass()))
-                    .beanLifecycle(lifecycle);
-
-            afterBeanDiscovery.addBean(beanBuilder.create());
+        for (AnnotatedType anType : this.classes) {
+            Class<? extends Annotation> scopeClass = resolveScope(anType.getJavaClass());
+            afterBeanDiscovery.addBean(new InvokerDelegateBean(anType.getJavaClass(), scopeClass));
         }
     }
 
     private void addAnnotatedType(AnnotatedType annotatedType) {
-        if (this.annotatedTypes.stream().noneMatch(anType -> anType.getJavaClass().equals(annotatedType.getJavaClass()))) {
-            this.annotatedTypes.add(annotatedType);
+        if (this.classes.stream().noneMatch(anType -> anType.getJavaClass().equals(annotatedType.getJavaClass()))) {
+            this.classes.add(annotatedType);
         }
     }
 
-    private Class resolveScope(Class interfaceClass) {
+    private Class<? extends Annotation> resolveScope(Class interfaceClass) {
         if (interfaceClass.isAnnotationPresent(RequestScoped.class)) {
             return RequestScoped.class;
         } else if (interfaceClass.isAnnotationPresent(ApplicationScoped.class)) {
