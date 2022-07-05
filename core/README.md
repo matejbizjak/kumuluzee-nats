@@ -271,7 +271,7 @@ NatsClientInvoker.java:
                     , (Class<?>) ((ParameterizedType) method.getParameterTypes()[0].getGenericSuperclass()).getActualTypeArguments()[0]);
             completableFuture.complete(receivedMsg);
         } catch (IOException e) {
-            throw new NatsListenerException(String.format("Cannot deserialize the message as class %s!"
+            throw new NatsListenerException(String.format("Cannot deserialize the message as class %s."
                     , method.getParameterTypes()[0].getName()), e);
         }
     });

@@ -99,8 +99,11 @@ public class ListenerInitializerExtension implements Extension {
                         }
                     } catch (IOException e) {
                         exponentialNak(msg);
-                        throw new SerializationException(String.format("Cannot deserialize the message as class %s!"
-                                , method.getParameterTypes()[0].getName()), e);
+                        throw new SerializationException(String
+                                .format("Cannot deserialize the message as class %s for subject %s and connection %s."
+                                        , method.getParameterTypes()[0].getName(), msg.getSubject()
+                                        , msg.getConnection().getConnectedUrl()
+                                ), e);
                     }
                     try {
                         method.invoke(reference, args);
@@ -111,8 +114,10 @@ public class ListenerInitializerExtension implements Extension {
                         }
                     } catch (InvocationTargetException | IllegalAccessException e) {
                         exponentialNak(msg);
-                        // TODO glej da se ne zapre dispatcher
-                        throw new InvocationException(String.format("Method %s could not be invoked.", method.getName()), e);
+                        throw new InvocationException(String
+                                .format("Method %s could not be invoked for subject %s and connection %s."
+                                        , method.getName(), msg.getSubject(), msg.getConnection().getConnectedUrl()
+                                ), e);
                     }
                 };
 
@@ -151,11 +156,12 @@ public class ListenerInitializerExtension implements Extension {
                 if (retries < generalConfig.getAckConfirmationRetries()) {
                     try {
                         Thread.sleep(generalConfig.getAckConfirmationTimeout().toMillis());
+                        LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server. Retrying...", e);
                     } catch (InterruptedException ex) {
-                        LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server.", ex);
+                        LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server. Retrying...", ex);
                     }
                 } else {
-                    LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server.", e);
+                    LOG.log(Level.SEVERE, "Could not receive an ack confirmation from the server. This was a final try.", e);
                 }
             }
         }

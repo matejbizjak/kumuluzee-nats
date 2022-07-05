@@ -17,7 +17,7 @@ public class JetStreamMessage {
     }
 
     /**
-     * Indicates that this message is being worked on and reset redelivery timer in the server.
+     * Indicates that this message is being worked on and resets redelivery timer at the server.
      */
     public void inProgress() {
         message.inProgress();

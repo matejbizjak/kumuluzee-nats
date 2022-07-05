@@ -105,24 +105,32 @@ public class ListenerInitializerExtension implements Extension {
                     receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
                     args[0] = receivedMsg;
                 } catch (IOException e) {
-                    throw new SerializationException(String.format("Cannot deserialize the message as class %s!"
-                            , method.getParameterTypes()[0].getName()), e);
+                    throw new SerializationException(String
+                            .format("Cannot deserialize the message as class %s for subject %s and connection %s."
+                                    , method.getParameterTypes()[0].getName(), msg.getSubject()
+                                    , msg.getConnection().getConnectedUrl()
+                            ), e);
                 }
 
                 Object responseMsg;
                 try {
                     responseMsg = method.invoke(reference, args);
                 } catch (IllegalAccessException | InvocationTargetException e) {
-                    // TODO glej da se ne zapre dispatcher
-                    throw new InvocationException(String.format("Method %s could not be invoked.", method.getName()), e);
+                    throw new InvocationException(String
+                            .format("Method %s could not be invoked for subject %s and connection %s."
+                                    , method.getName(), msg.getSubject(), msg.getConnection().getConnectedUrl()
+                            ), e);
                 }
 
                 if (!isVoid && msg.getReplyTo() != null && !msg.getReplyTo().isEmpty()) {
                     try {
                         connection.publish(msg.getReplyTo(), SerDes.serialize(responseMsg));
                     } catch (JsonProcessingException e) {
-                        throw new SerializationException(String.format("Cannot serialize the response message as object %s"
-                                , method.getReturnType().getName()), e);
+                        throw new SerializationException(String
+                                .format("Cannot serialize the response message as object %s for subject %s and connection %s."
+                                        , method.getReturnType().getName(), msg.getSubject()
+                                        , msg.getConnection().getConnectedUrl()
+                                ), e);
                     }
                 }
             });

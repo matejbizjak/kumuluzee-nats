@@ -7,7 +7,7 @@ import java.io.Closeable;
 import java.lang.reflect.Proxy;
 
 /**
- * Creates NATS Client by invoking {@link ClientInvoker}
+ * Creates NATS Client by invoking {@link ClientInvoker}.
  *
  * @author Matej Bizjak
  */

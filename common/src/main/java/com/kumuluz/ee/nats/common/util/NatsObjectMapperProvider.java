@@ -19,7 +19,7 @@ public interface NatsObjectMapperProvider {
      * Supplies the {@link ObjectMapper} for use in SerDes. If method returns null, this
      * provider is ignored. If no providers are found, the default {@link ObjectMapper} is used.
      *
-     * @return {@link ObjectMapper} that should be used or null if not applicable
+     * @return {@link ObjectMapper} that should be used or null if not applicable.
      */
 
     ObjectMapper provideObjectMapper();
