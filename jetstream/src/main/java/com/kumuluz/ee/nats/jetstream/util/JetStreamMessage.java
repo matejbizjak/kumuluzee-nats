@@ -12,7 +12,7 @@ import io.nats.client.support.Status;
  * @author Matej Bizjak
  */
 
-public class JetStreamMessage {  // new
+public class JetStreamMessage {
 
     private final Message message;
 
