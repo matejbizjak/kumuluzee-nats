@@ -123,7 +123,7 @@ public void receive(String value) {
 ##### Reseting redelivery timer for long operations
 
 A push consumer's method may also contain a second parameter of the type `JetStreamMessage`.
-It allows us to call function `inProgress()`, which indicates that this message is being worked on and resets redelivery timer at the server.
+It provides us a metadata of the message, and it allows us to call function `inProgress()`, which indicates that this message is being worked on and resets redelivery timer at the server.
 It is useful when it takes longer to process a message.
 
 ```java
