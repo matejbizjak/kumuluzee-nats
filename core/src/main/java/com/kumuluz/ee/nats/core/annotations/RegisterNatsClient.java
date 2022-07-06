@@ -14,5 +14,5 @@ public @interface RegisterNatsClient {
 
     @Nonbinding String connection() default "";
 
-    @Nonbinding String responseTimeout() default "";
+//    @Nonbinding String responseTimeout() default "";
 }
