@@ -38,7 +38,7 @@ public interface SimpleClient {
 ```
 
 #### Annotation
-We have to annotate an interface with `@RegisterNatsClient`, where we can specify the connection a client will use and a response timeout (maximum time to wait for response).
+We have to annotate an interface with `@RegisterNatsClient`, where we can specify the connection a client will use.
 
 Each method must be annotated with `@Subject`, but there are two options:
 - method annotation
@@ -49,7 +49,7 @@ We can use both annotation types on the same method, which is useful when want t
 
 `@Subject` also has 2 optional parameters when used under `@RegisterNatsClient`:
 - connection (overrides the connection from `@RegisterNatsClient`)
-- responseTimeout (overrides the responseTimeout from `@RegisterNatsClient`)
+- responseTimeout (overrides the responseTimeout from the general configurations)
 
 If those optional values are not set, NATS client will use the default values.
 
