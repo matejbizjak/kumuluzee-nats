@@ -34,11 +34,11 @@ public class InjectableClientHandler implements InvocationHandler {
         try {
             return method.invoke(natsClientInvoker, args);
         } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause == null) {
-                cause = e;
+            Throwable targetException = e.getTargetException();
+            if (targetException != null) {
+                throw targetException;
             }
-            throw cause;
+            throw e;
         }
     }
 }
