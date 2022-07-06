@@ -61,10 +61,6 @@ public class GeneralConfig {
         this.ackConfirmationRetries = ackConfirmationRetries;
     }
 
-    public List<ConsumerConfiguration> getConsumerConfigurations() {
-        return consumerConfigurations;
-    }
-
     public void setConsumerConfigurations(List<ConsumerConfiguration> consumerConfigurations) {
         this.consumerConfigurations = consumerConfigurations;
     }
@@ -221,7 +217,7 @@ public class GeneralConfig {
             if (consumerConfiguration.getMaxBytes() != null) {
                 builder.maxBytes(consumerConfiguration.getMaxBytes());
             }
-            if (consumerConfiguration.getIdleHeartbeat() != null) {
+            if (consumerConfiguration.getFlowControl() == Boolean.TRUE) {
                 builder.flowControl(consumerConfiguration.getIdleHeartbeat());
             }
             if (consumerConfiguration.getHeadersOnly() != null) {
