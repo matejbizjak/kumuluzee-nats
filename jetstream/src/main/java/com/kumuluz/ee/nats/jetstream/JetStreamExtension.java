@@ -9,6 +9,8 @@ import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
 import java.util.logging.Logger;
 
 /**
+ * KumuluzEE framework extension for NATS JetStream.
+ *
  * @author Matej Bizjak
  */
 

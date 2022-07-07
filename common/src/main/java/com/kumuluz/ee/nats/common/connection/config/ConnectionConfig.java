@@ -24,6 +24,8 @@ import java.util.Optional;
 import static io.nats.client.Options.*;
 
 /**
+ * Class for NATS Connection settings.
+ *
  * @author Matej Bizjak
  */
 

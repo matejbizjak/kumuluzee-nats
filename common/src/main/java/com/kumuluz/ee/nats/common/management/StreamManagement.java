@@ -3,20 +3,19 @@ package com.kumuluz.ee.nats.common.management;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
+import com.kumuluz.ee.nats.common.exception.NatsException;
 import io.nats.client.Connection;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamManagement;
-import io.nats.client.api.ConsumerConfiguration;
 import io.nats.client.api.StreamConfiguration;
 import io.nats.client.api.StreamInfo;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Helper for managing streams
+ * Helper for managing streams.
  *
  * @author Matej Bizjak
  */
@@ -34,7 +33,7 @@ public class StreamManagement {
                             try {
                                 createStreamOrUpdateSubjects(connection, streamConfiguration);
                             } catch (IOException | JetStreamApiException e) {
-                                throw new RuntimeException(e);
+                                throw new NatsException(e);
                             }
                         }
                 )
@@ -61,10 +60,6 @@ public class StreamManagement {
         return streamInfo;
     }
 
-    public static StreamInfo createStream(Connection connection, StreamConfiguration streamConfiguration) throws IOException, JetStreamApiException {
-        return createStream(connection.jetStreamManagement(), streamConfiguration);
-    }
-
     public static StreamInfo createStreamOrUpdateSubjects(JetStreamManagement jetStreamManagement, StreamConfiguration streamConfiguration)
             throws IOException, JetStreamApiException {
         StreamInfo streamInfo = getStreamInfoOrNullWhenNotExist(jetStreamManagement, streamConfiguration.getName());
@@ -72,6 +67,7 @@ public class StreamManagement {
             return createStream(jetStreamManagement, streamConfiguration);
         }
 
+//        // update subjects only
 //        // check to see if the configuration has all the subjects we want
 //        StreamConfiguration streamConfigurationDb = streamInfo.getConfiguration();
 //        boolean needToUpdate = false;
@@ -129,20 +125,20 @@ public class StreamManagement {
         return string;
     }
 
-    public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {
-        Connection connection = NatsConnection.getConnection(connectionName);
-        if (connection == null) {
-            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s because the connection was not established."
-                    , connectionName, streamName));
-        } else {
-            try {
-                connection.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
-                LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s."
-                        , connectionName, streamName));
-            } catch (IOException | JetStreamApiException e) {
-                LOG.log(Level.SEVERE, String.format("Unable to add/update consumer configuration for connection %s and stream %s."
-                        , connectionName, streamName), e);
-            }
-        }
-    }
+//    public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {
+//        Connection connection = NatsConnection.getConnection(connectionName);
+//        if (connection == null) {
+//            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s because the connection was not established."
+//                    , connectionName, streamName));
+//        } else {
+//            try {
+//                connection.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
+//                LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s."
+//                        , connectionName, streamName));
+//            } catch (IOException | JetStreamApiException e) {
+//                LOG.log(Level.SEVERE, String.format("Unable to add/update consumer configuration for connection %s and stream %s."
+//                        , connectionName, streamName), e);
+//            }
+//        }
+//    }
 }

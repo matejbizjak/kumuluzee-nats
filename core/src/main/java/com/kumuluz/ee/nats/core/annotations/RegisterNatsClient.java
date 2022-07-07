@@ -4,6 +4,8 @@ import javax.enterprise.util.Nonbinding;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for defining interface as a NATS Core Client (producer).
+ *
  * @author Matej Bizjak
  */
 

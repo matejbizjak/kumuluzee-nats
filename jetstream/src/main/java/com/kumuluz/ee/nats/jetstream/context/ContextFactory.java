@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Factory for JetStream contexts.
+ *
  * @author Matej Bizjak
  */
 

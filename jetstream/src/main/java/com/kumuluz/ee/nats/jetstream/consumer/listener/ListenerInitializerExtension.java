@@ -32,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Finds methods annotated with a {@link JetStreamListener} annotations and initializes them as listeners to previously created NATS connections.
+ *
  * @author Matej Bizjak
  */
 
@@ -67,8 +69,14 @@ public class ListenerInitializerExtension implements Extension {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() < 1 || method.getParameterCount() > 2) {
-                throw new DefinitionException(String.format("Listener method must have exactly 1 or 2 parameters! Cause: %s"
-                        , method));
+                throw new DefinitionException(String.format("Listener method %s in class %s must have exactly 1 or 2 parameters."
+                        , method.getName(), method.getDeclaringClass().getName()));
+            }
+            // 2nd parameter must be of type JetStreamMessage
+            if (method.getParameterCount() == 2 && !method.getParameters()[1].getType().equals(JetStreamMessage.class)) {
+                throw new DefinitionException(String
+                        .format("The 2nd parameter of listener method %s in class %s must be of type JetStreamMessage."
+                                , method.getName(), method.getDeclaringClass().getName()));
             }
 
             Object reference = beanManager.getReference(inst.getBean(), method.getDeclaringClass()
@@ -141,8 +149,10 @@ public class ListenerInitializerExtension implements Extension {
                         , dispatcher, handler, false, pushSubscribeOptions);
 
             } catch (JetStreamApiException | IOException e) {
-                LOG.log(Level.SEVERE, String.format("Cannot create a JetStream context for connection %s."
-                        , jetStreamListenerAnnotation.connection()), e);
+                LOG.log(Level.SEVERE, String
+                        .format("There was a problem with the JetStream listener at the method %s in class %s for connection %s."
+                                , method.getName(), method.getDeclaringClass().getName(), jetStreamListenerAnnotation.connection()
+                        ), e);
             }
         }
     }

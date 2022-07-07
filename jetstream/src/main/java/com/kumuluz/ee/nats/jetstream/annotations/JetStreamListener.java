@@ -5,6 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for defining method as a NATS JetStream Listener.
+ *
  * @author Matej Bizjak
  */
 

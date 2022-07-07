@@ -7,6 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
+ * Annotation for injecting a NATS Core Client (producer).
+ *
  * @author Matej Bizjak
  */
 

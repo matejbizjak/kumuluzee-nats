@@ -5,6 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for specifying the consumer configuration with an option to override specific values.
+ *
  * @author Matej Bizjak
  */
 

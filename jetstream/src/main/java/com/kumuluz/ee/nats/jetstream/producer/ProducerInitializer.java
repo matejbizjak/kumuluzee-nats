@@ -9,7 +9,7 @@ import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
- * Producer for JetStreamProducer annotation.
+ * Producer for {@link JetStreamProducer} annotation.
  *
  * @author Matej Bizjak
  */

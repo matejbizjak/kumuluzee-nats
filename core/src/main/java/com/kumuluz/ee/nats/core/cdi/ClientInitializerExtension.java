@@ -2,6 +2,7 @@ package com.kumuluz.ee.nats.core.cdi;
 
 import com.kumuluz.ee.nats.core.CoreExtension;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
+import com.kumuluz.ee.nats.core.util.InterfaceValidationUtil;
 
 import javax.enterprise.context.*;
 import javax.enterprise.event.Observes;
@@ -29,8 +30,9 @@ public class ClientInitializerExtension implements Extension {
         Class<T> javaClass = anType.getAnnotatedType().getJavaClass();
 
         if (!javaClass.isInterface()) {
-            throw new IllegalArgumentException("Nats client need to be an interface: " + javaClass);
+            throw new IllegalArgumentException(String.format("Nats client %s need to be an interface.", javaClass));
         }
+        InterfaceValidationUtil.validateInterface(javaClass);
 
         this.addAnnotatedType(anType.getAnnotatedType());
         anType.veto();

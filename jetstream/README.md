@@ -309,14 +309,15 @@ Prefix: `kumuluzee.nats`
 
 [//]: # (TODO napiši v tabelo še default vrednosti?)
 
-| Property                 | Type               | Description                                                                                              |
-|--------------------------|--------------------|----------------------------------------------------------------------------------------------------------|
-| enabled                  | boolean            | Enables/disables both NATS extensions                                                                    |
-| jetstream                | boolean            | Enables/disables NATS JetStream extension                                                                |
-| ack-confirmation-timeout | java.time.Duration | Timeout for a server's acknowledgment confirmation (double-acking)                                       |
-| ack-confirmation-retries | int                | Maximum number of retries a consumer asks the server for the acknowledgment confirmation (double-acking) |
-| servers                  | java.util.List     | The list of servers                                                                                      |
-| consumer-configuration   | java.util.List     | The list of consumer configurations                                                                      |
+| Property                 | Type                | Description                                                                                                                                                                                                                                                                                   |
+|--------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| enabled                  | boolean             | Enables/disables both NATS extensions                                                                                                                                                                                                                                                         |
+| jetstream                | boolean             | Enables/disables NATS JetStream extension                                                                                                                                                                                                                                                     |
+| ack-confirmation-timeout | java.time.Duration  | Timeout for a server's acknowledgment confirmation (double-acking)                                                                                                                                                                                                                            |
+| ack-confirmation-retries | int                 | Maximum number of retries a consumer asks the server for the acknowledgment confirmation (double-acking)                                                                                                                                                                                      |
+| drain-timeout            | java.time.Duration  | The time to wait for the drain to succeed, pass 0 to wait forever. Drain involves moving messages to and from the server so a very short timeout is not recommended. If the timeout is reached before the drain completes, the connection is simply closed, which can result in message loss. |
+| servers                  | java.util.List      | The list of servers                                                                                                                                                                                                                                                                           |
+| consumer-configuration   | java.util.List      | The list of consumer configurations                                                                                                                                                                                                                                                           |
 
 ### Servers
 
@@ -452,6 +453,48 @@ Other default values:
 - [ConsumerConfiguration](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/api/ConsumerConfiguration.java)
 - [JetStreamOptions](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/JetStreamOptions.java)
 - [StreamConfiguration](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/api/StreamConfiguration.java)
+
+### Parsing format
+
+| Type                                | Format               | Example                   |
+|-------------------------------------|----------------------|---------------------------|
+| java.lang.String                    |                      | example-string            |
+| int                                 |                      | 10                        |
+| long                                |                      | 10                        |
+| boolean                             |                      | true                      |
+| java.time.Duration                  | ISO-8601             | PT5S                      |
+| java.time.ZonedDateTime             | ISO_DATE_TIME        | 2011-12-03T10:15:30+01:00 |
+| io.nats.client.api.AckPolicy        | enum AckPolicy       | none                      |
+| io.nats.client.api.DiscardPolicy    | enum DiscardPolicy   | new                       |
+| io.nats.client.api.DeliverPolicy    | enum DeliverPolicy   | all                       |
+| io.nats.client.api.ReplayPolicy     | enum ReplayPolicy    | instant                   |
+| io.nats.client.api.RetentionPolicy  | enum RetentionPolicy | limits                    |
+| io.nats.client.api.StorageType      | enum StorageType     | memory                    |
+
+### Providing ObjectMapper
+
+KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
+a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
+For example:
+
+```java
+public class NatsMapperProvider implements NatsObjectMapperProvider {
+    
+    @Override
+    public ObjectMapper provideObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
+}
+```
+
+Do not forget to register the implementation and add the required dependencies.
+A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
+
+[//]: # (In our example in the resource directory `META-INF/services` add)
+
+[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
 
 ## Sample
 

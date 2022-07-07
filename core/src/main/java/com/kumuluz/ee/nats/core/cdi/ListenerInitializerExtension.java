@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 /**
- * Finds methods which are annotated with a Subject annotations and their class is annotated with NatsListener annotation.
+ * Finds methods which are annotated with a {@link Subject} annotations and their class is annotated with {@link NatsListener} annotation.
  * Also initializes them as listeners to previously created NATS connections.
  *
  * @author Matej Bizjak
@@ -58,15 +58,15 @@ public class ListenerInitializerExtension implements Extension {
         }
 
         for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
-            LOG.info(String.format("Found method %s in class %s.", inst.getMethod().getName(), inst.getMethod().getDeclaringClass()));
+            LOG.info(String.format("Found Core listener method %s in class %s.", inst.getMethod().getName(), inst.getMethod().getDeclaringClass()));
         }
 
         for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() != 1) {
-                throw new DefinitionException(String.format("Listener method must have exactly 1 parameter! Cause: %s"
-                        , method));
+                throw new DefinitionException(String.format("Listener method %s in class %s must have exactly 1 parameter."
+                        , method.getName(), method.getDeclaringClass().getName()));
             }
 
             Subject subjectAnnotation = inst.getAnnotation1();
@@ -140,6 +140,11 @@ public class ListenerInitializerExtension implements Extension {
             } else {
                 dispatcher.subscribe(subjectName);
             }
+
+            // disconnect
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                dispatcher.unsubscribe(subjectName);
+            }));
         }
     }
 }

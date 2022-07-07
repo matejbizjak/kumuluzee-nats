@@ -5,6 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for defining basic properties like subject and connection for both NATS Core producers and consumers.
+ *
  * @author Matej Bizjak
  */
 

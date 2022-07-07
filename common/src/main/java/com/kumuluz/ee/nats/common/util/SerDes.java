@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 /**
+ * Helper for de/serialization.
+ *
  * @author Matej Bizjak
  */
 

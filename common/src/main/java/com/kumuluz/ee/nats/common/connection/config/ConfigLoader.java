@@ -12,6 +12,9 @@ import java.util.*;
 import java.util.function.Supplier;
 
 /**
+ * Class used for reading and parsing the configurations.
+ * You can obtain the configurations by calling methods: getGeneralConfig(), getConnectionConfigs(), getConfigForConnection().
+ *
  * @author Matej Bizjak
  */
 
@@ -77,13 +80,16 @@ public class ConfigLoader {
         String prefix = "kumuluzee.nats";
         // response timeout
         Optional<String> responseTimeout = configurationUtil.get(prefix + ".response-timeout");
-        responseTimeout.ifPresent(x -> generalConfig.setResponseTimeout(Duration.parse("PT" + x)));
+        responseTimeout.ifPresent(x -> generalConfig.setResponseTimeout(Duration.parse(x)));
         // ack confirmation timeout
         Optional<String> ackConfirmationTimeout = configurationUtil.get(prefix + ".ack-confirmation-timeout");
-        ackConfirmationTimeout.ifPresent(x -> generalConfig.setAckConfirmationTimeout(Duration.parse("PT" + x)));
+        ackConfirmationTimeout.ifPresent(x -> generalConfig.setAckConfirmationTimeout(Duration.parse(x)));
         // ack confirmation retries
         Optional<Integer> ackConfirmationRetries = configurationUtil.getInteger(prefix + ".ack-confirmation-retries");
         ackConfirmationRetries.ifPresent(generalConfig::setAckConfirmationRetries);
+        // drain timeout
+        Optional<String> drainTimeout = configurationUtil.get(prefix + ".drain-timeout");
+        drainTimeout.ifPresent(x -> generalConfig.setDrainTimeout(Duration.parse(x)));
         // consumer configurations
         Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumer-configuration");
         List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
@@ -132,16 +138,16 @@ public class ConfigLoader {
         startTime.ifPresent(x -> consumerConfiguration.setStartTime(ZonedDateTime.parse(x, DateTimeFormatter.ISO_DATE_TIME)));
         // ack wait
         Optional<String> ackWait = configurationUtil.get(currentPrefix + ".ack-wait");
-        ackWait.ifPresent(x -> consumerConfiguration.setAckWait(Duration.parse("PT" + x)));
+        ackWait.ifPresent(x -> consumerConfiguration.setAckWait(Duration.parse(x)));
         // idle heartbeat
         Optional<String> idleHeartbeat = configurationUtil.get(currentPrefix + ".idle-heartbeat");
-        idleHeartbeat.ifPresent(x -> consumerConfiguration.setIdleHeartbeat(Duration.parse("PT" + x)));
+        idleHeartbeat.ifPresent(x -> consumerConfiguration.setIdleHeartbeat(Duration.parse(x)));
         // max expires
         Optional<String> maxExpires = configurationUtil.get(currentPrefix + ".max-expires");
-        maxExpires.ifPresent(x -> consumerConfiguration.setMaxExpires(Duration.parse("PT" + x)));
+        maxExpires.ifPresent(x -> consumerConfiguration.setMaxExpires(Duration.parse(x)));
         // inactive threshold
         Optional<String> inactiveThreshold = configurationUtil.get(currentPrefix + ".inactive-threshold");
-        inactiveThreshold.ifPresent(x -> consumerConfiguration.setInactiveThreshold(Duration.parse("PT" + x)));
+        inactiveThreshold.ifPresent(x -> consumerConfiguration.setInactiveThreshold(Duration.parse(x)));
         // start seq
         Optional<Long> startSeq = configurationUtil.getLong(currentPrefix + ".start-seq");
         startSeq.ifPresent(consumerConfiguration::setStartSeq);
@@ -175,7 +181,7 @@ public class ConfigLoader {
         if (backoffListSize.isPresent()) {
             for (int i = 0; i < backoffListSize.get(); i++) {
                 Optional<String> backoff = configurationUtil.get(currentPrefix + ".backoff" + "[" + i + "]");
-                backoff.ifPresent(x -> backoffList.add(Duration.parse("PT" + x)));
+                backoff.ifPresent(x -> backoffList.add(Duration.parse(x)));
             }
         }
         consumerConfiguration.setBackoff(backoffList);
@@ -200,13 +206,13 @@ public class ConfigLoader {
         maxReconnect.ifPresent(connectionConfig::setMaxReconnect);
         // reconnect wait
         Optional<String> reconnectWait = configurationUtil.get(currentPrefix + ".reconnect-wait");
-        reconnectWait.ifPresent(x -> connectionConfig.setReconnectWait(Duration.parse("PT" + x)));
+        reconnectWait.ifPresent(x -> connectionConfig.setReconnectWait(Duration.parse(x)));
         // connection timeout
         Optional<String> connectionTimeout = configurationUtil.get(currentPrefix + ".connection-timeout");
-        connectionTimeout.ifPresent(x -> connectionConfig.setConnectionTimeout(Duration.parse("PT" + x)));
+        connectionTimeout.ifPresent(x -> connectionConfig.setConnectionTimeout(Duration.parse(x)));
         // ping interval
         Optional<String> pingInterval = configurationUtil.get(currentPrefix + ".ping-interval");
-        pingInterval.ifPresent(x -> connectionConfig.setPingInterval(Duration.parse("PT" + x)));
+        pingInterval.ifPresent(x -> connectionConfig.setPingInterval(Duration.parse(x)));
         // reconnect-buffer size
         Optional<Long> reconnectBufferSize = configurationUtil.getLong(currentPrefix + ".reconnect-buffer-size");
         reconnectBufferSize.ifPresent(connectionConfig::setReconnectBufferSize);
@@ -333,7 +339,7 @@ public class ConfigLoader {
 //        duplicateWindow.ifPresent(x -> builder.duplicateWindow(Duration.parse(duplicateWindow.get())));
         Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicate-window");
         if (duplicateWindow.isPresent()) {
-            builder.duplicateWindow(Duration.parse("PT" + duplicateWindow.get()));
+            builder.duplicateWindow(Duration.parse(duplicateWindow.get()));
         } else {
             // This is a default value on the server anyway but StreamConfiguration builder defaults it to ZERO
             // which is then overwritten on the server by 2 min. To make StreamManagement.configurationsChanged() work
@@ -364,7 +370,7 @@ public class ConfigLoader {
         publishNoAck.ifPresent(builder::publishNoAck);
         // request timeout
         Optional<String> requestTimeout = configurationUtil.get(currentPrefix + ".request-timeout");
-        requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.parse("PT" + x)));
+        requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.parse(x)));
 
         namedJetStreamOptions.setJetStreamOptions(builder.build());
         return namedJetStreamOptions;

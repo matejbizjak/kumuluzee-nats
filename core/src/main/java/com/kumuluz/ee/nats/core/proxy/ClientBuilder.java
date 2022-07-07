@@ -1,7 +1,6 @@
 package com.kumuluz.ee.nats.core.proxy;
 
 import com.kumuluz.ee.nats.core.invoker.ClientInvoker;
-import com.kumuluz.ee.nats.core.util.InterfaceValidationUtil;
 
 import java.io.Closeable;
 import java.lang.reflect.Proxy;
@@ -20,7 +19,6 @@ public class ClientBuilder {
     }
 
     public <T> T build(Class<T> aClass) {
-        InterfaceValidationUtil.validateInterface(aClass);
         return this.create(aClass);
     }
 

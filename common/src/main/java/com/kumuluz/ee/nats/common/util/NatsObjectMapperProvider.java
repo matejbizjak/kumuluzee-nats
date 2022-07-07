@@ -36,7 +36,7 @@ public interface NatsObjectMapperProvider {
         });
 
         if (objectMappers.size() == 0) {
-            return new ObjectMapper().findAndRegisterModules();
+            return new ObjectMapper();
         } else if (objectMappers.size() == 1) {
             return objectMappers.get(0);
         } else {

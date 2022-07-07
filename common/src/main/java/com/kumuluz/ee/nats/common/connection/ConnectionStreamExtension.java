@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Extension for establishing connections to NATS servers and updating JetStream streams
+ * Extension for establishing connections to NATS servers and updating JetStream streams.
  *
  * @author Matej Bizjak
  */

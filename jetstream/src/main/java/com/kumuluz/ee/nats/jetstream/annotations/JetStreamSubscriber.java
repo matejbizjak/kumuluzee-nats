@@ -5,6 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for injecting a NATS JetStream subscriber (pull listener).
+ *
  * @author Matej Bizjak
  */
 

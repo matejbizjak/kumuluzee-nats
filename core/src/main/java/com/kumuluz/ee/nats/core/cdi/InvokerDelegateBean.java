@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Bean that creates a NATS Client using a {@link InjectableClientHandler}
+ * Bean that creates a NATS Client using a {@link InjectableClientHandler}.
  *
  * @author Matej Bizjak
  */

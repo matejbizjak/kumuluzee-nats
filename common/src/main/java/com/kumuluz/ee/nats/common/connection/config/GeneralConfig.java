@@ -25,6 +25,8 @@ public class GeneralConfig {
 
     private int ackConfirmationRetries = 5;
 
+    private Duration drainTimeout = Duration.ofSeconds(10);
+
     private List<ConsumerConfiguration> consumerConfigurations;
 
     public GeneralConfig() {
@@ -59,6 +61,14 @@ public class GeneralConfig {
 
     public void setAckConfirmationRetries(int ackConfirmationRetries) {
         this.ackConfirmationRetries = ackConfirmationRetries;
+    }
+
+    public Duration getDrainTimeout() {
+        return drainTimeout;
+    }
+
+    public void setDrainTimeout(Duration drainTimeout) {
+        this.drainTimeout = drainTimeout;
     }
 
     public void setConsumerConfigurations(List<ConsumerConfiguration> consumerConfigurations) {

@@ -19,6 +19,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Factory for JetStream subscriptions (pull consumers).
+ *
  * @author Matej Bizjak
  */
 

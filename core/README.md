@@ -218,6 +218,16 @@ The extension is enabled by default.
 
 For other default values take a look [here](https://github.com/nats-io/nats.java/blob/main/src/main/java/io/nats/client/Options.java).
 
+### Parsing format
+
+| Type                                | Format               | Example                   |
+|-------------------------------------|----------------------|---------------------------|
+| java.lang.String                    |                      | example-string            |
+| int                                 |                      | 10                        |
+| long                                |                      | 10                        |
+| boolean                             |                      | true                      |
+| java.time.Duration                  | ISO-8601             | PT5S                      |
+
 ### Providing ObjectMapper
 
 KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
@@ -236,14 +246,12 @@ public class NatsMapperProvider implements NatsObjectMapperProvider {
 }
 ```
 
-Do not forget to register the implementation.
+Do not forget to register the implementation and add the required dependencies.
 A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
 
-In our example in the resource directory `META-INF/services` add
-a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.
+[//]: # (In our example in the resource directory `META-INF/services` add)
 
-[//]: # (TODO spremeni pot)
-
+[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
 
 ## Sample
 

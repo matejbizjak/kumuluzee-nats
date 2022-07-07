@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Finds methods annotated with a {@link JetStreamSubscriber} annotations and initializes them as subscribers (pull consumers) to previously created NATS connections.
+ *
  * @author Matej Bizjak
  */
 

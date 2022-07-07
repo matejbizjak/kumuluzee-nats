@@ -9,6 +9,8 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
+ * Class for NATS Consumer settings.
+ *
  * @author Matej Bizjak
  */
 

@@ -5,6 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
+ * Annotation for defining class as a NATS Core Listener.
+ *
  * @author Matej Bizjak
  */
 

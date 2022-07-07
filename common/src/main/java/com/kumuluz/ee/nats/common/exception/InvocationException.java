@@ -1,6 +1,8 @@
 package com.kumuluz.ee.nats.common.exception;
 
 /**
+ * NATS Exception about invocation problems.
+ *
  * @author Matej Bizjak
  */
 

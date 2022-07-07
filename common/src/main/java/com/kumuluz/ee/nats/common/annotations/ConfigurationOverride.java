@@ -5,6 +5,8 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 /**
+ * Annotation for overriding specific values of the consumer configuration.
+ *
  * @author Matej Bizjak
  */
 

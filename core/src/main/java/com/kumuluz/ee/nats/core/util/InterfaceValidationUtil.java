@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.core.util;
 
 import com.kumuluz.ee.nats.common.exception.DefinitionException;
+import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.core.annotations.Subject;
 
 import java.lang.annotation.Annotation;
@@ -8,11 +9,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 /**
+ * Helper for validating interfaces annotated with {@link RegisterNatsClient}.
+ *
  * @author Matej Bizjak
  */
 
 public class InterfaceValidationUtil {
-
     public static <T> void validateInterface(Class<T> aClass) {
         // method params
         for (Method method : aClass.getMethods()) {
@@ -38,16 +40,20 @@ public class InterfaceValidationUtil {
         }
 
         if (!isAnnotated) {
-            throw new DefinitionException(String.format("NATS client's method is not annotated with @Subject or its value is null! Cause: %s", method));
+            throw new DefinitionException(String
+                    .format("NATS client's method %s in class %s is not annotated with @Subject or its value is null."
+                            , method.getName(), method.getDeclaringClass().getName()));
         }
     }
 
     private static void checkMethodParameters(Method method) {
         if (method.getParameterCount() < 1) {
-            throw new DefinitionException(String.format("Not enough method parameters! Cause: %s", method));
+            throw new DefinitionException(String.format("Not enough method parameters at method %s in class %s."
+                    , method.getName(), method.getDeclaringClass().getName()));
         } else if (method.getParameterCount() == 1) {
             if (method.getParameters()[0].isAnnotationPresent(Subject.class)) {
-                throw new DefinitionException(String.format("Not enough method parameters! Cause: %s", method));
+                throw new DefinitionException(String.format("Not enough method parameters at method %s in class %s."
+                        , method.getName(), method.getDeclaringClass().getName()));
             }
         } else if (method.getParameterCount() == 2) {
             int numberOfSubjectAnnotations = 0;
@@ -57,10 +63,12 @@ public class InterfaceValidationUtil {
                 }
             }
             if (numberOfSubjectAnnotations != 1) {
-                throw new DefinitionException(String.format("Wrong method parameters! Cause: %s", method));
+                throw new DefinitionException(String.format("Wrong method parameters at method %s in class %s."
+                        , method.getName(), method.getDeclaringClass().getName()));
             }
         } else {
-            throw new DefinitionException(String.format("Wrong method parameters! Cause: %s", method));
+            throw new DefinitionException(String.format("Wrong number of method parameters at method %s in class %s."
+                    , method.getName(), method.getDeclaringClass().getName()));
         }
     }
 

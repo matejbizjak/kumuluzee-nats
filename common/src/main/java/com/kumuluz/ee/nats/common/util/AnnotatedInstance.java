@@ -4,6 +4,8 @@ import javax.enterprise.inject.spi.Bean;
 import java.lang.reflect.Method;
 
 /**
+ * Represents an annotated method in a bean.
+ *
  * @author Matej Bizjak
  */
 
