@@ -257,34 +257,59 @@ A Service Provider is configured and identified through a provider configuration
 
 Samples are available [here](https://github.com/matejbizjak/kumuluzee-nats-core-sample).
 
----
+[//]: # (---)
 
-## Notes
+[//]: # (## Notes)
 
-### Poskus za asinhrono čakanje na odgovor
+[//]: # ()
+[//]: # (### Poskus za asinhrono čakanje na odgovor)
 
-NatsClientInvoker.java:
+[//]: # ()
+[//]: # (NatsClientInvoker.java:)
 
-```java
-...
-        else if(returnType.equals(Future.class)){ // wait for response asynchronously
-        CompletableFuture<Object> completableFuture=new CompletableFuture<>();
-        // v0.2
-        Dispatcher dispatcher=connection.createDispatcher((msg)->{});
-        // Problem je v naslednji vrstici, ker je message.getReplyTo() == null in ga ne moreš uporabiti, ker ga uporablja NATS za interne zadeve.
-        // The Message object allows you to set a replyTo, but in requests, the replyTo is reserved for internal use as the address for the server to respond to the client with the consumer's reply.
-    Subscription subscription = dispatcher.subscribe(message.getReplyTo(), (msg) -> {
-        try {
-            Object receivedMsg = SerDes.deserialize(msg.getData()
-                    , (Class<?>) ((ParameterizedType) method.getParameterTypes()[0].getGenericSuperclass()).getActualTypeArguments()[0]);
-            completableFuture.complete(receivedMsg);
-        } catch (IOException e) {
-            throw new NatsListenerException(String.format("Cannot deserialize the message as class %s."
-                    , method.getParameterTypes()[0].getName()), e);
-        }
-    });
-    connection.publish(message);
-    dispatcher.unsubscribe(subscription);  // TODO
-    return completableFuture;
-}
-```
+[//]: # ()
+[//]: # (```java)
+
+[//]: # (...)
+
+[//]: # (        else if&#40;returnType.equals&#40;Future.class&#41;&#41;{ // wait for response asynchronously)
+
+[//]: # (        CompletableFuture<Object> completableFuture=new CompletableFuture<>&#40;&#41;;)
+
+[//]: # (        // v0.2)
+
+[//]: # (        Dispatcher dispatcher=connection.createDispatcher&#40;&#40;msg&#41;->{}&#41;;)
+
+[//]: # (        // Problem je v naslednji vrstici, ker je message.getReplyTo&#40;&#41; == null in ga ne moreš uporabiti, ker ga uporablja NATS za interne zadeve.)
+
+[//]: # (        // The Message object allows you to set a replyTo, but in requests, the replyTo is reserved for internal use as the address for the server to respond to the client with the consumer's reply.)
+
+[//]: # (    Subscription subscription = dispatcher.subscribe&#40;message.getReplyTo&#40;&#41;, &#40;msg&#41; -> {)
+
+[//]: # (        try {)
+
+[//]: # (            Object receivedMsg = SerDes.deserialize&#40;msg.getData&#40;&#41;)
+
+[//]: # (                    , &#40;Class<?>&#41; &#40;&#40;ParameterizedType&#41; method.getParameterTypes&#40;&#41;[0].getGenericSuperclass&#40;&#41;&#41;.getActualTypeArguments&#40;&#41;[0]&#41;;)
+
+[//]: # (            completableFuture.complete&#40;receivedMsg&#41;;)
+
+[//]: # (        } catch &#40;IOException e&#41; {)
+
+[//]: # (            throw new NatsListenerException&#40;String.format&#40;"Cannot deserialize the message as class %s.")
+
+[//]: # (                    , method.getParameterTypes&#40;&#41;[0].getName&#40;&#41;&#41;, e&#41;;)
+
+[//]: # (        })
+
+[//]: # (    }&#41;;)
+
+[//]: # (    connection.publish&#40;message&#41;;)
+
+[//]: # (    dispatcher.unsubscribe&#40;subscription&#41;;  // TODO)
+
+[//]: # (    return completableFuture;)
+
+[//]: # (})
+
+[//]: # (```)
