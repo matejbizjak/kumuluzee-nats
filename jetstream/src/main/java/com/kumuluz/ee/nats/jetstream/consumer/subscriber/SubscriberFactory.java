@@ -49,11 +49,13 @@ public class SubscriberFactory {
 
     private JetStreamSubscription createSubscription(JetStreamSubscriber jetStreamSubscriberAnnotation, ConsumerConfig consumerConfigAnnotation, JetStream jetStream) {
         JetStreamSubscription jetStreamSubscription = null;
+
         if (jetStreamSubscriberAnnotation.durable().equals("")) {
             LOG.severe(String.format("Durable must be set for pull based subscriptions. Cannot create a JetStream subscription for a connection %s context %s and subject %s."
                     , jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.context(), jetStreamSubscriberAnnotation.subject()));
             return null;
         }
+
         GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
         ConsumerConfiguration consumerConfiguration;
         if (consumerConfigAnnotation == null) {
@@ -61,6 +63,7 @@ public class SubscriberFactory {
         } else {
             consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name(), consumerConfigAnnotation.configOverrides());
         }
+
         PullSubscribeOptions pullSubscribeOptions = PullSubscribeOptions
                 .builder()
                 .stream(jetStreamSubscriberAnnotation.stream())
@@ -68,7 +71,9 @@ public class SubscriberFactory {
                 .durable(jetStreamSubscriberAnnotation.durable())
                 .bind(jetStreamSubscriberAnnotation.bind())
                 .build();
+
 //        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
+
         try {
             jetStreamSubscription = jetStream.subscribe(jetStreamSubscriberAnnotation.subject(), pullSubscribeOptions);
             LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully."
