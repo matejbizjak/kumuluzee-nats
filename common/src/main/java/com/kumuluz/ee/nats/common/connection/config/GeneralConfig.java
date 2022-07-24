@@ -8,6 +8,7 @@ import io.nats.client.api.ReplayPolicy;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -19,14 +20,53 @@ import java.util.stream.Collectors;
 
 public class GeneralConfig {
 
-    private Duration responseTimeout = Duration.ofSeconds(5);
+    public static class Builder {
+        private Duration responseTimeout = Duration.ofSeconds(5);
+        private Duration ackConfirmationTimeout = Duration.ofSeconds(5);
+        private int ackConfirmationRetries = 5;
+        private Duration drainTimeout = Duration.ofSeconds(10);
+        private List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
 
-    private Duration ackConfirmationTimeout = Duration.ofSeconds(5);
+        public Builder responseTimeout(Duration responseTimeout) {
+            this.responseTimeout = responseTimeout;
+            return this;
+        }
 
-    private int ackConfirmationRetries = 5;
+        public Builder ackConfirmationTimeout(Duration ackConfirmationTimeout) {
+            this.ackConfirmationTimeout = ackConfirmationTimeout;
+            return this;
+        }
 
-    private Duration drainTimeout = Duration.ofSeconds(10);
+        public Builder ackConfirmationRetries(int ackConfirmationRetries) {
+            this.ackConfirmationRetries = ackConfirmationRetries;
+            return this;
+        }
 
+        public Builder drainTimeout(Duration drainTimeout) {
+            this.drainTimeout = drainTimeout;
+            return this;
+        }
+
+        public Builder consumerConfigurations(List<ConsumerConfiguration> consumerConfigurations) {
+            this.consumerConfigurations = consumerConfigurations;
+            return this;
+        }
+
+        public GeneralConfig build() {
+            GeneralConfig generalConfig = new GeneralConfig();
+            generalConfig.responseTimeout = responseTimeout;
+            generalConfig.ackConfirmationTimeout = ackConfirmationTimeout;
+            generalConfig.ackConfirmationRetries = ackConfirmationRetries;
+            generalConfig.drainTimeout = drainTimeout;
+            generalConfig.consumerConfigurations = consumerConfigurations;
+            return generalConfig;
+        }
+    }
+
+    private Duration responseTimeout;
+    private Duration ackConfirmationTimeout;
+    private int ackConfirmationRetries;
+    private Duration drainTimeout;
     private List<ConsumerConfiguration> consumerConfigurations;
 
     public GeneralConfig() {
@@ -36,8 +76,16 @@ public class GeneralConfig {
         return responseTimeout;
     }
 
-    public void setResponseTimeout(Duration responseTimeout) {
-        this.responseTimeout = responseTimeout;
+    public Duration getAckConfirmationTimeout() {
+        return ackConfirmationTimeout;
+    }
+
+    public int getAckConfirmationRetries() {
+        return ackConfirmationRetries;
+    }
+
+    public Duration getDrainTimeout() {
+        return drainTimeout;
     }
 
     public ConsumerConfiguration getConsumerConfiguration(String name) {
@@ -45,34 +93,6 @@ public class GeneralConfig {
                 .filter(x -> Objects.equals(x.getName(), name))
                 .findFirst()
                 .orElse(null);
-    }
-
-    public Duration getAckConfirmationTimeout() {
-        return ackConfirmationTimeout;
-    }
-
-    public void setAckConfirmationTimeout(Duration ackConfirmationTimeout) {
-        this.ackConfirmationTimeout = ackConfirmationTimeout;
-    }
-
-    public int getAckConfirmationRetries() {
-        return ackConfirmationRetries;
-    }
-
-    public void setAckConfirmationRetries(int ackConfirmationRetries) {
-        this.ackConfirmationRetries = ackConfirmationRetries;
-    }
-
-    public Duration getDrainTimeout() {
-        return drainTimeout;
-    }
-
-    public void setDrainTimeout(Duration drainTimeout) {
-        this.drainTimeout = drainTimeout;
-    }
-
-    public void setConsumerConfigurations(List<ConsumerConfiguration> consumerConfigurations) {
-        this.consumerConfigurations = consumerConfigurations;
     }
 
     public io.nats.client.api.ConsumerConfiguration combineConsumerConfigAndBuild(String name, ConfigurationOverride[] overrides) {
@@ -236,13 +256,6 @@ public class GeneralConfig {
             if (consumerConfiguration.getBackoff() != null) {
                 builder.backoff(consumerConfiguration.getBackoff().toArray(new Duration[0]));
             }
-
-//            if (durableName != null) {
-//                builder.durable(durableName);
-//            }
-//            if (groupName != null) {
-//                builder.deliverGroup(groupName);
-//            }
             return builder.build();
         }
         return io.nats.client.api.ConsumerConfiguration.builder().build();

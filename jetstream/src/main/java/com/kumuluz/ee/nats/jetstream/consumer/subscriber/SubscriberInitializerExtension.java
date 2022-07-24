@@ -22,7 +22,7 @@ import java.util.List;
 
 public class SubscriberInitializerExtension implements Extension {
 
-    List<AnnotatedInstance<JetStreamSubscriber, ConsumerConfig>> instanceList = new ArrayList<>();
+    private final List<AnnotatedInstance<JetStreamSubscriber, ConsumerConfig>> INSTANCES = new ArrayList<>();
 
     public <T> void processStreamSubscribers(@Observes ProcessBean<T> processBean) {
         for (Field field : processBean.getBean().getBeanClass().getDeclaredFields()) {
@@ -32,7 +32,7 @@ public class SubscriberInitializerExtension implements Extension {
                 if (field.getAnnotation(ConsumerConfig.class) != null) {
                     consumerConfigAnnotation = field.getAnnotation(ConsumerConfig.class);
                 }
-                instanceList.add(new AnnotatedInstance<>(processBean.getBean(), null, jetStreamSubscriberAnnotation, consumerConfigAnnotation));
+                INSTANCES.add(new AnnotatedInstance<>(processBean.getBean(), null, jetStreamSubscriberAnnotation, consumerConfigAnnotation));
             }
         }
     }
@@ -42,7 +42,7 @@ public class SubscriberInitializerExtension implements Extension {
             return;
         }
 
-        for (AnnotatedInstance<JetStreamSubscriber, ConsumerConfig> inst : instanceList) {
+        for (AnnotatedInstance<JetStreamSubscriber, ConsumerConfig> inst : INSTANCES) {
             SubscriberFactory.getInstance().getSubscription(inst.getAnnotation1(), inst.getAnnotation2());
         }
     }

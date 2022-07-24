@@ -67,26 +67,6 @@ public class StreamManagement {
             return createStream(jetStreamManagement, streamConfiguration);
         }
 
-//        // update subjects only
-//        // check to see if the configuration has all the subjects we want
-//        StreamConfiguration streamConfigurationDb = streamInfo.getConfiguration();
-//        boolean needToUpdate = false;
-//        for (String subject : streamConfiguration.getSubjects()) {
-//            if (!streamConfigurationDb.getSubjects().contains(subject)) {
-//                needToUpdate = true;
-//                streamConfigurationDb.getSubjects().add(subject);
-//            }
-//        }
-//        if (needToUpdate) {
-//            streamConfigurationDb = StreamConfiguration.builder(streamConfigurationDb).subjects(streamConfigurationDb.getSubjects()).build();
-//            streamInfo = jetStreamManagement.updateStream(streamConfigurationDb);
-//            LOG.info(String.format("Existing stream %s was updated, has subject(s) %s.",
-//                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
-//        } else {
-//            LOG.info(String.format("Existing stream %s already contained subject(s) %s.",
-//                    streamConfiguration.getName(), streamInfo.getConfiguration().getSubjects()));
-//        }
-
         if (configurationsChanged(streamInfo.getConfiguration(), streamConfiguration)) {
             streamInfo = jetStreamManagement.updateStream(streamConfiguration);
             LOG.info(String.format("Existing stream %s was updated.", streamConfiguration.getName()));
@@ -124,21 +104,4 @@ public class StreamManagement {
         }
         return string;
     }
-
-//    public static void addOrUpdateConsumer(String connectionName, String streamName, ConsumerConfiguration consumerConfiguration) {
-//        Connection connection = NatsConnection.getConnection(connectionName);
-//        if (connection == null) {
-//            LOG.severe(String.format("Unable to add/update consumer configuration for connection %s and stream %s because the connection was not established."
-//                    , connectionName, streamName));
-//        } else {
-//            try {
-//                connection.jetStreamManagement().addOrUpdateConsumer(streamName, consumerConfiguration);
-//                LOG.info(String.format("Successfully added/updated consumer configuration for connection %s and stream %s."
-//                        , connectionName, streamName));
-//            } catch (IOException | JetStreamApiException e) {
-//                LOG.log(Level.SEVERE, String.format("Unable to add/update consumer configuration for connection %s and stream %s."
-//                        , connectionName, streamName), e);
-//            }
-//        }
-//    }
 }

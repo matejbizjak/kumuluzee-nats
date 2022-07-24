@@ -29,7 +29,7 @@ public class SubscriberFactory {
 
     private static SubscriberFactory instance;
 
-    private static final Table<JetStream, String, JetStreamSubscription> subscriptions = HashBasedTable.create();
+    private static final Table<JetStream, String, JetStreamSubscription> SUBSCRIPTIONS = HashBasedTable.create();
 
     public SubscriberFactory() {
     }
@@ -72,8 +72,6 @@ public class SubscriberFactory {
                 .bind(jetStreamSubscriberAnnotation.bind())
                 .build();
 
-//        StreamManagement.addOrUpdateConsumer(jetStreamSubscriberAnnotation.connection(), jetStreamSubscriberAnnotation.stream(), consumerConfiguration);
-
         try {
             jetStreamSubscription = jetStream.subscribe(jetStreamSubscriberAnnotation.subject(), pullSubscribeOptions);
             LOG.info(String.format("JetStream subscription for a connection %s context %s and subject %s was created successfully."
@@ -95,13 +93,13 @@ public class SubscriberFactory {
         if (jetStream == null) {
             return null;
         }
-        if (!subscriptions.contains(jetStream, jetStreamSubscriberAnnotation.subject())) {
+        if (!SUBSCRIPTIONS.contains(jetStream, jetStreamSubscriberAnnotation.subject())) {
             JetStreamSubscription jetStreamSubscription = createSubscription(jetStreamSubscriberAnnotation
                     , consumerConfigAnnotation, jetStream);
             if (jetStreamSubscription != null) {
-                subscriptions.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
+                SUBSCRIPTIONS.put(jetStream, jetStreamSubscriberAnnotation.subject(), jetStreamSubscription);
             }
         }
-        return subscriptions.get(jetStream, jetStreamSubscriberAnnotation.subject());
+        return SUBSCRIPTIONS.get(jetStream, jetStreamSubscriberAnnotation.subject());
     }
 }

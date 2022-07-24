@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 @EeExtensionDef(group = "nats-jetstream", name = "NATS JetStream")
 public class JetStreamExtension implements Extension {
 
-    private static final Logger LOGGER = Logger.getLogger(JetStreamExtension.class.getName());
+    private static final Logger LOG = Logger.getLogger(JetStreamExtension.class.getName());
 
     @Override
     public void load() {
@@ -25,7 +25,7 @@ public class JetStreamExtension implements Extension {
 
     @Override
     public void init(KumuluzServerWrapper kumuluzServerWrapper, EeConfig eeConfig) {
-        LOGGER.info("Initialising KumuluzEE NATS JetStream extension.");
+        LOG.info("Initialising KumuluzEE NATS JetStream extension.");
     }
 
     @Override

@@ -15,6 +15,4 @@ import java.lang.annotation.*;
 public @interface RegisterNatsClient {
 
     @Nonbinding String connection() default "";
-
-//    @Nonbinding String responseTimeout() default "";
 }

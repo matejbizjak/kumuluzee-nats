@@ -18,7 +18,7 @@ import java.lang.annotation.RetentionPolicy;
 public @interface NatsClient {
     NatsClient LITERAL = new NatsClient.NatsClientLiteral();
 
-    public static class NatsClientLiteral extends AnnotationLiteral<NatsClient> implements NatsClient {
+    class NatsClientLiteral extends AnnotationLiteral<NatsClient> implements NatsClient {
         public NatsClientLiteral() {
 
         }

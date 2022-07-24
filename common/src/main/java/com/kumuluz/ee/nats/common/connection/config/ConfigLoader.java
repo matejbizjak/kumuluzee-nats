@@ -22,7 +22,7 @@ public class ConfigLoader {
 
     private static ConfigLoader instance;
     private static GeneralConfig generalConfig;
-    private static final HashMap<String, ConnectionConfig> connectionConfigs = new HashMap<>();
+    private static final HashMap<String, ConnectionConfig> CONNECTION_CONFIGS = new HashMap<>();
     private final ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
 
     public static ConfigLoader getInstance() {
@@ -37,11 +37,11 @@ public class ConfigLoader {
     }
 
     public HashMap<String, ConnectionConfig> getConnectionConfigs() {
-        return connectionConfigs;
+        return CONNECTION_CONFIGS;
     }
 
     public ConnectionConfig getConfigForConnection(String connectionName) {
-        return connectionConfigs.get(connectionName);
+        return CONNECTION_CONFIGS.get(connectionName);
     }
 
     public void readConfiguration() {
@@ -58,14 +58,14 @@ public class ConfigLoader {
                         .orElseThrow(configNotFoundException(currentPrefix + ".name"));
                 ClusterConnectionConfig clusterConfig = new ClusterConnectionConfig(name);
                 readAndSetConnectionConfigClass(clusterConfig, currentPrefix);
-                connectionConfigs.put(name, clusterConfig);
+                CONNECTION_CONFIGS.put(name, clusterConfig);
             }
         } else {
             String natsCorePrefix = "kumuluzee.nats";
             if (configurationUtil.get(natsCorePrefix).isPresent()) {  // single configuration
                 SingleConnectionConfig singleConfig = new SingleConnectionConfig();
                 readAndSetConnectionConfigClass(singleConfig, natsCorePrefix);
-                connectionConfigs.put(singleConfig.getName(), singleConfig);
+                CONNECTION_CONFIGS.put(singleConfig.getName(), singleConfig);
             } else {
                 throw configNotFoundException(natsCorePrefix).get();
             }
@@ -78,18 +78,19 @@ public class ConfigLoader {
 
     private void readAndSetGeneralConfigClass() {
         String prefix = "kumuluzee.nats";
+        GeneralConfig.Builder builder = new GeneralConfig.Builder();
         // response timeout
         Optional<String> responseTimeout = configurationUtil.get(prefix + ".response-timeout");
-        responseTimeout.ifPresent(x -> generalConfig.setResponseTimeout(Duration.parse(x)));
+        responseTimeout.ifPresent(x -> builder.responseTimeout(Duration.parse(x)));
         // ack confirmation timeout
         Optional<String> ackConfirmationTimeout = configurationUtil.get(prefix + ".ack-confirmation-timeout");
-        ackConfirmationTimeout.ifPresent(x -> generalConfig.setAckConfirmationTimeout(Duration.parse(x)));
+        ackConfirmationTimeout.ifPresent(x -> builder.ackConfirmationTimeout(Duration.parse(x)));
         // ack confirmation retries
         Optional<Integer> ackConfirmationRetries = configurationUtil.getInteger(prefix + ".ack-confirmation-retries");
-        ackConfirmationRetries.ifPresent(generalConfig::setAckConfirmationRetries);
+        ackConfirmationRetries.ifPresent(builder::ackConfirmationRetries);
         // drain timeout
         Optional<String> drainTimeout = configurationUtil.get(prefix + ".drain-timeout");
-        drainTimeout.ifPresent(x -> generalConfig.setDrainTimeout(Duration.parse(x)));
+        drainTimeout.ifPresent(x -> builder.drainTimeout(Duration.parse(x)));
         // consumer configurations
         Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumer-configuration");
         List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
@@ -98,7 +99,8 @@ public class ConfigLoader {
                 consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumer-configuration" + "[" + i + "]"));
             }
         }
-        generalConfig.setConsumerConfigurations(consumerConfigurations);
+        builder.consumerConfigurations(consumerConfigurations);
+        generalConfig = builder.build();
     }
 
     private ConsumerConfiguration readConsumerConfiguration(String currentPrefix) {
@@ -335,8 +337,6 @@ public class ConfigLoader {
         Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discard-policy");
         discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(x)));
         // duplicate window
-//        Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicateWindow");
-//        duplicateWindow.ifPresent(x -> builder.duplicateWindow(Duration.parse(duplicateWindow.get())));
         Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicate-window");
         if (duplicateWindow.isPresent()) {
             builder.duplicateWindow(Duration.parse(duplicateWindow.get()));
@@ -351,14 +351,14 @@ public class ConfigLoader {
     }
 
     private NamedJetStreamOptions readJetStreamOptions(String currentPrefix) {
-        NamedJetStreamOptions namedJetStreamOptions = new NamedJetStreamOptions();
         JetStreamOptions.Builder builder = JetStreamOptions.builder();
+        NamedJetStreamOptions.Builder namedBuilder = new NamedJetStreamOptions.Builder();
         // name
         Optional<String> name = configurationUtil.get(currentPrefix + ".name");
         if (!name.isPresent()) {
             throw configNotFoundException(currentPrefix + ".name").get();
         }
-        namedJetStreamOptions.setName(name.get());
+        namedBuilder.name(name.get());
         // domain
         Optional<String> domain = configurationUtil.get(currentPrefix + ".domain");
         domain.ifPresent(builder::domain);
@@ -372,11 +372,34 @@ public class ConfigLoader {
         Optional<String> requestTimeout = configurationUtil.get(currentPrefix + ".request-timeout");
         requestTimeout.ifPresent(x -> builder.requestTimeout(Duration.parse(x)));
 
-        namedJetStreamOptions.setJetStreamOptions(builder.build());
-        return namedJetStreamOptions;
+        namedBuilder.jetStreamOptions(builder.build());
+        return namedBuilder.build();
     }
 
     private static class NamedJetStreamOptions {
+
+        private static class Builder {
+            private String name;
+            private JetStreamOptions jetStreamOptions;
+
+            private Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            private Builder jetStreamOptions(JetStreamOptions jetStreamOptions) {
+                this.jetStreamOptions = jetStreamOptions;
+                return this;
+            }
+
+            private NamedJetStreamOptions build() {
+                NamedJetStreamOptions namedJetStreamOptions = new NamedJetStreamOptions();
+                namedJetStreamOptions.name = name;
+                namedJetStreamOptions.jetStreamOptions = jetStreamOptions;
+                return namedJetStreamOptions;
+            }
+        }
+
         private String name;
         private JetStreamOptions jetStreamOptions;
 
@@ -387,16 +410,8 @@ public class ConfigLoader {
             return name;
         }
 
-        public void setName(String name) {
-            this.name = name;
-        }
-
         public JetStreamOptions getJetStreamOptions() {
             return jetStreamOptions;
-        }
-
-        public void setJetStreamOptions(JetStreamOptions jetStreamOptions) {
-            this.jetStreamOptions = jetStreamOptions;
         }
     }
 }

@@ -100,11 +100,6 @@ public class ClientInvoker implements InvocationHandler {
     private Duration getAnnotatedResponseTimeout(Method method) {
         Duration responseTimeout = null;
 
-//        RegisterNatsClient registerNatsClientAnnotation = method.getDeclaringClass().getAnnotation(RegisterNatsClient.class);
-//        if (!registerNatsClientAnnotation.responseTimeout().isEmpty()) {
-//            responseTimeout = Duration.parse(registerNatsClientAnnotation.responseTimeout());
-//        }
-
         Subject subjectAnnotation = method.getAnnotation(Subject.class);
         if (subjectAnnotation != null && !subjectAnnotation.responseTimeout().isEmpty()) {
             responseTimeout = Duration.parse(subjectAnnotation.responseTimeout());

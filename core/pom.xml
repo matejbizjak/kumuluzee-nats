@@ -5,7 +5,7 @@
     <parent>
         <artifactId>kumuluzee-nats</artifactId>
         <groupId>com.kumuluz.ee.nats</groupId>
-        <version>0.1-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,10 +13,6 @@
     <description>NATS Core connective technology extension for the lightweight KumuluzEE framework.</description>
 
     <artifactId>kumuluzee-nats-core</artifactId>
-
-    <properties>
-        <deltaspike.version>1.9.5</deltaspike.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -27,7 +23,7 @@
         <dependency>
             <groupId>com.kumuluz.ee.nats</groupId>
             <artifactId>kumuluzee-nats-common</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>

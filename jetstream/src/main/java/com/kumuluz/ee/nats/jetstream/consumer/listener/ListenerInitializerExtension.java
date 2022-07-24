@@ -40,7 +40,7 @@ import java.util.logging.Logger;
 public class ListenerInitializerExtension implements Extension {
 
     private static final Logger LOG = Logger.getLogger(ListenerInitializerExtension.class.getName());
-    List<AnnotatedInstance<JetStreamListener, ConsumerConfig>> instanceList = new ArrayList<>();
+    private final List<AnnotatedInstance<JetStreamListener, ConsumerConfig>> INSTANCES = new ArrayList<>();
 
     public <T> void processStreamListeners(@Observes ProcessBean<T> processBean) {
         for (Method method : processBean.getBean().getBeanClass().getMethods()) {
@@ -50,7 +50,7 @@ public class ListenerInitializerExtension implements Extension {
                 if (method.getAnnotation(ConsumerConfig.class) != null) {
                     consumerConfigAnnotaion = method.getAnnotation(ConsumerConfig.class);
                 }
-                instanceList.add(new AnnotatedInstance<>(processBean.getBean(), method, jetStreamListenerAnnotation, consumerConfigAnnotaion));
+                INSTANCES.add(new AnnotatedInstance<>(processBean.getBean(), method, jetStreamListenerAnnotation, consumerConfigAnnotaion));
             }
         }
     }
@@ -60,12 +60,12 @@ public class ListenerInitializerExtension implements Extension {
             return;
         }
 
-        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
+        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : INSTANCES) {
             LOG.info(String.format("Found JetStream listener method %s in class %s.", inst.getMethod().getName()
                     , inst.getMethod().getDeclaringClass().getName()));
         }
 
-        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : instanceList) {
+        for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : INSTANCES) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() < 1 || method.getParameterCount() > 2) {

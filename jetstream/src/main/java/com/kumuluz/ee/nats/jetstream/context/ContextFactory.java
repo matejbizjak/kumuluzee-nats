@@ -26,7 +26,7 @@ public class ContextFactory {
 
     private static ContextFactory instance;
 
-    private static final Table<String, String, JetStream> jetStreamContexts = HashBasedTable.create();
+    private static final Table<String, String, JetStream> JET_STREAM_CONTEXTS = HashBasedTable.create();
 
     public ContextFactory() {
     }
@@ -71,13 +71,13 @@ public class ContextFactory {
             return null;
         }
 
-        if (!jetStreamContexts.contains(connectionName, contextName)) {
+        if (!JET_STREAM_CONTEXTS.contains(connectionName, contextName)) {
             JetStream jetStream = createContext(connectionName, contextName);
             if (jetStream != null) {
-                jetStreamContexts.put(connectionName, contextName, jetStream);
+                JET_STREAM_CONTEXTS.put(connectionName, contextName, jetStream);
             }
         }
-        return jetStreamContexts.get(connectionName, contextName);
+        return JET_STREAM_CONTEXTS.get(connectionName, contextName);
     }
 
 }

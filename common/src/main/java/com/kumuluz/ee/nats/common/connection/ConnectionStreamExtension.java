@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ConnectionStreamExtension implements Extension {
 
-    private static final ConfigurationUtil config = ConfigurationUtil.getInstance();
+    private static final ConfigurationUtil CONFIG = ConfigurationUtil.getInstance();
 
     void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery) {
         if (!isNatsEnabled()) {
@@ -37,11 +37,11 @@ public class ConnectionStreamExtension implements Extension {
     }
 
     private static boolean isNatsEnabled() {
-        return config.getBoolean("kumuluzee.nats.enabled").orElse(true);
+        return CONFIG.getBoolean("kumuluzee.nats.enabled").orElse(true);
     }
 
     private static boolean isJetStreamEnabled() {
-        return isNatsEnabled() && config.getBoolean("kumuluzee.nats.jetStream").orElse(true);
+        return isNatsEnabled() && CONFIG.getBoolean("kumuluzee.nats.jetStream").orElse(true);
     }
 
     public static void establishAllConnections() {

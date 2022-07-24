@@ -6,7 +6,7 @@
 
     <groupId>com.kumuluz.ee.nats</groupId>
     <artifactId>kumuluzee-nats</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <modules>
         <module>core</module>
         <module>common</module>
@@ -30,7 +30,6 @@
         <kumuluzee.version>3.12.2</kumuluzee.version>
 
         <jnats.version>2.15.3</jnats.version>
-        <deltaspike.version>1.9.5</deltaspike.version>
         <guava.version>31.1-jre</guava.version>
     </properties>
 

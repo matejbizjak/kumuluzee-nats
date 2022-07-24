@@ -12,10 +12,10 @@ import java.lang.reflect.Proxy;
  */
 
 public class ClientBuilder {
-    private static final ClientBuilder instance = new ClientBuilder();
+    private static final ClientBuilder INSTANCE = new ClientBuilder();
 
     public static ClientBuilder getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     public <T> T build(Class<T> aClass) {

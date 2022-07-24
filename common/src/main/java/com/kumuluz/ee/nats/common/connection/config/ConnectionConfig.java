@@ -32,33 +32,19 @@ import static io.nats.client.Options.*;
 public abstract class ConnectionConfig {
 
     private final String name;
-
     private List<String> addresses = Collections.singletonList(DEFAULT_URL);
-
     private int maxReconnect = DEFAULT_MAX_RECONNECT;
-
     private Duration reconnectWait = DEFAULT_RECONNECT_WAIT;
-
     private Duration connectionTimeout = Options.DEFAULT_CONNECTION_TIMEOUT;
-
     private Duration pingInterval = DEFAULT_PING_INTERVAL;
-
     private long reconnectBufferSize = DEFAULT_RECONNECT_BUF_SIZE;
-
     private String inboxPrefix = DEFAULT_INBOX_PREFIX;
-
     private boolean noEcho;
-
     private String username;
-
     private String password;
-
     private String credentials;
-
     private TLS tls;
-
     private List<StreamConfiguration> streamConfigurations;
-
     private Map<String, JetStreamOptions> jetStreamContextOptions;
 
     public ConnectionConfig(String name) {

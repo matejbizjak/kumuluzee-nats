@@ -21,18 +21,18 @@ import java.util.logging.Logger;
  */
 
 public class NatsConnection {
-    private static final HashMap<String, Connection> connections = new HashMap<>();
+    private static final HashMap<String, Connection> CONNECTIONS = new HashMap<>();
     private static final Logger LOG = Logger.getLogger(NatsConnection.class.getName());
 
     public static Connection getConnection(String name) {
-        return connections.get(name);
+        return CONNECTIONS.get(name);
     }
 
     public static void establishConnection(ConnectionConfig config) {
         GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
         try {
             Connection connection = Nats.connect(config.toOptionsBuilder().build());
-            connections.put(config.getName(), connection);
+            CONNECTIONS.put(config.getName(), connection);
             LOG.info(String.format("Connection to a NATS server/cluster %s was created successfully.", config.getName()));
 
             // drain messages before disconnect
@@ -54,6 +54,6 @@ public class NatsConnection {
     }
 
     public static HashMap<String, Connection> getAllConnections() {
-        return connections;
+        return CONNECTIONS;
     }
 }

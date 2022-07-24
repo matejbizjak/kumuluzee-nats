@@ -24,8 +24,8 @@ import java.util.Set;
 
 public class InvokerDelegateBean implements Bean<Object>, PassivationCapable {
 
-    private Class<?> restClientType;
-    private Class<? extends Annotation> scope;
+    private final Class<?> restClientType;
+    private final Class<? extends Annotation> scope;
 
     public InvokerDelegateBean(Class<?> restClientType, Class<? extends Annotation> scope) {
         this.restClientType = restClientType;

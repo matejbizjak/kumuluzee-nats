@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 @EeExtensionDef(group = "nats-core", name = "NATS Core")
 public class CoreExtension implements Extension {
 
-    private static final Logger LOGGER = Logger.getLogger(CoreExtension.class.getName());
+    private static final Logger LOG = Logger.getLogger(CoreExtension.class.getName());
 
     @Override
     public void load() {
@@ -25,7 +25,7 @@ public class CoreExtension implements Extension {
 
     @Override
     public void init(KumuluzServerWrapper kumuluzServerWrapper, EeConfig eeConfig) {
-        LOGGER.info("Initialising KumuluzEE NATS Core extension.");
+        LOG.info("Initialising KumuluzEE NATS Core extension.");
     }
 
     @Override

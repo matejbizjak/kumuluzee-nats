@@ -36,7 +36,7 @@ import java.util.logging.Logger;
 public class ListenerInitializerExtension implements Extension {
 
     private static final Logger LOG = Logger.getLogger(ListenerInitializerExtension.class.getName());
-    List<AnnotatedInstance<Subject, NatsListener>> instanceList = new ArrayList<>();
+    private final List<AnnotatedInstance<Subject, NatsListener>> INSTANCES = new ArrayList<>();
 
     public <T> void processListeners(@Observes ProcessBean<T> processBean) {
         Class<?> aClass = processBean.getBean().getBeanClass();
@@ -45,7 +45,7 @@ public class ListenerInitializerExtension implements Extension {
             for (Method method : aClass.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(Subject.class)) {
                     Subject subjectAnnotation = method.getAnnotation(Subject.class);
-                    instanceList.add(new AnnotatedInstance<>(processBean.getBean(), method, subjectAnnotation
+                    INSTANCES.add(new AnnotatedInstance<>(processBean.getBean(), method, subjectAnnotation
                             , natsListenerAnnotation));
                 }
             }
@@ -57,11 +57,11 @@ public class ListenerInitializerExtension implements Extension {
             return;
         }
 
-        for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
+        for (AnnotatedInstance<Subject, NatsListener> inst : INSTANCES) {
             LOG.info(String.format("Found Core listener method %s in class %s.", inst.getMethod().getName(), inst.getMethod().getDeclaringClass()));
         }
 
-        for (AnnotatedInstance<Subject, NatsListener> inst : instanceList) {
+        for (AnnotatedInstance<Subject, NatsListener> inst : INSTANCES) {
             Method method = inst.getMethod();
 
             if (method.getParameterCount() != 1) {
