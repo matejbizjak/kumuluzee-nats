@@ -8,13 +8,12 @@ import io.nats.client.api.StreamConfiguration;
 import javax.net.ssl.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
@@ -292,15 +291,6 @@ public abstract class ConnectionConfig {
         private TrustManager[] createTrustManagers() throws Exception {
             KeyStore store = loadStore(trustStorePath, trustStorePassword);
             TrustManagerFactory factory = TrustManagerFactory.getInstance(Optional.ofNullable(trustStoreType).orElse("SunX509"));
-
-            if (certificatePath != null && !certificatePath.isEmpty()) {
-                try (BufferedInputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(certificatePath)))) {
-                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    X509Certificate cert = (X509Certificate) cf.generateCertificate(in);
-                    store.setCertificateEntry("nats", cert);
-                }
-            }
-
             factory.init(store);
             return factory.getTrustManagers();
         }
@@ -308,9 +298,18 @@ public abstract class ConnectionConfig {
         private KeyStore loadStore(String path, String password) throws Exception {
             KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
             if (path != null && !path.isEmpty()) {
-                try (BufferedInputStream in = new BufferedInputStream(Files.newInputStream(Paths.get(path)))) {
-                    store.load(in, Optional.ofNullable(password).map(String::toCharArray).orElse(new char[0]));
+                BufferedInputStream in = null;
+                try {
+                    // full path
+                    in = new BufferedInputStream(Files.newInputStream(Paths.get(path)));
+                } catch (IOException e) {
+                    // resources
+                    URL resource = getClass().getClassLoader().getResource(path);
+                    if (resource != null) {
+                        in = new BufferedInputStream(resource.openStream());
+                    }
                 }
+                store.load(in, Optional.ofNullable(password).map(String::toCharArray).orElse(new char[0]));
             } else {
                 store.load(null);
             }
