@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="kumuluzee-nats-core" />
         <module name="kumuluzee-nats-common" />
+        <module name="tests" />
         <module name="kumuluzee-nats-jetstream" />
       </profile>
     </annotationProcessing>

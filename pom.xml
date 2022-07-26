@@ -11,6 +11,7 @@
         <module>core</module>
         <module>common</module>
         <module>jetstream</module>
+        <module>tests</module>
     </modules>
 
     <name>KumuluzEE NATS</name>
@@ -31,6 +32,7 @@
 
         <jnats.version>2.15.3</jnats.version>
         <guava.version>31.1-jre</guava.version>
+        <jackson.version>2.13.3</jackson.version>
     </properties>
 
     <!--    <scm>-->
@@ -79,7 +81,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
-                <version>2.13.2</version>
+                <version>${jackson.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>

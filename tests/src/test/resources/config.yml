@@ -1,0 +1,7 @@
+kumuluzee:
+  nats:
+    response-timeout: PT5S
+    servers:
+      - name: default
+        addresses:
+          - nats://localhost:4222
