@@ -16,8 +16,8 @@
 
     <properties>
         <kumuluzee-arquillian-container.version>1.1.1</kumuluzee-arquillian-container.version>
-        <arquillian.version>1.7.0.Alpha9</arquillian.version>
-        <testng.version>6.14.3</testng.version>
+        <arquillian.version>1.7.0.Alpha10</arquillian.version>
+        <testng.version>7.6.1</testng.version>
         <rest-assured.version>5.1.1</rest-assured.version>
     </properties>
 
