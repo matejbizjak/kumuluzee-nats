@@ -20,13 +20,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Objects;
 
 import static io.restassured.RestAssured.given;
