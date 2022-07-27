@@ -1,8 +1,12 @@
-package com.kumuluz.ee.nats.tests.beans.dto;
+package com.kumuluz.ee.nats.tests.beans.common;
 
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.time.Instant;
+
+/**
+ * @author Matej Bizjak
+ */
 
 public class Product {
 

@@ -1,7 +1,83 @@
 kumuluzee:
   nats:
-    response-timeout: PT5S
+    jetstream: true
+    ack-confirmation-timeout: PT5S
     servers:
-      - name: default
+#      - name: default
+#        addresses:
+#          - nats://localhost:<nats_port>
+#        streams:
+#          - name: stream1
+#            subjects:
+#              - subject1
+#              - subject2
+#            #            description:
+#            #            retention-policy:
+#            #            max-consumers:
+#            #            max-bytes:
+#            #            max-age:
+#            #            max-msgs: 100
+#            #            max-msg-size:
+#            storage-type: memory
+#        #            replicas:
+#        #            no-ack:
+#        #            template-owner:
+#        #            discard-policy:
+#        #            duplicate-window:
+#        jetstream-contexts:
+#          - name: context1
+#      #            domain:
+#      #            prefix:
+#      #            publish-no-ack:
+#      #            request-timeout:
+      - name: secure
         addresses:
-          - nats://localhost:4222
+          - tls://localhost:<nats_port>
+        tls:
+          trust-store-path: certs\truststore.jks
+          trust-store-password: password2
+          key-store-path: certs\keystore.jks
+          key-store-password: password
+        streams:
+          - name: stream2
+            subjects:
+              - product.*
+            #            description:
+            #            retention-policy:
+            #            max-consumers:
+            #            max-bytes:
+            #            max-age:
+            #            max-msgs:
+            #            max-msg-size:
+            storage-type: memory
+    #            replicas:
+    #            no-ack:
+    #            template-owner:
+    #            discard-policy:
+    #            duplicate-window:
+    consumer-configuration:
+      - name: custom1
+        deliver-policy: all
+#        ack-policy:
+#        replay-policy:
+#        description:
+#        durable:
+#        deliver-subject:
+#        deliver-group:
+#        filter-subject:
+#        sample-frequency:
+#        start-time:
+#        ack-wait:
+#        idle-heartbeat:
+#        max-expires:
+#        inactive-threshold:
+#        start-seq:
+#        max-deliver:
+#        rate-limit:
+#        max-ack-pending:
+#        max-pull-waiting:
+#        max-batch:
+#        max-bytes:
+#        flow-control:
+#        headers-only:
+#        backoff:

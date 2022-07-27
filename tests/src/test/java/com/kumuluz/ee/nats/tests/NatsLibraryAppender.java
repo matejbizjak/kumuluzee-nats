@@ -26,7 +26,7 @@ import com.kumuluz.ee.nats.core.cdi.ClientInitializerExtension;
 import com.kumuluz.ee.nats.core.cdi.ListenerInitializerExtension;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.consumer.subscriber.SubscriberInitializerExtension;
-import com.kumuluz.ee.nats.tests.beans.NatsMapperProvider;
+import com.kumuluz.ee.nats.tests.beans.common.NatsMapperProvider;
 import org.jboss.arquillian.container.test.spi.client.deployment.CachedAuxilliaryArchiveAppender;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

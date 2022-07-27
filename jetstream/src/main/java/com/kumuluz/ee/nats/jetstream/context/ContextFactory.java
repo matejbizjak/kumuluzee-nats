@@ -48,6 +48,10 @@ public class ContextFactory {
         JetStream jetStream = null;
         ConfigLoader configLoader = ConfigLoader.getInstance();
         ConnectionConfig config = configLoader.getConfigForConnection(connectionName);
+        if (config == null) {
+            LOG.severe(String.format("Configurations for connection %s are missing.", connectionName));
+            return null;
+        }
         JetStreamOptions jetStreamOptions = config.getJetStreamContextOptions().get(contextName);
         Connection connection = NatsConnection.getConnection(connectionName);
         if (connection == null) {

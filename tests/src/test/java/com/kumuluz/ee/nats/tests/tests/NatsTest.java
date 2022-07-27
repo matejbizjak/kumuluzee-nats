@@ -1,10 +1,11 @@
 package com.kumuluz.ee.nats.tests.tests;
 
-import com.kumuluz.ee.nats.tests.beans.DemoApplication;
-import com.kumuluz.ee.nats.tests.beans.client.ProductClient;
-import com.kumuluz.ee.nats.tests.beans.dto.Product;
-import com.kumuluz.ee.nats.tests.beans.listener.ProductListener;
-import com.kumuluz.ee.nats.tests.beans.rest.ProductResource;
+import com.kumuluz.ee.nats.tests.beans.common.DemoApplication;
+import com.kumuluz.ee.nats.tests.beans.common.Product;
+import com.kumuluz.ee.nats.tests.beans.core.ProductClient;
+import com.kumuluz.ee.nats.tests.beans.core.ProductListener;
+import com.kumuluz.ee.nats.tests.beans.core.ProductResource;
+import com.kumuluz.ee.nats.tests.beans.jetstream.ProductSubscriber;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -14,8 +15,10 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -32,10 +35,18 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 public class NatsTest extends Arquillian {
 
-    private static final int NATS_PORT = 4222;
+    private static final int NATS_PORT = 4224; // TODO
+
+//    private static final GenericContainer<?> NATS = new GenericContainer<>("nats:latest")
+//            .withExposedPorts(NATS_PORT)
+//            .withCommand("-c /etc/nats/simple.conf")
+//            .withClasspathResourceMapping("./config/", "/etc/nats", BindMode.READ_ONLY);
 
     private static final GenericContainer<?> NATS = new GenericContainer<>("nats:latest")
-            .withExposedPorts(NATS_PORT);
+            .withExposedPorts(NATS_PORT)
+            .withCommand("-c /etc/nats/tlsverify.conf")
+            .withClasspathResourceMapping("./config/", "/etc/nats", BindMode.READ_ONLY)
+            .withClasspathResourceMapping("./certs/", "/etc/nats/certs", BindMode.READ_ONLY);
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -50,7 +61,7 @@ public class NatsTest extends Arquillian {
                     NatsTest.class.getClassLoader().getResourceAsStream("config.yml"),
                     "Could not load config.yml"
             ).readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("4222", "" + NATS.getMappedPort(NATS_PORT));
+                    .replace("<nats_port>", "" + NATS.getMappedPort(NATS_PORT));
         } catch (IOException e) {
             throw new IllegalStateException("Could not load config.yml", e);
         }
@@ -60,9 +71,25 @@ public class NatsTest extends Arquillian {
                 .addClass(Product.class)
                 .addClass(ProductListener.class)
                 .addClass(ProductResource.class)
+                .addClass(com.kumuluz.ee.nats.tests.beans.jetstream.ProductListener.class)
+                .addClass(com.kumuluz.ee.nats.tests.beans.jetstream.ProductResource.class)
+                .addClass(ProductSubscriber.class)
                 .addClass(DemoApplication.class)
                 .addAsResource(new StringAsset(config), "config.yml")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource("certs/keystore.jks", "certs/keystore.jks")
+                .addAsResource("certs/truststore.jks", "certs/truststore.jks");
+    }
+
+    @BeforeClass
+    @RunAsClient
+    public static void printCert() throws Exception {
+        String s = new String(Objects.requireNonNull(
+                NatsTest.class.getClassLoader().getResourceAsStream("certs/keystore.jks"),
+                "Could not load config.yml"
+        ).readAllBytes(), StandardCharsets.UTF_8);
+        System.out.println("HEREEEEEEEEEEEEEEE");
+        System.out.println(s);
     }
 
     @AfterClass
@@ -73,20 +100,36 @@ public class NatsTest extends Arquillian {
         NATS.stop();
     }
 
+//    @Test
+//    @RunAsClient
+//    public void validateCorePublishResponse() {
+//        given()
+//                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
+//                        , new BigDecimal("1.2"), 132, null, null))
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/v1/product/withResponse")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .contentType(ContentType.JSON)
+//                .body(equalTo("The product was sent. Even more, I also received a String as response: apple"));
+//    }
+
+//    @Test(dependsOnMethods = "validateCorePublishResponse")
     @Test
     @RunAsClient
-    public void validateResponseMessage() {
-
+    public void validateJetStreamPublish() {
         given()
-                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
-                        , new BigDecimal("1.2"), 132, null, null))
+                .body(new Product(1, "Corn", "Corn for popcorn - 1 kg"
+                        , new BigDecimal("3.2"), 12, null, null))
                 .contentType(ContentType.JSON)
                 .when()
-                .post("/v1/product/withResponse")
+                .post("/v1/product/corn")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body(equalTo("The product was sent. Even more, I also received a String as response: apple"));
+                .body(equalTo("Message has been sent to stream stream2"));
     }
 }

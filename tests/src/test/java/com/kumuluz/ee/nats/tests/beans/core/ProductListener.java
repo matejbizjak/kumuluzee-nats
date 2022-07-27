@@ -1,8 +1,12 @@
-package com.kumuluz.ee.nats.tests.beans.listener;
+package com.kumuluz.ee.nats.tests.beans.core;
 
 import com.kumuluz.ee.nats.core.annotations.NatsListener;
 import com.kumuluz.ee.nats.core.annotations.Subject;
-import com.kumuluz.ee.nats.tests.beans.dto.Product;
+import com.kumuluz.ee.nats.tests.beans.common.Product;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * @author Matej Bizjak

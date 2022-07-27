@@ -1,8 +1,7 @@
-package com.kumuluz.ee.nats.tests.beans.rest;
+package com.kumuluz.ee.nats.tests.beans.core;
 
 import com.kumuluz.ee.nats.core.annotations.NatsClient;
-import com.kumuluz.ee.nats.tests.beans.client.ProductClient;
-import com.kumuluz.ee.nats.tests.beans.dto.Product;
+import com.kumuluz.ee.nats.tests.beans.common.Product;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -12,6 +11,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * @author Matej Bizjak
