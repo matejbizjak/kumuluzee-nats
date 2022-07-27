@@ -2,7 +2,6 @@ package com.kumuluz.ee.nats.tests.beans.jetstream;
 
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamProducer;
-import com.kumuluz.ee.nats.tests.beans.common.Product;
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.Message;
@@ -24,21 +23,22 @@ import java.util.concurrent.ExecutionException;
  * @author Matej Bizjak
  */
 
-@Path("/product/")
+@Path("/text/")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RequestScoped
-public class ProductResource {
+public class TextResource {
 
     @Inject
-    private ProductSubscriber productSubscriber;
+    private TextSubscriber textSubscriber;
+
     @Inject
-    @JetStreamProducer(connection = "secure")
+    @JetStreamProducer(context = "context1")
     private JetStream jetStream;
 
     @POST
-    @Path("/corn")
-    public Response postCorn(Product corn) {
+    @Path("/uniqueSync/{subject}")
+    public Response postSub1(@PathParam("subject") String subject, String messageText) {
         if (jetStream == null) {
             return Response.serverError().build();
         }
@@ -47,42 +47,43 @@ public class ProductResource {
             Headers headers = new Headers().add("Nats-Msg-Id", uniqueID);
 
             Message message = NatsMessage.builder()
-                    .subject("product.corn")
-                    .data(SerDes.serialize(corn))
+                    .subject(subject)
+                    .data(SerDes.serialize(messageText))
                     .headers(headers)
                     .build();
 
-            CompletableFuture<PublishAck> future = jetStream.publishAsync(message);
-            PublishAck publishAck = future.get();
-            return Response.ok(String.format("Message has been sent to stream %s", publishAck.getStream())).build();
-        } catch (IOException | ExecutionException | InterruptedException e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
-        }
-    }
-
-    @POST
-    @Path("/apple")
-    public Response postApple(Product apple) {
-        if (jetStream == null) {
-            return Response.serverError().build();
-        }
-        try {
-            Message message = NatsMessage.builder()
-                    .subject("product.apple")
-                    .data(SerDes.serialize(apple))
-                    .build();
-
             PublishAck publishAck = jetStream.publish(message);
-            return Response.ok(String.format("Message has been sent to stream %s", publishAck.getStream())).build();
+            return Response.ok(String.format("Message has been sent to subject %s in stream %s.", message.getSubject()
+                    , publishAck.getStream())).build();
         } catch (IOException | JetStreamApiException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         }
     }
 
+    @POST
+    @Path("/async/{subject}")
+    public Response postSub2(@PathParam("subject") String subject, String messageText) {
+        if (jetStream == null) {
+            return Response.serverError().build();
+        }
+        try {
+            Message message = NatsMessage.builder()
+                    .subject(subject)
+                    .data(SerDes.serialize(messageText))
+                    .build();
+
+            CompletableFuture<PublishAck> futureAck = jetStream.publishAsync(message);
+            return Response.ok(String.format("Message has been sent to subject %s in stream %s.", message.getSubject()
+                    , futureAck.get().getStream())).build();
+        } catch (IOException | ExecutionException | InterruptedException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+        }
+    }
+
     @GET
-    @Path("/pullCorn")
-    public Response pullCorn() {
-        productSubscriber.pullCorn();
-        return Response.ok().build();
+    @Path("/pull")
+    public Response pullText() {
+        String message = textSubscriber.pullMsg();
+        return Response.ok(message).build();
     }
 }

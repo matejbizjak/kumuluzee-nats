@@ -3,58 +3,33 @@ kumuluzee:
     jetstream: true
     ack-confirmation-timeout: PT5S
     servers:
-#      - name: default
-#        addresses:
-#          - nats://localhost:<nats_port>
-#        streams:
-#          - name: stream1
-#            subjects:
-#              - subject1
-#              - subject2
-#            #            description:
-#            #            retention-policy:
-#            #            max-consumers:
-#            #            max-bytes:
-#            #            max-age:
-#            #            max-msgs: 100
-#            #            max-msg-size:
-#            storage-type: memory
-#        #            replicas:
-#        #            no-ack:
-#        #            template-owner:
-#        #            discard-policy:
-#        #            duplicate-window:
-#        jetstream-contexts:
-#          - name: context1
-#      #            domain:
-#      #            prefix:
-#      #            publish-no-ack:
-#      #            request-timeout:
-      - name: secure
+      - name: default
         addresses:
-          - tls://localhost:<nats_port>
-        tls:
-          trust-store-path: certs\truststore.jks
-          trust-store-password: password2
-          key-store-path: certs\keystore.jks
-          key-store-password: password
+          - nats://localhost:<nats_port>
         streams:
-          - name: stream2
+          - name: stream1
             subjects:
-              - product.*
+              - subject1
+              - subject2
             #            description:
             #            retention-policy:
             #            max-consumers:
             #            max-bytes:
             #            max-age:
-            #            max-msgs:
+            #            max-msgs: 100
             #            max-msg-size:
             storage-type: memory
-    #            replicas:
-    #            no-ack:
-    #            template-owner:
-    #            discard-policy:
-    #            duplicate-window:
+        #            replicas:
+        #            no-ack:
+        #            template-owner:
+        #            discard-policy:
+        #            duplicate-window:
+        jetstream-contexts:
+          - name: context1
+      #            domain:
+      #            prefix:
+      #            publish-no-ack:
+      #            request-timeout:
     consumer-configuration:
       - name: custom1
         deliver-policy: all
