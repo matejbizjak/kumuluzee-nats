@@ -69,7 +69,7 @@ public class ClientInvoker implements InvocationHandler {
 
         // method annotation variables
         Subject subjectAnnotation = method.getAnnotation(Subject.class);
-        if (subjectAnnotation != null) {
+        if (subjectAnnotation != null && !subjectAnnotation.connection().isEmpty()) {
             connectionName = subjectAnnotation.connection();
         }
 
