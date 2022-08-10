@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.common.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -20,5 +21,9 @@ public class SerDes {
 
     public static <T> T deserialize(byte[] data, Class<T> clazz) throws IOException {
         return objectMapper.readValue(data, clazz);
+    }
+
+    public static <T> T deserialize(byte[] data, TypeReference<T> valueTypeRef) throws IOException {
+        return objectMapper.readValue(data, valueTypeRef);
     }
 }
