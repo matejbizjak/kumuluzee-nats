@@ -69,6 +69,8 @@ The implementation of the NATS client interfaces is automatically generated duri
 private SimpleClient simpleClient;
 ```
 
+> :warning: Please, make sure to set the `bean-discovery-mode` to `all` in the `beans.xml` file or the generated class will not be discovered. 
+
 ### Using a NATS client
 
 After injecting a client to our service, we can call the methods from the interface.
@@ -208,6 +210,10 @@ The prefix of all following properties must be `kumuluzee.nats`.
 | servers.tls.certificate-path     | java.lang.String    | Path to the server's certificate                                                                   |
 | servers.tls.key-store-path       | java.lang.String    | Path to the key store                                                                              |
 | servers.tls.key-store-password   | java.lang.String    | The password to unlock the key store                                                               |
+
+### Clusters & Reconnecting
+
+The Java client will automatically reconnect if it loses its connection the nats-server. If given a single server, the client will keep trying that one. If given a list of servers, the client will rotate between them. When the nats servers are in a cluster, they will tell the client about the other servers, so that in the simplest case a client could connect to one server, learn about the cluster and reconnect to another server if its initial one goes down.
 
 ### Default values
 

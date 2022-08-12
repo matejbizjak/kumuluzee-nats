@@ -351,6 +351,10 @@ More info [here](https://docs.nats.io/using-nats/developer/connecting).
 | streams                  | java.util.List      | The list of streams                                                                                |
 | jetstream-contexts       | java.util.List      | The list of JetStream contexts                                                                     |
 
+#### Clusters & Reconnecting
+
+The Java client will automatically reconnect if it loses its connection the nats-server. If given a single server, the client will keep trying that one. If given a list of servers, the client will rotate between them. When the nats servers are in a cluster, they will tell the client about the other servers, so that in the simplest case a client could connect to one server, learn about the cluster and reconnect to another server if its initial one goes down.
+
 ### Streams
 
 Prefix: `kumuluzee.nats.servers.streams`
