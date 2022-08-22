@@ -3,17 +3,30 @@ kumuluzee:
     jetstream: true
     ack-confirmation-timeout: PT5S
     servers:
-      - name: default
+#      - name: default
+      #        addresses:
+      #          - nats://localhost:<nats_port>
+      #        streams:
+      #          - name: stream1
+      #            subjects:
+      #              - subject1
+      #              - subject2
+      #            storage-type: memory
+      #        jetstream-contexts:
+      #          - name: context1
+      - name: secure
         addresses:
-          - nats://localhost:<nats_port>
+          - tls://localhost:<nats_port>
+        tls:
+          trust-store-path: certs\truststore.jks
+          trust-store-password: password2
+          key-store-path: certs\keystore.jks
+          key-store-password: password
         streams:
-          - name: stream1
+          - name: stream2
             subjects:
-              - subject1
-              - subject2
+              - product.*
             storage-type: memory
-        jetstream-contexts:
-          - name: context1
     consumer-configuration:
       - name: custom1
         deliver-policy: all

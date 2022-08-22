@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 import static io.restassured.RestAssured.given;
-import static io.restassured.RestAssured.when;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 /**
@@ -32,12 +31,13 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 public class NatsTest extends Arquillian {
 
-    private static final int NATS_PORT = 4222;
+    private static final int NATS_PORT = 4224;
 
     private static final GenericContainer<?> NATS = new GenericContainer<>("nats:latest")
             .withExposedPorts(NATS_PORT)
-            .withCommand("-c /etc/nats/simple.conf")
-            .withClasspathResourceMapping("./config/", "/etc/nats", BindMode.READ_ONLY);
+            .withCommand("-c /etc/nats/tlsverify.conf")
+            .withClasspathResourceMapping("./config/", "/etc/nats", BindMode.READ_ONLY)
+            .withClasspathResourceMapping("./certs/", "/etc/nats/certs", BindMode.READ_ONLY);
 
     @Deployment
     public static JavaArchive createDeployment() {
@@ -72,63 +72,79 @@ public class NatsTest extends Arquillian {
         NATS.stop();
     }
 
-    @Test
-    @RunAsClient
-    public void validateCorePublishResponse() {
-        given()
-                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
-                        , new BigDecimal("1.2"), 132, null, null))
-                .contentType(ContentType.JSON)
-                .when()
-                .post("/v1/product/withResponse")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(equalTo("The product was sent. Even more, I also received a String as response: apple"));
-    }
+//    @Test
+//    @RunAsClient
+//    public void validateCorePublishResponse() {
+//        given()
+//                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
+//                        , new BigDecimal("1.2"), 132, null, null))
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/v1/product/withResponse")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .contentType(ContentType.JSON)
+//                .body(equalTo("The product was sent. Even more, I also received a String as response: apple"));
+//    }
+//
+//    @Test
+//    @RunAsClient
+//    public void validateJetStreamPublish1() {
+//        given()
+//                .body("simple message")
+//                .pathParam("subject", "subject1")
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/v1/text/uniqueSync/{subject}")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .contentType(ContentType.JSON)
+//                .body(equalTo("Message has been sent to subject subject1 in stream stream1."));
+//    }
+//
+//    @Test
+//    @RunAsClient
+//    public void validateJetStreamPublish2() {
+//        given()
+//                .body("simple message to be pulled manually")
+//                .pathParam("subject", "subject2")
+//                .contentType(ContentType.JSON)
+//                .when()
+//                .post("/v1/text/async/{subject}")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .contentType(ContentType.JSON)
+//                .body(equalTo("Message has been sent to subject subject2 in stream stream1."));
+//    }
+//
+//    @Test(dependsOnMethods = "validateJetStreamPublish2")
+//    @RunAsClient
+//    public void validateJetStreamPull() {
+//        when()
+//                .get("/v1/text/pull")
+//                .then()
+//                .assertThat()
+//                .statusCode(200)
+//                .contentType(ContentType.JSON)
+//                .body(equalTo("simple message to be pulled manually"));
+//    }
 
     @Test
     @RunAsClient
-    public void validateJetStreamPublish1() {
+    public void validateJetStreamPublish() {
         given()
-                .body("simple message")
-                .pathParam("subject", "subject1")
+                .body(new Product(1, "Corn", "Corn for popcorn - 1 kg"
+                        , new BigDecimal("3.2"), 12, null, null))
                 .contentType(ContentType.JSON)
                 .when()
-                .post("/v1/text/uniqueSync/{subject}")
+                .post("/v1/product/corn")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body(equalTo("Message has been sent to subject subject1 in stream stream1."));
-    }
-
-    @Test
-    @RunAsClient
-    public void validateJetStreamPublish2() {
-        given()
-                .body("simple message to be pulled manually")
-                .pathParam("subject", "subject2")
-                .contentType(ContentType.JSON)
-                .when()
-                .post("/v1/text/async/{subject}")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(equalTo("Message has been sent to subject subject2 in stream stream1."));
-    }
-
-    @Test(dependsOnMethods = "validateJetStreamPublish2")
-    @RunAsClient
-    public void validateJetStreamPull() {
-        when()
-                .get("/v1/text/pull")
-                .then()
-                .assertThat()
-                .statusCode(200)
-                .contentType(ContentType.JSON)
-                .body(equalTo("simple message to be pulled manually"));
+                .body(equalTo("Message has been sent to stream stream2"));
     }
 }
