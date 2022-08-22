@@ -82,7 +82,11 @@ public class ProductResource {
     @GET
     @Path("/pullCorn")
     public Response pullCorn() {
-        productSubscriber.pullCorn();
-        return Response.ok().build();
+        try {
+            Product corn = productSubscriber.pullCorn();
+            return Response.status(Response.Status.OK).entity(corn).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
+        }
     }
 }

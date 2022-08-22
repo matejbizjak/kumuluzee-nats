@@ -12,7 +12,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
 
 /**
  * @author Matej Bizjak
@@ -26,18 +25,18 @@ public class ProductSubscriber {
     @ConsumerConfig(name = "custom1", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
     private JetStreamSubscription jetStreamSubscription;
 
-    public void pullCorn() {
+    public Product pullCorn() {
+        Product corn = null;
         if (jetStreamSubscription != null) {
-            List<Message> messages = jetStreamSubscription.fetch(3, Duration.ofSeconds(1));
-            for (Message message : messages) {
-                try {
-                    Product corn = SerDes.deserialize(message.getData(), Product.class);
-                    message.ack();
-                } catch (IOException e) {
-                    message.nak();
-                    throw new RuntimeException(e);
-                }
+            Message message = jetStreamSubscription.fetch(1, Duration.ofSeconds(1)).get(0);
+            try {
+                corn = SerDes.deserialize(message.getData(), Product.class);
+                message.ack();
+            } catch (IOException e) {
+                message.nak();
+                throw new RuntimeException(e);
             }
         }
+        return corn;
     }
 }

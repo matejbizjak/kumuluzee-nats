@@ -5,6 +5,7 @@ import com.kumuluz.ee.nats.testapp.common.NatsMapperProvider;
 import com.kumuluz.ee.nats.testapp.common.Product;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.testng.Arquillian;
@@ -14,6 +15,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
@@ -24,6 +26,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.RestAssured.when;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 /**
@@ -33,6 +36,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class NatsTest extends Arquillian {
 
     private static final int NATS_PORT = 4224;
+
+    private static final Product CORN_PRODUCT = new Product(1, "Corn", "Corn for popcorn - 1 kg"
+            , new BigDecimal("3.2"), 12, null, Instant.EPOCH);
 
     private static final GenericContainer<?> NATS = new GenericContainer<>("nats:latest")
             .withExposedPorts(NATS_PORT)
@@ -75,72 +81,27 @@ public class NatsTest extends Arquillian {
         NATS.stop();
     }
 
-//    @Test
-//    @RunAsClient
-//    public void validateCorePublishResponse() {
-//        given()
-//                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
-//                        , new BigDecimal("1.2"), 132, null, null))
-//                .contentType(ContentType.JSON)
-//                .when()
-//                .post("/v1/product/withResponse")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .contentType(ContentType.JSON)
-//                .body(equalTo("The product was sent. Even more, I also received a String as response: apple"));
-//    }
-//
-//    @Test
-//    @RunAsClient
-//    public void validateJetStreamPublish1() {
-//        given()
-//                .body("simple message")
-//                .pathParam("subject", "subject1")
-//                .contentType(ContentType.JSON)
-//                .when()
-//                .post("/v1/text/uniqueSync/{subject}")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .contentType(ContentType.JSON)
-//                .body(equalTo("Message has been sent to subject subject1 in stream stream1."));
-//    }
-//
-//    @Test
-//    @RunAsClient
-//    public void validateJetStreamPublish2() {
-//        given()
-//                .body("simple message to be pulled manually")
-//                .pathParam("subject", "subject2")
-//                .contentType(ContentType.JSON)
-//                .when()
-//                .post("/v1/text/async/{subject}")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .contentType(ContentType.JSON)
-//                .body(equalTo("Message has been sent to subject subject2 in stream stream1."));
-//    }
-//
-//    @Test(dependsOnMethods = "validateJetStreamPublish2")
-//    @RunAsClient
-//    public void validateJetStreamPull() {
-//        when()
-//                .get("/v1/text/pull")
-//                .then()
-//                .assertThat()
-//                .statusCode(200)
-//                .contentType(ContentType.JSON)
-//                .body(equalTo("simple message to be pulled manually"));
-//    }
+    @Test
+    @RunAsClient
+    public void validateCorePublishResponse() {
+        given()
+                .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
+                        , new BigDecimal("1.2"), 132, null, null))
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/v1/product/withResponseProduct")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body(equalTo("The product was sent. Even more, I also received a product as response. Its name is APPLE"));
+    }
 
     @Test
     @RunAsClient
-    public void validateJetStreamPublish() {
+    public void validateJetStreamPublish1() {
         given()
-                .body(new Product(1, "Corn", "Corn for popcorn - 1 kg"
-                        , new BigDecimal("3.2"), 12, null, Instant.now()))
+                .body(CORN_PRODUCT)
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/v1/product/corn")
@@ -149,5 +110,41 @@ public class NatsTest extends Arquillian {
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .body(equalTo("Message has been sent to stream stream2"));
+    }
+
+    @Test
+    @RunAsClient
+    public void validateJetStreamPublish2() {
+        given()
+                .body(new Product(1, "Apple", "Fuji Apple - 1 kg"
+                        , new BigDecimal("1.2"), 132, null, Instant.EPOCH))
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/v1/product/apple")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body(equalTo("Message has been sent to stream stream2"));
+    }
+
+    @Test(dependsOnMethods = "validateJetStreamPublish1")
+    @RunAsClient
+    public void validateJetStreamPull() {
+        Response response = when()
+                .get("/v1/product/pullCorn")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .extract().response();
+        Product product = response.getBody().as(Product.class);
+        Assert.assertEquals(product.getId(), CORN_PRODUCT.getId());
+        Assert.assertEquals(product.getDescription(), CORN_PRODUCT.getDescription());
+        Assert.assertEquals(product.getName(), CORN_PRODUCT.getName());
+        Assert.assertEquals(product.getStock(), CORN_PRODUCT.getStock());
+        Assert.assertEquals(product.getImage(), CORN_PRODUCT.getImage());
+        Assert.assertEquals(product.getPrice(), CORN_PRODUCT.getPrice());
+        Assert.assertEquals(product.getAddedDate(), CORN_PRODUCT.getAddedDate());
     }
 }
