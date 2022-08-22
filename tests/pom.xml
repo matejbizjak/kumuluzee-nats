@@ -59,13 +59,13 @@
         <dependency>
             <artifactId>kumuluzee-nats-core</artifactId>
             <groupId>com.kumuluz.ee.nats</groupId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <artifactId>kumuluzee-nats-jetstream</artifactId>
             <groupId>com.kumuluz.ee.nats</groupId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
