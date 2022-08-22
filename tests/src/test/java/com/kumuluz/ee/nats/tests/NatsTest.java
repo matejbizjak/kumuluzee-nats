@@ -61,7 +61,9 @@ public class NatsTest extends Arquillian {
                 .addPackages(true, "com.kumuluz.ee.nats.testapp")
                 .addAsServiceProvider(NatsObjectMapperProvider.class, NatsMapperProvider.class)
                 .addAsResource(new StringAsset(config), "config.yml")
-                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+                .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml")
+                .addAsResource("certs/keystore.jks", "certs/keystore.jks")
+                .addAsResource("certs/truststore.jks", "certs/truststore.jks");
     }
 
     @AfterClass
