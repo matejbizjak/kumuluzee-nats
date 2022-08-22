@@ -11,48 +11,9 @@ kumuluzee:
             subjects:
               - subject1
               - subject2
-            #            description:
-            #            retention-policy:
-            #            max-consumers:
-            #            max-bytes:
-            #            max-age:
-            #            max-msgs: 100
-            #            max-msg-size:
             storage-type: memory
-        #            replicas:
-        #            no-ack:
-        #            template-owner:
-        #            discard-policy:
-        #            duplicate-window:
         jetstream-contexts:
           - name: context1
-      #            domain:
-      #            prefix:
-      #            publish-no-ack:
-      #            request-timeout:
     consumer-configuration:
       - name: custom1
         deliver-policy: all
-#        ack-policy:
-#        replay-policy:
-#        description:
-#        durable:
-#        deliver-subject:
-#        deliver-group:
-#        filter-subject:
-#        sample-frequency:
-#        start-time:
-#        ack-wait:
-#        idle-heartbeat:
-#        max-expires:
-#        inactive-threshold:
-#        start-seq:
-#        max-deliver:
-#        rate-limit:
-#        max-ack-pending:
-#        max-pull-waiting:
-#        max-batch:
-#        max-bytes:
-#        flow-control:
-#        headers-only:
-#        backoff:

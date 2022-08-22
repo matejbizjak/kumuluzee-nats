@@ -1,13 +1,8 @@
-package com.kumuluz.ee.nats.tests.tests;
+package com.kumuluz.ee.nats.tests;
 
-import com.kumuluz.ee.nats.tests.beans.common.DemoApplication;
-import com.kumuluz.ee.nats.tests.beans.common.Product;
-import com.kumuluz.ee.nats.tests.beans.core.ProductClient;
-import com.kumuluz.ee.nats.tests.beans.core.ProductListener;
-import com.kumuluz.ee.nats.tests.beans.core.ProductResource;
-import com.kumuluz.ee.nats.tests.beans.jetstream.TextListener;
-import com.kumuluz.ee.nats.tests.beans.jetstream.TextResource;
-import com.kumuluz.ee.nats.tests.beans.jetstream.TextSubscriber;
+import com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider;
+import com.kumuluz.ee.nats.testapp.common.NatsMapperProvider;
+import com.kumuluz.ee.nats.testapp.common.Product;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -63,14 +58,8 @@ public class NatsTest extends Arquillian {
         }
 
         return ShrinkWrap.create(JavaArchive.class)
-                .addClass(ProductClient.class)
-                .addClass(Product.class)
-                .addClass(ProductListener.class)
-                .addClass(ProductResource.class)
-                .addClass(TextListener.class)
-                .addClass(TextResource.class)
-                .addClass(TextSubscriber.class)
-                .addClass(DemoApplication.class)
+                .addPackages(true, "com.kumuluz.ee.nats.testapp")
+                .addAsServiceProvider(NatsObjectMapperProvider.class, NatsMapperProvider.class)
                 .addAsResource(new StringAsset(config), "config.yml")
                 .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
     }

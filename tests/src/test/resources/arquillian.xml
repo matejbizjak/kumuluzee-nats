@@ -6,9 +6,11 @@
     <container qualifier="KumuluzEE" default="true">
         <configuration>
             <property name="kumuluzVersion">${kumuluzee.version}</property>
-            <!--            <property name="includeRequiredLibraries">fromPom</property>-->
+            <property name="includeRequiredLibraries">fromPom</property>
 
-            <!--<property name="javaArguments">-Xmx512m -XX:MaxPermSize=128m -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y</property>-->
+            <!--            <property name="javaArguments">-Xmx512m -XX:MaxPermSize=128m-->
+            <!--                -Xrunjdwp:transport=dt_socket,address=8787,server=y,suspend=y-->
+            <!--            </property>-->
             <!--            <property name="packaging">uberJar</property>-->
             <!--            <property name="deleteTemporaryFiles">${arquillian.deleteFiles}</property>-->
         </configuration>

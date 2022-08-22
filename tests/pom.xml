@@ -18,6 +18,7 @@
         <kumuluzee-arquillian-container.version>1.1.1</kumuluzee-arquillian-container.version>
         <arquillian.version>1.7.0.Alpha10</arquillian.version>
         <testng.version>7.6.1</testng.version>
+        <testcontainers.version>1.17.3</testcontainers.version>
         <rest-assured.version>5.1.1</rest-assured.version>
     </properties>
 
@@ -36,29 +37,44 @@
     <dependencies>
         <dependency>
             <groupId>com.kumuluz.ee</groupId>
-            <artifactId>kumuluzee-cdi-weld</artifactId>
-            <scope>provided</scope>
+            <artifactId>kumuluzee-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
+            <groupId>com.kumuluz.ee</groupId>
+            <artifactId>kumuluzee-cdi-weld</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kumuluz.ee</groupId>
+            <artifactId>kumuluzee-servlet-jetty</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.kumuluz.ee</groupId>
+            <artifactId>kumuluzee-jax-rs-jersey</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
-            <artifactId>kumuluzee-nats-common</artifactId>
-            <groupId>com.kumuluz.ee.nats</groupId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <artifactId>kumuluzee-nats-core</artifactId>
             <groupId>com.kumuluz.ee.nats</groupId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <artifactId>kumuluzee-nats-jetstream</artifactId>
             <groupId>com.kumuluz.ee.nats</groupId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!--        testing-->
         <dependency>
             <groupId>com.kumuluz.ee.testing</groupId>
@@ -80,7 +96,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
-            <version>1.17.3</version>
+            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -90,14 +106,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>
-    </build>
 
 </project>

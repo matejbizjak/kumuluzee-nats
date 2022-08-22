@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.tests.beans.common;
+package com.kumuluz.ee.nats.testapp.common;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;

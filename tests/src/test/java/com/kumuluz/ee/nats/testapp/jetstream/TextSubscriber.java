@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.tests.beans.jetstream;
+package com.kumuluz.ee.nats.testapp.jetstream;
 
 import com.kumuluz.ee.nats.common.annotations.ConfigurationOverride;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
@@ -11,7 +11,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.List;
 
 /**
  * @author Matej Bizjak

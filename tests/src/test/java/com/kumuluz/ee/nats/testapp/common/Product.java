@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.tests.beans.common;
+package com.kumuluz.ee.nats.testapp.common;
 
 import java.math.BigDecimal;
 import java.sql.Blob;

@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.tests.beans.common;
+package com.kumuluz.ee.nats.testapp.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;

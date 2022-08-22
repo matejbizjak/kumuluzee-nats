@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.tests.beans.jetstream;
+package com.kumuluz.ee.nats.testapp.jetstream;
 
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamProducer;

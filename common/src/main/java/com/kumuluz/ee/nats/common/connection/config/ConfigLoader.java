@@ -256,8 +256,8 @@ public class ConfigLoader {
         connectionConfig.setJetStreamContextOptions(jetStreamContexts);
 
         // TLS
-        Optional<String> tlsConf = configurationUtil.get(currentPrefix + ".tls");
-        if (!tlsConf.isPresent()) {
+        Optional<List<String>> tlsKeys = configurationUtil.getMapKeys(currentPrefix + ".tls");
+        if (tlsKeys.isEmpty()) {
             return;
         }
         ConnectionConfig.TLS tls = new ConnectionConfig.TLS();

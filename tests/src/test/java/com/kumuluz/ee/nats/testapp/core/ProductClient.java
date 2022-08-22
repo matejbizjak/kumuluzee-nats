@@ -1,12 +1,8 @@
-package com.kumuluz.ee.nats.tests.beans.core;
+package com.kumuluz.ee.nats.testapp.core;
 
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.core.annotations.Subject;
-import com.kumuluz.ee.nats.tests.beans.common.Product;
-
-/**
- * @author Matej Bizjak
- */
+import com.kumuluz.ee.nats.testapp.common.Product;
 
 /**
  * @author Matej Bizjak
