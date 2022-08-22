@@ -4,6 +4,7 @@ import com.kumuluz.ee.nats.common.annotations.ConfigurationOverride;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
+import com.kumuluz.ee.nats.testapp.common.Product;
 import io.nats.client.JetStreamSubscription;
 import io.nats.client.Message;
 
@@ -17,26 +18,25 @@ import java.time.Duration;
  */
 
 @ApplicationScoped
-public class TextSubscriber {
-
+public class ProductSubscriber {
 
     @Inject
-    @JetStreamSubscriber(context = "context1", stream = "stream1", subject = "subject2", durable = "somethingNew")
+    @JetStreamSubscriber(connection = "secure", subject = "product.corn", durable = "newCorn")
     @ConsumerConfig(name = "custom1", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
     private JetStreamSubscription jetStreamSubscription;
 
-    public String pullMsg() {
+    public Product pullCorn() {
+        Product corn = null;
         if (jetStreamSubscription != null) {
             Message message = jetStreamSubscription.fetch(1, Duration.ofSeconds(1)).get(0);
             try {
-                String value = SerDes.deserialize(message.getData(), String.class);
+                corn = SerDes.deserialize(message.getData(), Product.class);
                 message.ack();
-                return value;
             } catch (IOException e) {
                 message.nak();
                 throw new RuntimeException(e);
             }
         }
-        return null;
+        return corn;
     }
 }

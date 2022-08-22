@@ -11,8 +11,9 @@ import com.kumuluz.ee.nats.testapp.common.Product;
 @NatsListener
 public class ProductListener {
 
-    @Subject(value = "product2")
-    public String receiveAndReturnString(Product product) {
-        return product.getName().toLowerCase();
+    @Subject(value = "product3", connection = "secure")
+    public Product receiveAndReturnProduct(Product product) {
+        product.setName(product.getName().toUpperCase());
+        return product;
     }
 }

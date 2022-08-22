@@ -27,20 +27,6 @@ public class ProductResource {
     private ProductClient productClient;
 
     @POST
-    public Response postProduct(Product product) {
-        productClient.sendProduct(product);
-        return Response.ok("The product was sent.").build();
-    }
-
-    @POST
-    @Path("/withResponse")
-    public Response postProductResponse(Product product) {
-        String msgResponse = productClient.sendProductResponse(product);
-        return Response.ok(String.format("The product was sent. Even more, I also received a String as response: %s"
-                , msgResponse)).build();
-    }
-
-    @POST
     @Path("/withResponseProduct")
     public Response postProductResponseProduct(Product product) {
         Product demoResponse = productClient.sendProductResponseProduct(product);
