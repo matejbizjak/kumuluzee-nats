@@ -20,6 +20,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Objects;
 
 import static io.restassured.RestAssured.given;
@@ -77,7 +78,7 @@ public class NatsTest extends Arquillian {
     public void validateCorePublishResponse() {
         given()
                 .body(new Product(2, "Apple", "Fuji Apple - 1 kg"
-                        , new BigDecimal("1.2"), 132, null, null))
+                        , new BigDecimal("1.2"), 132, null, Instant.now()))
                 .contentType(ContentType.JSON)
                 .when()
                 .post("/v1/product/withResponse")
