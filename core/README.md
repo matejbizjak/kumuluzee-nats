@@ -16,6 +16,37 @@ NATS Core extension can be added via the following Maven dependency:
 
 NATS Core extension can also be used simultaneously alongside NATS JetStream extension.
 
+### De/serialization of messages
+
+#### Providing custom ObjectMapper
+
+KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion.
+In order to supply a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
+For example:
+
+```java
+public class NatsMapperProvider implements NatsObjectMapperProvider {
+    
+    @Override
+    public ObjectMapper provideObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
+}
+```
+
+Do not forget to register the implementation and add the required dependencies.
+A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
+
+[//]: # (In our example in the resource directory `META-INF/services` add)
+
+[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
+
+#### Using ObjectMapper
+
+Use methods in SerDes class for de/serialization.
+
 ### Defining NATS client
 
 To define a NATS client, we need to create an interface:
@@ -55,7 +86,9 @@ If those optional values are not set, NATS client will use the default values.
 
 #### Return type
 
-Method's return type specifies the response (message) object a client should receive. If the return type is `void` the client does not expect a response. 
+Method's return type specifies the response (message) object a client should receive. If the return type is `void` the client does not expect a response.
+
+> :information_source: Objects from `java.util.Collection` and `java.util.Map` are also supported.
 
 > :warning: Please, make sure that the custom classes you use have a default constructor. If not, they will not be de/serialized successfully.
 
@@ -233,31 +266,6 @@ For other default values take a look [here](https://github.com/nats-io/nats.java
 | long                                |                      | 10                        |
 | boolean                             |                      | true                      |
 | java.time.Duration                  | ISO-8601             | PT5S                      |
-
-### Providing ObjectMapper
-
-KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
-a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
-For example:
-
-```java
-public class NatsMapperProvider implements NatsObjectMapperProvider {
-    
-    @Override
-    public ObjectMapper provideObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
-    }
-}
-```
-
-Do not forget to register the implementation and add the required dependencies.
-A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
-
-[//]: # (In our example in the resource directory `META-INF/services` add)
-
-[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
 
 ## Sample
 

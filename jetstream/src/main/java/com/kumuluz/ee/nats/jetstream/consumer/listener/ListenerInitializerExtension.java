@@ -8,6 +8,7 @@ import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
+import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
@@ -100,7 +101,7 @@ public class ListenerInitializerExtension implements Extension {
                 MessageHandler handler = msg -> {
                     Object receivedMsg;
                     try {
-                        receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
+                        receivedMsg = SerDes.deserialize(msg.getData(), CollectionSerDes.getCollectionParameterType(method));
                         args[0] = receivedMsg;
                         if (method.getParameterCount() == 2) {
                             args[1] = new JetStreamMessage(msg);

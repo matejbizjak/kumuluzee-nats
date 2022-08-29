@@ -3,6 +3,7 @@ package com.kumuluz.ee.nats.core.invoker;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.SingleConnectionConfig;
+import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.core.annotations.Subject;
@@ -54,7 +55,8 @@ public class ClientInvoker implements InvocationHandler {
             CompletableFuture<Message> incoming = connection.request(message);
             Message response = incoming.get(getAnnotatedResponseTimeout(method).get(ChronoUnit.SECONDS), TimeUnit.SECONDS);
             if (response != null) {
-                return SerDes.deserialize(response.getData(), returnType);
+                // TODO
+                return SerDes.deserialize(response.getData(), CollectionSerDes.getCollectionReturnType(method));
             }
         }
         return null;

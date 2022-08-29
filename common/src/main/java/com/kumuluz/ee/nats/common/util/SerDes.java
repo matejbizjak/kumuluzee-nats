@@ -2,7 +2,9 @@ package com.kumuluz.ee.nats.common.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import java.io.IOException;
 
@@ -25,5 +27,13 @@ public class SerDes {
 
     public static <T> T deserialize(byte[] data, TypeReference<T> valueTypeRef) throws IOException {
         return objectMapper.readValue(data, valueTypeRef);
+    }
+
+    public static <T> T deserialize(byte[] data, JavaType valueType) throws IOException {
+        return objectMapper.readValue(data, valueType);
+    }
+
+    public static TypeFactory getTypeFactory() {
+        return objectMapper.getTypeFactory();
     }
 }

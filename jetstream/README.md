@@ -45,6 +45,37 @@ You also need to include a Log4j2 configuration, which should be in a file named
 
 > If you are unfamiliar with the NATS JetStream, please check the [documentation](https://docs.nats.io/nats-concepts/jetstream) or read the [Configuration](#configuration) section first.
 
+### De/serialization of messages
+
+#### Providing custom ObjectMapper
+
+KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion.
+In order to supply a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
+For example:
+
+```java
+public class NatsMapperProvider implements NatsObjectMapperProvider {
+    
+    @Override
+    public ObjectMapper provideObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+    }
+}
+```
+
+Do not forget to register the implementation and add the required dependencies.
+A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
+
+[//]: # (In our example in the resource directory `META-INF/services` add)
+
+[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
+
+#### Using ObjectMapper
+
+Use methods in SerDes class for de/serialization.
+
 ### Publishing messages
 
 For injecting a JetStream context, the KumuluzEE NATS JetStream provides the `@JetStreamProducer` annotation, which will
@@ -88,6 +119,8 @@ your choice, or **pull** to have control by asking the server for messages.
 To specify a push consumer, we need to annotate a method with the `@JetStreamListener` annotation.
 Server will push the messages to the client, which we can retrieve by the first function parameter.
 Make sure to match the object type to the type of the producer.
+
+> :information_source: Objects from `java.util.Collection` and `java.util.Map` are also supported.
 
 There is another **optional** annotation available, which allows us to select a consumer configuration with an option to
 override the configurations.
@@ -474,31 +507,6 @@ Other default values:
 | io.nats.client.api.ReplayPolicy     | enum ReplayPolicy    | instant                   |
 | io.nats.client.api.RetentionPolicy  | enum RetentionPolicy | limits                    |
 | io.nats.client.api.StorageType      | enum StorageType     | memory                    |
-
-### Providing ObjectMapper
-
-KumuluzEE NATS Core uses Jackson for de/serializing and can use a custom instance of `ObjectMapper` to perform the conversion. In order to supply
-a custom instance implement the `NatsObjectMapperProvider` interface and register the implementation in a service file.
-For example:
-
-```java
-public class NatsMapperProvider implements NatsObjectMapperProvider {
-    
-    @Override
-    public ObjectMapper provideObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
-    }
-}
-```
-
-Do not forget to register the implementation and add the required dependencies.
-A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
-
-[//]: # (In our example in the resource directory `META-INF/services` add)
-
-[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
 
 ## Sample
 

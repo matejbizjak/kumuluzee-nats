@@ -7,6 +7,7 @@ import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
+import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.CoreExtension;
 import com.kumuluz.ee.nats.core.annotations.NatsListener;
@@ -102,7 +103,7 @@ public class ListenerInitializerExtension implements Extension {
             Dispatcher dispatcher = connection.createDispatcher(msg -> {
                 Object receivedMsg;
                 try {
-                    receivedMsg = SerDes.deserialize(msg.getData(), method.getParameterTypes()[0]);
+                    receivedMsg = SerDes.deserialize(msg.getData(), CollectionSerDes.getCollectionParameterType(method));
                     args[0] = receivedMsg;
                 } catch (IOException e) {
                     throw new SerializationException(String
