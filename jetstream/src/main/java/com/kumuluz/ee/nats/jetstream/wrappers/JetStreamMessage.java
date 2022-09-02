@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.jetstream.util;
+package com.kumuluz.ee.nats.jetstream.wrappers;
 
 import io.nats.client.Message;
 import io.nats.client.impl.AckType;

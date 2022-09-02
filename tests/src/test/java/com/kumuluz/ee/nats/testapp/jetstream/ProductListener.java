@@ -1,7 +1,7 @@
 package com.kumuluz.ee.nats.testapp.jetstream;
 
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
-import com.kumuluz.ee.nats.jetstream.util.JetStreamMessage;
+import com.kumuluz.ee.nats.jetstream.wrappers.JetStreamMessage;
 import com.kumuluz.ee.nats.testapp.common.Product;
 
 /**

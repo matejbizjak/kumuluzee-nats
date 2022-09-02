@@ -220,6 +220,26 @@ public void pullMsg() {
 - durable (required)
 - bind (whether this subscription is expected to bind to an existing stream and durable consumer)
 
+#### Creating dynamic consumers during runtime
+
+Until now, we have learned how to create consumers beforehand - before the application starts.
+They cannot be modified during the runtime.
+In case this is not suitable for your entire application you can always create consumers programmatically during the runtime for those special cases.
+Use `@JetStreamDynamicConsumer` to inject the JetStream context and then use the `subscribe()` methods.
+You can even use the `NatsConfigLoader` class to easily obtain the predefined values from your configuration.
+
+```java
+@Inject
+@JetStreamDynamicConsumer
+private JetStream jetStream;
+```
+
+`@JetStreamDynamicConsumer` has two optional parameters:
+- connection (name of the connection)
+- context (name of the JetStream context)
+
+If parameter values are not set, the default connection and JetStream context will be used.
+
 ### Exactly Once Delivery
 
 JetStream supports exactly-once delivery guarantees by combining Message Deduplication and double acks.

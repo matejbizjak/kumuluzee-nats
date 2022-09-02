@@ -18,16 +18,16 @@ import java.util.function.Supplier;
  * @author Matej Bizjak
  */
 
-public class ConfigLoader {
+public class NatsConfigLoader {
 
-    private static ConfigLoader instance;
+    private static NatsConfigLoader instance;
     private static GeneralConfig generalConfig;
     private static final HashMap<String, ConnectionConfig> CONNECTION_CONFIGS = new HashMap<>();
     private final ConfigurationUtil configurationUtil = ConfigurationUtil.getInstance();
 
-    public static ConfigLoader getInstance() {
+    public static NatsConfigLoader getInstance() {
         if (instance == null) {
-            instance = new ConfigLoader();
+            instance = new NatsConfigLoader();
         }
         return instance;
     }

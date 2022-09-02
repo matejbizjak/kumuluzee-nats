@@ -3,8 +3,8 @@ package com.kumuluz.ee.nats.jetstream.context;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
@@ -46,8 +46,8 @@ public class ContextFactory {
 
     private JetStream createContext(String connectionName, String contextName) {
         JetStream jetStream = null;
-        ConfigLoader configLoader = ConfigLoader.getInstance();
-        ConnectionConfig config = configLoader.getConfigForConnection(connectionName);
+        NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
+        ConnectionConfig config = natsConfigLoader.getConfigForConnection(connectionName);
         if (config == null) {
             LOG.severe(String.format("Configurations for connection %s are missing.", connectionName));
             return null;

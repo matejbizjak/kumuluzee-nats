@@ -1,7 +1,7 @@
 package com.kumuluz.ee.nats.core.invoker;
 
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.SingleConnectionConfig;
 import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
@@ -108,7 +108,7 @@ public class ClientInvoker implements InvocationHandler {
         }
 
         if (responseTimeout == null) {
-            responseTimeout = ConfigLoader.getInstance().getGeneralConfig().getResponseTimeout();
+            responseTimeout = NatsConfigLoader.getInstance().getGeneralConfig().getResponseTimeout();
         }
         return responseTimeout;
     }

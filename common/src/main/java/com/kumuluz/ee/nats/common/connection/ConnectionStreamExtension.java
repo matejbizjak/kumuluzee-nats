@@ -1,8 +1,8 @@
 package com.kumuluz.ee.nats.common.connection;
 
 import com.kumuluz.ee.configuration.utils.ConfigurationUtil;
-import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.management.StreamManagement;
 
 import javax.enterprise.event.Observes;
@@ -45,9 +45,9 @@ public class ConnectionStreamExtension implements Extension {
     }
 
     public static void establishAllConnections() {
-        ConfigLoader configLoader = ConfigLoader.getInstance();
-        configLoader.readConfiguration();
-        HashMap<String, ConnectionConfig> connectionConfigs = configLoader.getConnectionConfigs();
+        NatsConfigLoader natsConfigLoader = NatsConfigLoader.getInstance();
+        natsConfigLoader.readConfiguration();
+        HashMap<String, ConnectionConfig> connectionConfigs = natsConfigLoader.getConnectionConfigs();
         AtomicReference<Duration> maxTimeout = new AtomicReference<>(Duration.ZERO);
         if (connectionConfigs.size() > 0) {
             ExecutorService executorService = Executors.newFixedThreadPool(connectionConfigs.size());

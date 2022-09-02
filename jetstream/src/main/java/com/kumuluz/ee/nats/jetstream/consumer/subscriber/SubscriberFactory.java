@@ -3,8 +3,8 @@ package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
-import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.GeneralConfig;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
@@ -56,7 +56,7 @@ public class SubscriberFactory {
             return null;
         }
 
-        GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
+        GeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
         ConsumerConfiguration consumerConfiguration;
         if (consumerConfigAnnotation == null) {
             consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);

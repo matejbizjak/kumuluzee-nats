@@ -2,8 +2,8 @@ package com.kumuluz.ee.nats.jetstream.consumer.listener;
 
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
-import com.kumuluz.ee.nats.common.connection.config.ConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.GeneralConfig;
+import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
@@ -13,7 +13,7 @@ import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamListener;
 import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
-import com.kumuluz.ee.nats.jetstream.util.JetStreamMessage;
+import com.kumuluz.ee.nats.jetstream.wrappers.JetStreamMessage;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
 
@@ -84,7 +84,7 @@ public class ListenerInitializerExtension implements Extension {
                     , beanManager.createCreationalContext(inst.getBean()));
             Object[] args = new Object[method.getParameterCount()];
 
-            GeneralConfig generalConfig = ConfigLoader.getInstance().getGeneralConfig();
+            GeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
             JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
             ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
             Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
