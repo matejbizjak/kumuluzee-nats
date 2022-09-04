@@ -147,8 +147,8 @@ public void receive(String value) {
 - stream (The stream to attach to. If not supplied the stream will be looked up by subject)
 - queue (queue group to join)
 - doubleAck (for double-acking, see [Exactly once delivery](#exactly-once-delivery))
-- bind (whether this subscription is expected to bind to an existing stream and durable consumer)
-- durable (consumer durable name, overrides the durable name from consumer configurations)
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, both need to be specified)
+- durable (name of the consumer, overrides the durable name from consumer configurations)
 - ordered (whether this subscription is expected to ensure messages come in order)
 
 > Durable means the server will remember where we are if we use that name.
@@ -218,7 +218,7 @@ public void pullMsg() {
 - stream (The stream to attach to. If not supplied the stream will be looked up by subject)
 - subject (required)
 - durable (required)
-- bind (whether this subscription is expected to bind to an existing stream and durable consumer)
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, both need to be specified)
 
 #### Creating dynamic consumers during runtime
 
