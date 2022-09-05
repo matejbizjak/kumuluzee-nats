@@ -135,6 +135,8 @@ public void receive(String value) {
     System.out.println(value);
 }
 ```
+> :information_source: If consumer `myConsumer` does not exist yet, it will be created automatically - with default values.
+> That means that you don't actually need to specify every consumer in configuration.  
 
 `@JetStreamListener` has the following parameters:
 - connection
@@ -198,6 +200,8 @@ public void pullMsg() {
     }
 }
 ```
+> :information_source: If consumer `onlyNewMessages` does not exist yet, it will be created automatically - with default values.
+> That means that you don't actually need to specify every consumer in configuration.
 
 `@JetStreamSubscriber` has the following parameters:
 - connection
@@ -499,7 +503,6 @@ More info [here](https://docs.nats.io/nats-concepts/jetstream/consumers).
 
 > :warning: If you decide not to use KumuluzEE JetStream for creating consumers during the runtime and use the
 > predefined consumers, please omit them in the configuration and just use their names in the code.
-> Consumer settings cannot be updated once it is created.
 
 | Property           | Type                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |--------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
