@@ -2,11 +2,14 @@ package com.kumuluz.ee.nats.jetstream.consumer.listener;
 
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
+import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
 import com.kumuluz.ee.nats.common.connection.config.GeneralConfig;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
+import com.kumuluz.ee.nats.common.connection.config.StreamConsumerConfiguration;
 import com.kumuluz.ee.nats.common.exception.DefinitionException;
 import com.kumuluz.ee.nats.common.exception.InvocationException;
 import com.kumuluz.ee.nats.common.exception.SerializationException;
+import com.kumuluz.ee.nats.common.management.StreamManagement;
 import com.kumuluz.ee.nats.common.util.AnnotatedInstance;
 import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
@@ -16,6 +19,7 @@ import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
 import com.kumuluz.ee.nats.jetstream.wrappers.JetStreamMessage;
 import io.nats.client.*;
 import io.nats.client.api.ConsumerConfiguration;
+import io.nats.client.api.StreamInfo;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AfterDeploymentValidation;
@@ -28,6 +32,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,87 +73,108 @@ public class ListenerInitializerExtension implements Extension {
 
         for (AnnotatedInstance<JetStreamListener, ConsumerConfig> inst : INSTANCES) {
             Method method = inst.getMethod();
+            GeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
+            JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
+            ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
 
+            //region Validation
             if (method.getParameterCount() < 1 || method.getParameterCount() > 2) {
                 throw new DefinitionException(String.format("Listener method %s in class %s must have exactly 1 or 2 parameters."
                         , method.getName(), method.getDeclaringClass().getName()));
             }
-            // 2nd parameter must be of type JetStreamMessage
             if (method.getParameterCount() == 2 && !method.getParameters()[1].getType().equals(JetStreamMessage.class)) {
                 throw new DefinitionException(String
                         .format("The 2nd parameter of listener method %s in class %s must be of type JetStreamMessage."
                                 , method.getName(), method.getDeclaringClass().getName()));
             }
-
-            Object reference = beanManager.getReference(inst.getBean(), method.getDeclaringClass()
-                    , beanManager.createCreationalContext(inst.getBean()));
-            Object[] args = new Object[method.getParameterCount()];
-
-            GeneralConfig generalConfig = NatsConfigLoader.getInstance().getGeneralConfig();
-            JetStreamListener jetStreamListenerAnnotation = inst.getAnnotation1();
-            ConsumerConfig consumerConfigAnnotation = inst.getAnnotation2();
+            if (jetStreamListenerAnnotation.subject().isEmpty()) {
+                throw new DefinitionException(String.format("Subject was not specified for listener method %s in class %s."
+                        , method.getName(), method.getDeclaringClass().getName()));
+            }
+            if (jetStreamListenerAnnotation.stream().isEmpty()) {
+                throw new DefinitionException(String.format("Stream was not specified for listener method %s in class %s."
+                        , method.getName(), method.getDeclaringClass().getName()));
+            }
             Connection connection = NatsConnection.getConnection(jetStreamListenerAnnotation.connection());
             if (connection == null) {
                 LOG.severe(String.format("Cannot establish a NATS JetStream listener for method %s class %s and connection %s, because the connection was not established."
                         , method.getName(), method.getDeclaringClass().getName(), jetStreamListenerAnnotation.connection()));
                 continue;
             }
-            try {
-                JetStream jetStream = ContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection()
-                        , jetStreamListenerAnnotation.context());
-                Dispatcher dispatcher = connection.createDispatcher();
+            //endregion
 
-                MessageHandler handler = msg -> {
-                    Object receivedMsg;
-                    try {
-                        receivedMsg = SerDes.deserialize(msg.getData(), CollectionSerDes.getCollectionParameterType(method));
-                        args[0] = receivedMsg;
-                        if (method.getParameterCount() == 2) {
-                            args[1] = new JetStreamMessage(msg);
-                        }
-                    } catch (IOException e) {
-                        exponentialNak(msg);
-                        throw new SerializationException(String
-                                .format("Cannot deserialize the message as class %s for subject %s and connection %s."
-                                        , method.getParameterTypes()[0].getName(), msg.getSubject()
-                                        , msg.getConnection().getConnectedUrl()
-                                ), e);
-                    }
-                    try {
-                        method.invoke(reference, args);
-                        if (jetStreamListenerAnnotation.doubleAck()) {
-                            ackSyncWithRetries(msg, generalConfig);
-                        } else {
-                            msg.ack();
-                        }
-                    } catch (InvocationTargetException | IllegalAccessException e) {
-                        exponentialNak(msg);
-                        throw new InvocationException(String
-                                .format("Method %s could not be invoked for subject %s and connection %s."
-                                        , method.getName(), msg.getSubject(), msg.getConnection().getConnectedUrl()
-                                ), e);
-                    }
-                };
+            Object reference = beanManager.getReference(inst.getBean(), method.getDeclaringClass()
+                    , beanManager.createCreationalContext(inst.getBean()));
+            Object[] args = new Object[method.getParameterCount()];
 
-                ConsumerConfiguration consumerConfiguration;
-                if (consumerConfigAnnotation == null) {
-                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(null, null);
-                } else {
-                    consumerConfiguration = generalConfig.combineConsumerConfigAndBuild(consumerConfigAnnotation.name()
-                            , consumerConfigAnnotation.configOverrides());
+            JetStream jetStream = ContextFactory.getInstance().getContext(jetStreamListenerAnnotation.connection()
+                    , jetStreamListenerAnnotation.context());
+            Dispatcher dispatcher = connection.createDispatcher();
+
+            MessageHandler handler = msg -> {
+                Object receivedMsg;
+                try {
+                    receivedMsg = SerDes.deserialize(msg.getData(), CollectionSerDes.getCollectionParameterType(method));
+                    args[0] = receivedMsg;
+                    if (method.getParameterCount() == 2) {
+                        args[1] = new JetStreamMessage(msg);
+                    }
+                } catch (IOException e) {
+                    exponentialNak(msg);
+                    throw new SerializationException(String
+                            .format("Cannot deserialize the message as class %s for subject %s and connection %s."
+                                    , method.getParameterTypes()[0].getName(), msg.getSubject()
+                                    , msg.getConnection().getConnectedUrl()
+                            ), e);
                 }
+                try {
+                    method.invoke(reference, args);
+                    if (jetStreamListenerAnnotation.doubleAck()) {
+                        ackSyncWithRetries(msg, generalConfig);
+                    } else {
+                        msg.ack();
+                    }
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    exponentialNak(msg);
+                    throw new InvocationException(String
+                            .format("Method %s could not be invoked for subject %s and connection %s."
+                                    , method.getName(), msg.getSubject(), msg.getConnection().getConnectedUrl()
+                            ), e);
+                }
+            };
 
-                PushSubscribeOptions pushSubscribeOptions = PushSubscribeOptions.builder()
-                        .configuration(consumerConfiguration)
-                        .ordered(jetStreamListenerAnnotation.ordered())
-                        .bind(jetStreamListenerAnnotation.bind())
-                        .stream(jetStreamListenerAnnotation.stream())
-                        .durable(jetStreamListenerAnnotation.durable())
-                        .build();
+            //region Configuration
+            PushSubscribeOptions.Builder builder = PushSubscribeOptions.builder()
+                    .ordered(jetStreamListenerAnnotation.ordered())
+                    .bind(jetStreamListenerAnnotation.bind())
+                    .stream(jetStreamListenerAnnotation.stream())
+                    .durable(jetStreamListenerAnnotation.durable());
+            ConnectionConfig connectionConfig = NatsConfigLoader.getInstance().getConfigForConnection(jetStreamListenerAnnotation.connection());
+            StreamConsumerConfiguration streamConsumerConfiguration = connectionConfig
+                    .getStreamConsumerConfiguration(jetStreamListenerAnnotation.stream());
+            if (streamConsumerConfiguration == null) {  // stream not specified in configuration
+                StreamInfo streamInfo = null;
+                try {
+                    streamInfo = StreamManagement.getStreamInfoOrNullWhenNotExist(connection, jetStreamListenerAnnotation.stream());
+                } catch (JetStreamApiException | IOException e) {
+                    LOG.log(Level.SEVERE, String.format("There was a problem obtaining stream info for method %s in class %s."
+                            , method.getName(), method.getDeclaringClass().getName()), e);
+                }
+                if (streamInfo == null) {  // check if stream already exists (was created previously)
+                    throw new DefinitionException(String.format("Stream must be set and valid - at method %s in class %s."
+                            , method.getName(), method.getDeclaringClass().getName()));
+                }
+            } else {  // stream specified in configuration
+                Optional<ConsumerConfiguration> consumerConfiguration = streamConsumerConfiguration
+                        .getAndCombineConsumerConfig(connection, jetStreamListenerAnnotation.durable(), consumerConfigAnnotation);
+                consumerConfiguration.ifPresent(builder::configuration);
+            }
+            PushSubscribeOptions pushSubscribeOptions = builder.build();
+            //endregion
 
+            try {
                 jetStream.subscribe(jetStreamListenerAnnotation.subject(), jetStreamListenerAnnotation.queue()
                         , dispatcher, handler, false, pushSubscribeOptions);
-
             } catch (JetStreamApiException | IOException e) {
                 LOG.log(Level.SEVERE, String
                         .format("There was a problem with the JetStream listener at the method %s in class %s for connection %s."

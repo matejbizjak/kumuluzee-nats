@@ -74,6 +74,11 @@ public class ListenerInitializerExtension implements Extension {
             NatsListener natsListenerAnnotation = inst.getAnnotation2();
 
             String subjectName = subjectAnnotation.value();
+            if (subjectName.isEmpty()) {
+                throw new DefinitionException(String.format("Subject cannot be null or empty at listener method %s in class %s."
+                        , method.getName(), method.getDeclaringClass().getName()));
+            }
+
             String connectionName = subjectAnnotation.connection();
             if (connectionName.isEmpty()) {
                 connectionName = natsListenerAnnotation.connection();

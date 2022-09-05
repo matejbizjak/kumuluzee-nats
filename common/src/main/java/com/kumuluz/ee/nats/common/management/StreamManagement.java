@@ -28,16 +28,20 @@ public class StreamManagement {
         HashMap<String, Connection> connections = NatsConnection.getAllConnections();
         HashMap<String, ConnectionConfig> connectionConfigs = NatsConfigLoader.getInstance().getConnectionConfigs();
         connections.forEach(
-                (name, connection) -> connectionConfigs.get(name).getStreamConfigurations().forEach(
+                (name, connection) -> connectionConfigs.get(name).getStreamConsumerConfigurations().forEach(
                         streamConfiguration -> {
                             try {
-                                createStreamOrUpdateSubjects(connection, streamConfiguration);
+                                createStreamOrUpdateSubjects(connection, streamConfiguration.getStreamConfiguration());
                             } catch (IOException | JetStreamApiException e) {
                                 throw new NatsException(e);
                             }
                         }
                 )
         );
+    }
+
+    public static StreamInfo getStreamInfoOrNullWhenNotExist(Connection connection, String streamName) throws IOException, JetStreamApiException {
+        return getStreamInfoOrNullWhenNotExist(connection.jetStreamManagement(), streamName);
     }
 
     public static StreamInfo getStreamInfoOrNullWhenNotExist(JetStreamManagement jetStreamManagement, String streamName)

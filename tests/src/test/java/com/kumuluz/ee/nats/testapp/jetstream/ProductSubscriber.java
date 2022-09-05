@@ -1,7 +1,5 @@
 package com.kumuluz.ee.nats.testapp.jetstream;
 
-import com.kumuluz.ee.nats.common.annotations.ConfigurationOverride;
-import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import com.kumuluz.ee.nats.testapp.common.Product;
@@ -21,8 +19,7 @@ import java.time.Duration;
 public class ProductSubscriber {
 
     @Inject
-    @JetStreamSubscriber(connection = "secure", subject = "product.corn", durable = "newCorn")
-    @ConsumerConfig(name = "custom1", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+    @JetStreamSubscriber(connection = "secure", stream = "stream2", subject = "product.corn", durable = "newCorn")
     private JetStreamSubscription jetStreamSubscription;
 
     public Product pullCorn() {

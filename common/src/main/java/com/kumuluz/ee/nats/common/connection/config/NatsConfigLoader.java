@@ -78,7 +78,7 @@ public class NatsConfigLoader {
 
     private void readAndSetGeneralConfigClass() {
         String prefix = "kumuluzee.nats";
-        GeneralConfig.Builder builder = new GeneralConfig.Builder();
+        GeneralConfig.Builder builder = GeneralConfig.builder();
         // response timeout
         Optional<String> responseTimeout = configurationUtil.get(prefix + ".response-timeout");
         responseTimeout.ifPresent(x -> builder.responseTimeout(Duration.parse(x)));
@@ -91,15 +91,6 @@ public class NatsConfigLoader {
         // drain timeout
         Optional<String> drainTimeout = configurationUtil.get(prefix + ".drain-timeout");
         drainTimeout.ifPresent(x -> builder.drainTimeout(Duration.parse(x)));
-        // consumer configurations
-        Optional<Integer> consumerConfigSize = configurationUtil.getListSize(prefix + ".consumer-configuration");
-        List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
-        if (consumerConfigSize.isPresent()) {
-            for (int i = 0; i < consumerConfigSize.get(); i++) {
-                consumerConfigurations.add(readConsumerConfiguration(prefix + ".consumer-configuration" + "[" + i + "]"));
-            }
-        }
-        builder.consumerConfigurations(consumerConfigurations);
         generalConfig = builder.build();
     }
 
@@ -120,9 +111,6 @@ public class NatsConfigLoader {
         // description
         Optional<String> description = configurationUtil.get(currentPrefix + ".description");
         description.ifPresent(consumerConfiguration::setDescription);
-        // durable
-        Optional<String> durable = configurationUtil.get(currentPrefix + ".durable");
-        durable.ifPresent(consumerConfiguration::setDurable);
         // deliver subject
         Optional<String> deliverSubject = configurationUtil.get(currentPrefix + ".deliver-subject");
         deliverSubject.ifPresent(consumerConfiguration::setDeliverSubject);
@@ -236,13 +224,13 @@ public class NatsConfigLoader {
 
         // (jet)streams
         Optional<Integer> streamsSize = configurationUtil.getListSize(currentPrefix + ".streams");
-        List<StreamConfiguration> streams = new ArrayList<>();
+        List<StreamConsumerConfiguration> streams = new ArrayList<>();
         if (streamsSize.isPresent()) {
             for (int i = 0; i < streamsSize.get(); i++) {
                 streams.add(readStreamsConfiguration(currentPrefix + ".streams" + "[" + i + "]"));
             }
         }
-        connectionConfig.setStreamConfigurations(streams);
+        connectionConfig.setStreamConsumerConfigurations(streams);
 
         // jetStreamContext options
         Optional<Integer> jetStreamContextsSize = configurationUtil.getListSize(currentPrefix + ".jetstream-contexts");
@@ -285,11 +273,14 @@ public class NatsConfigLoader {
         connectionConfig.setTls(tls);
     }
 
-    private StreamConfiguration readStreamsConfiguration(String currentPrefix) {
-        StreamConfiguration.Builder builder = StreamConfiguration.builder();
+    private StreamConsumerConfiguration readStreamsConfiguration(String currentPrefix) {
+        StreamConsumerConfiguration.Builder streamConsumerBuilder = StreamConsumerConfiguration.builder();
+
+        // stream
+        StreamConfiguration.Builder streamBuilder = StreamConfiguration.builder();
         // name
-        Optional<String> name = configurationUtil.get(currentPrefix + ".name");
-        name.ifPresent(builder::name);
+        String name = configurationUtil.get(currentPrefix + ".name").orElseThrow(configNotFoundException(currentPrefix + ".name"));
+        streamBuilder.name(name);
         // subjects
         Optional<Integer> subjectsSize = configurationUtil.getListSize(currentPrefix + ".subjects");
         List<String> subjects = new ArrayList<>();
@@ -299,55 +290,68 @@ public class NatsConfigLoader {
                 subject.ifPresent(subjects::add);
             }
         }
-        builder.subjects(subjects);
+        streamBuilder.subjects(subjects);
         // description
         Optional<String> description = configurationUtil.get(currentPrefix + ".description");
-        description.ifPresent(builder::description);
+        description.ifPresent(streamBuilder::description);
         // retention policy
         Optional<String> retentionPolicy = configurationUtil.get(currentPrefix + ".retention-policy");
-        retentionPolicy.ifPresent(x -> builder.retentionPolicy(RetentionPolicy.get(x)));
+        retentionPolicy.ifPresent(x -> streamBuilder.retentionPolicy(RetentionPolicy.get(x)));
         // max consumers
         Optional<Long> maxConsumers = configurationUtil.getLong(currentPrefix + ".max-consumers");
-        maxConsumers.ifPresent(builder::maxConsumers);
+        maxConsumers.ifPresent(streamBuilder::maxConsumers);
         // max bytes
         Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".max-bytes");
-        maxBytes.ifPresent(builder::maxBytes);
+        maxBytes.ifPresent(streamBuilder::maxBytes);
         // max age
         Optional<Long> maxAge = configurationUtil.getLong(currentPrefix + ".max-age");
-        maxAge.ifPresent(builder::maxAge);
+        maxAge.ifPresent(streamBuilder::maxAge);
         // max messages
         Optional<Long> maxMsgs = configurationUtil.getLong(currentPrefix + ".max-msgs");
-        maxMsgs.ifPresent(builder::maxMessages);
+        maxMsgs.ifPresent(streamBuilder::maxMessages);
         // max message size
         Optional<Long> maxMsgSize = configurationUtil.getLong(currentPrefix + ".max-msg-size");
-        maxMsgSize.ifPresent(builder::maxMsgSize);
+        maxMsgSize.ifPresent(streamBuilder::maxMsgSize);
         // storage type
         Optional<String> storageType = configurationUtil.get(currentPrefix + ".storage-type");
-        storageType.ifPresent(x -> builder.storageType(StorageType.get(x)));
+        storageType.ifPresent(x -> streamBuilder.storageType(StorageType.get(x)));
         // replicas
         Optional<Integer> replicas = configurationUtil.getInteger(currentPrefix + ".replicas");
-        replicas.ifPresent(builder::replicas);
+        replicas.ifPresent(streamBuilder::replicas);
         // no ack
         Optional<Boolean> noAck = configurationUtil.getBoolean(currentPrefix + ".no-ack");
-        noAck.ifPresent(builder::noAck);
+        noAck.ifPresent(streamBuilder::noAck);
         // template owner
         Optional<String> templateOwner = configurationUtil.get(currentPrefix + ".template-owner");
-        templateOwner.ifPresent(builder::templateOwner);
+        templateOwner.ifPresent(streamBuilder::templateOwner);
         // discard policy
         Optional<String> discardPolicy = configurationUtil.get(currentPrefix + ".discard-policy");
-        discardPolicy.ifPresent(x -> builder.discardPolicy(DiscardPolicy.get(x)));
+        discardPolicy.ifPresent(x -> streamBuilder.discardPolicy(DiscardPolicy.get(x)));
         // duplicate window
         Optional<String> duplicateWindow = configurationUtil.get(currentPrefix + ".duplicate-window");
         if (duplicateWindow.isPresent()) {
-            builder.duplicateWindow(Duration.parse(duplicateWindow.get()));
+            streamBuilder.duplicateWindow(Duration.parse(duplicateWindow.get()));
         } else {
             // This is a default value on the server anyway but StreamConfiguration builder defaults it to ZERO
             // which is then overwritten on the server by 2 min. To make StreamManagement.configurationsChanged() work
             // properly we set it to 2 min at the beginning. https://github.com/nats-io/nats.java/issues/682
-            builder.duplicateWindow(Duration.ofMinutes(2));
+            streamBuilder.duplicateWindow(Duration.ofMinutes(2));
         }
 
-        return builder.build();
+        // consumers
+        Optional<Integer> consumersSize = configurationUtil.getListSize(currentPrefix + ".consumers");
+        List<ConsumerConfiguration> consumerConfigurations = new ArrayList<>();
+        if (consumersSize.isPresent()) {
+            for (int i = 0; i < consumersSize.get(); i++) {
+                consumerConfigurations.add(readConsumerConfiguration(currentPrefix + ".consumers" + "[" + i + "]"));
+            }
+        }
+        streamConsumerBuilder.consumerConfigurations(consumerConfigurations);
+
+        streamConsumerBuilder.streamName(name);
+        streamConsumerBuilder.streamConfiguration(streamBuilder.build());
+
+        return streamConsumerBuilder.build();
     }
 
     private NamedJetStreamOptions readJetStreamOptions(String currentPrefix) {

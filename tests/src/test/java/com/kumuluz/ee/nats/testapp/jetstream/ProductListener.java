@@ -11,8 +11,7 @@ import com.kumuluz.ee.nats.testapp.common.Product;
 public class ProductListener {
 
 
-    @JetStreamListener(connection = "secure", subject = "product.*")
-//    @ConsumerConfig(name = "custom1", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+    @JetStreamListener(connection = "secure", stream = "stream2", subject = "product.*")
     public void receive(Product product, JetStreamMessage msg) {
     }
 }

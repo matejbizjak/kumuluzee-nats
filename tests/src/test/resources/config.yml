@@ -28,5 +28,5 @@ kumuluzee:
               - product.*
             storage-type: memory
     consumer-configuration:
-      - name: custom1
-        deliver-policy: all
+      - name: newCorn
+        deliver-policy: new

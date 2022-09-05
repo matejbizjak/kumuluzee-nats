@@ -114,6 +114,9 @@ Consumers can either be **push** based where JetStream will deliver the messages
 rate limit policy) to a subject of
 your choice, or **pull** to have control by asking the server for messages.
 
+Consumers can also be **durable** or **ephemeral**. Durable consumers are tracked by the server, allowing resuming consumption where left off.
+By default, a consumer is ephemeral. To make the consumer durable, you have to set their name as it will be explained in the later sections.
+
 #### Push consumers
 
 To specify a push consumer, we need to annotate a method with the `@JetStreamListener` annotation.
@@ -122,36 +125,27 @@ Make sure to match the object type to the type of the producer.
 
 > :information_source: Objects from `java.util.Collection` and `java.util.Map` are also supported.
 
-There is another **optional** annotation available, which allows us to select a consumer configuration with an option to
-override the configurations.
-That annotation is `@ConsumerConfig`.
-
-In the following example push consumer is listening to the subject `subject` on the default connection and default JetStream
-context.
-It uses custom consumer configuration named `custom` but overrides the `deliverPolicy` parameter.
-It expects the message of the String data type.
+In the following example push consumer is listening to the subject `subject` on the default connection, default JetStream
+context and stream `myStream`.
+It is durable, and it works as a consumer `myConsumer`. It expects the message of the String data type.
 
 ```java
-@JetStreamListener(subject = "subject")
-@ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+@JetStreamListener(subject = "subject", stream = "myStream", durable = "myConsumer")
 public void receive(String value) {
     System.out.println(value);
 }
 ```
 
 `@JetStreamListener` has the following parameters:
-
 - connection
 - context
 - subject (required)
-- stream (The stream to attach to. If not supplied the stream will be looked up by subject)
-- queue (queue group to join)
+- stream (required)
+- queue (queue group to join - only one in the group will receive the message)
 - doubleAck (for double-acking, see [Exactly once delivery](#exactly-once-delivery))
-- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, both need to be specified)
-- durable (name of the consumer, overrides the durable name from consumer configurations)
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, the consumer must already exist before application starts)
+- durable (name of the consumer - setting a value makes the consumer durable)
 - ordered (whether this subscription is expected to ensure messages come in order)
-
-> Durable means the server will remember where we are if we use that name.
 
 ##### Reseting redelivery timer for long operations
 
@@ -160,8 +154,7 @@ It provides us a metadata of the message, and it allows us to call function `inP
 It is useful when it takes longer to process a message.
 
 ```java
-@JetStreamListener(subject = "subject")
-@ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+@JetStreamListener(subject = "subject", stream = "myStream", durable = "myConsumer")
 public void receive(String value, JetStreamMessage msg) {
     try {
         // long processing of the message
@@ -175,26 +168,20 @@ public void receive(String value, JetStreamMessage msg) {
 
 #### Pull consumers
 
-To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with the help
+To be able to manually pull messages from a server we need to inject `JetStreamSubscription` reference with a help
 of the `@JetStreamSubscriber` annotation.
 We have to use it in conjunction with the `@Inject` annotation, as shown in the example below. 
 
-> :warning: Durable must be set for pull based consumers!
+> :warning: Pull consumers must be durable (durable name must be set)!
 
-There is another **optional** annotation available, which allows us to select a consumer configuration with an option to
-override the configurations.
-That annotation is `@ConsumerConfig`.
-
-In the following example the pull consumer is listening to the subject `subject` on the default connection and default
-context.
-Durable name is set to `somethingNew`.
-It uses custom consumer configuration named `custom` but overrides the `deliverPolicy` parameter.
+In the following example the pull consumer is listening to the subject `subject` on the default connection, default
+context and stream `myStream`.
+It uses configuration of the `onlyNewMessages` consumer.
 It fetches up to 10 messages with a timeout of 1 second. It expects the data to be of String data type.
 
 ```java
 @Inject
-@JetStreamSubscriber(subject = "subject", durable = "somethingNew")
-@ConsumerConfig(name = "custom", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+@JetStreamSubscriber(subject = "subject", stream = "myStream", durable = "onlyNewMessages")
 private JetStreamSubscription jetStreamSubscription;
 
 public void pullMsg() {
@@ -215,10 +202,10 @@ public void pullMsg() {
 `@JetStreamSubscriber` has the following parameters:
 - connection
 - context
-- stream (The stream to attach to. If not supplied the stream will be looked up by subject)
+- stream (required)
 - subject (required)
-- durable (required)
-- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, both need to be specified)
+- durable (required) (name of the consumer - setting a value makes the consumer durable)
+- bind (whether this subscription is expected to bind to an existing stream and durable consumer - if true, the consumer must already exist before application starts)
 
 #### Creating dynamic consumers during runtime
 
@@ -239,6 +226,39 @@ private JetStream jetStream;
 - context (name of the JetStream context)
 
 If parameter values are not set, the default connection and JetStream context will be used.
+
+#### Creating consumers with annotations
+
+There is another way of creating consumers apart from specifying them in the configuration or manually creating them beforehand - more in section [Configuration](#configuration).
+That is `@ConsumerConfig` annotation. You use it together with `@JetStreamSubscriber` and `@JetStreamListener` annotations.
+You specify the name of the base consumer and the values you want to override.
+
+> :information_source: If you omit the base value, it will use the default configuration as a base.
+
+##### Durable consumer
+
+If you want to make a consumer durable, select a new durable name at annotation `@JetStreamSubscriber` or `@JetStreamListener`.
+This will be the actual name of the created consumer.
+```java
+@Inject
+@JetStreamSubscriber(stream = "myStream", subject = "subject", durable = "onlyNewMessagesConsumer")
+@ConsumerConfig(base = "myDefaultConsumer", configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")})
+private JetStreamSubscription jetStreamSubscription;
+```
+In this example we create a durable consumer `onlyNewMessagesConsumer` with the same values as `myDefaultConsumer` except deliver policy is set to new.
+
+##### Ephemeral consumer
+If you want to create an ephemeral consumer leave a durable value empty at annotation `@JetStreamSubscriber` or `@JetStreamListener`.
+
+```java
+@JetStreamSub(stream = "myStream", subject = "subject")
+@ConsumerConfig(configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")
+        , @ConfigurationOverride(key = "ack-policy", value = "none")})
+public void receive(String value, JetStreamMessage msg) {
+        ...
+}
+```
+In this example we create an ephemeral consumer with the same values as default consumer except deliver policy is set to new and ack policy to none.
 
 ### Exactly Once Delivery
 
@@ -266,7 +286,11 @@ PublishAck publishAck = jetStream.publish(message);
 
 #### Consumer
 
-Consumers can be 100% sure a message was correctly processed by requesting the server Acknowledge having received your acknowledgement (sometimes referred to as double-acking) by calling the message's `AckSync()` (rather than `Ack()`) function which sets a reply subject on the Ack and waits for a response from the server on the reception and processing of the acknowledgement. If the response received from the server indicates success you can be sure that the message will never be re-delivered by the consumer (due to a loss of your acknowledgement).
+Consumers can be 100% sure a message was correctly processed by requesting the server Acknowledge having received your 
+acknowledgement (sometimes referred to as double-acking) by calling the message's `AckSync()` (rather than `Ack()`) 
+function which sets a reply subject on the Ack and waits for a response from the server on the reception and processing
+of the acknowledgement. If the response received from the server indicates success you can be sure that the message will
+never be re-delivered by the consumer (due to a loss of your acknowledgement).
 
 ##### Push consumer
 
@@ -281,7 +305,7 @@ For pull based subscribers, use `AckSync()` function instead of `Ack()`.
 Streams and durable consumers can be defined administratively outside the application (typically using the [NATS CLI Tool](https://docs.nats.io/using-nats/nats-tools/nats_cli)) in which case the application only needs to know about the well-known names of the durable consumers it wants to use.
 But with KumuluzEE JetStream you can manage streams and consumers programmatically, simply by specifying them in the configurations.
 
-> :warning: You cannot update a consumer (change its configuration) once created.
+> :warning: You cannot update a consumer (change its configuration) once it is created.
 
 > :warning: You cannot delete a stream or consumer directly with KumuluzEE JetStream. You can do this manually typically using the [NATS CLI Tool](https://docs.nats.io/using-nats/nats-tools/nats_cli).
 
@@ -370,7 +394,6 @@ Prefix: `kumuluzee.nats`
 | ack-confirmation-retries | int                 | Maximum number of retries a consumer asks the server for the acknowledgment confirmation (double-acking)                                                                                                                                                                                      |
 | drain-timeout            | java.time.Duration  | The time to wait for the drain to succeed, pass 0 to wait forever. Drain involves moving messages to and from the server so a very short timeout is not recommended. If the timeout is reached before the drain completes, the connection is simply closed, which can result in message loss. |
 | servers                  | java.util.List      | The list of servers                                                                                                                                                                                                                                                                           |
-| consumer-configuration   | java.util.List      | The list of consumer configurations                                                                                                                                                                                                                                                           |
 
 ### Servers
 
@@ -418,6 +441,10 @@ the defined storage system.
 
 More info [here](https://docs.nats.io/nats-concepts/jetstream/streams).
 
+> :warning: If you decide not to use KumuluzEE JetStream for creating streams at the application startup and use the
+> predefined streams, please omit them in the configuration and just use their names in the code. Or make sure that they
+> have the exact same settings, or they will be updated (with new values from the configuration).
+
 | Property         | Type                               | Description                                                                                                                                             |
 |------------------|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | name             | java.lang.String                   | A name for the Stream that may not have spaces, tabs, period (.), greater than (>) or asterisk (*).                                                     |
@@ -435,6 +462,7 @@ More info [here](https://docs.nats.io/nats-concepts/jetstream/streams).
 | template-owner   | java.lang.String                   |                                                                                                                                                         |
 | discard-policy   | io.nats.client.api.DiscardPolicy   | When a Stream reaches it's limits either, DiscardNew refuses new messages while DiscardOld (default) deletes old messages                               |
 | duplicate-window | java.time.Duration                 | The window within which to track duplicate messages                                                                                                     |
+| consumers        | java.util.List                     | The list of consumer configurations                                                                                                                     |
 
 ### JetStream Contexts
 
@@ -455,7 +483,7 @@ Contexts may be prefixed to be used in conjunction with NATS authorization.
 
 ### Consumer configuration
 
-Prefix: `kumuluzee.nats.consumer-configuration`
+Prefix: `kumuluzee.nats.servers.streams.consumers`
 
 Consumers can be conceived as 'views' into a stream, with their own 'cursor'. Consumers iterate or consume over all or a
 subset of the messages stored in the stream, according to their 'subject filter' and 'replay policy', and can be used by
@@ -468,6 +496,10 @@ their own individual replay of messages from a stream you would use an 'ordered 
 scaling horizontally the processing of messages from a stream you would use a 'pull consumer'.
 
 More info [here](https://docs.nats.io/nats-concepts/jetstream/consumers).
+
+> :warning: If you decide not to use KumuluzEE JetStream for creating consumers during the runtime and use the
+> predefined consumers, please omit them in the configuration and just use their names in the code.
+> Consumer settings cannot be updated once it is created.
 
 | Property           | Type                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |--------------------|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

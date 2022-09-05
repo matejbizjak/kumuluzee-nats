@@ -26,8 +26,6 @@ public class ConsumerConfiguration {
 
     private String description;
 
-    private String durable;
-
     private String deliverSubject;
 
     private String deliverGroup;
@@ -107,14 +105,6 @@ public class ConsumerConfiguration {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getDurable() {
-        return durable;
-    }
-
-    public void setDurable(String durable) {
-        this.durable = durable;
     }
 
     public String getDeliverSubject() {

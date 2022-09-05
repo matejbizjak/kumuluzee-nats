@@ -5,7 +5,8 @@ import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
 /**
- * Annotation for specifying the consumer configuration with an option to override specific values.
+ * Annotation for specifying new consumer configuration.
+ * Copies values from the base consumer with an option to override certain values.
  *
  * @author Matej Bizjak
  */
@@ -16,8 +17,14 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD, ElementType.METHOD})
 public @interface ConsumerConfig {
 
-    @Nonbinding String name() default "";
+    /**
+     * @return Base consumer configuration.
+     */
+    @Nonbinding String base() default "";
 
+    /**
+     * @return Overrided values.
+     */
     @Nonbinding ConfigurationOverride[] configOverrides() default {};
 
 }

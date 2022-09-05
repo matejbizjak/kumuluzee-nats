@@ -3,7 +3,6 @@ package com.kumuluz.ee.nats.common.connection.config;
 import io.nats.client.JetStreamOptions;
 import io.nats.client.Nats;
 import io.nats.client.Options;
-import io.nats.client.api.StreamConfiguration;
 
 import javax.net.ssl.*;
 import java.io.BufferedInputStream;
@@ -43,7 +42,7 @@ public abstract class ConnectionConfig {
     private String password;
     private String credentials;
     private TLS tls;
-    private List<StreamConfiguration> streamConfigurations;
+    private List<StreamConsumerConfiguration> streamConsumerConfigurations;
     private Map<String, JetStreamOptions> jetStreamContextOptions;
 
     public ConnectionConfig(String name) {
@@ -150,12 +149,16 @@ public abstract class ConnectionConfig {
         this.tls = tls;
     }
 
-    public List<StreamConfiguration> getStreamConfigurations() {
-        return streamConfigurations;
+    public List<StreamConsumerConfiguration> getStreamConsumerConfigurations() {
+        return streamConsumerConfigurations;
     }
 
-    public void setStreamConfigurations(List<StreamConfiguration> streamConfigurations) {
-        this.streamConfigurations = streamConfigurations;
+    public StreamConsumerConfiguration getStreamConsumerConfiguration(String streamName) {
+        return streamConsumerConfigurations.stream().filter(x -> x.getStreamName().equals(streamName)).findFirst().orElse(null);
+    }
+
+    public void setStreamConsumerConfigurations(List<StreamConsumerConfiguration> streamConsumerConfigurations) {
+        this.streamConsumerConfigurations = streamConsumerConfigurations;
     }
 
     public Map<String, JetStreamOptions> getJetStreamContextOptions() {

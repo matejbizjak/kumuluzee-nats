@@ -27,7 +27,7 @@ public class InterfaceValidationUtil {
         boolean isAnnotated = false;
         // method annotation variables
         Subject subjectAnnotation = method.getAnnotation(Subject.class);
-        if (subjectAnnotation != null) {
+        if (subjectAnnotation != null && !subjectAnnotation.value().isEmpty()) {
             isAnnotated = true;
         }
         // method parameter variables
@@ -41,7 +41,7 @@ public class InterfaceValidationUtil {
 
         if (!isAnnotated) {
             throw new DefinitionException(String
-                    .format("NATS client's method %s in class %s is not annotated with @Subject or its value is null."
+                    .format("NATS client's method %s in class %s is not annotated with @Subject or its value is null or empty."
                             , method.getName(), method.getDeclaringClass().getName()));
         }
     }
