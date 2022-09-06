@@ -388,8 +388,6 @@ The configuration is split into more parts for easier understanding.
 
 Prefix: `kumuluzee.nats`
 
-[//]: # (TODO napiši v tabelo še default vrednosti?)
-
 | Property                 | Type                | Description                                                                                                                                                                                                                                                                                   |
 |--------------------------|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | enabled                  | boolean             | Enables/disables both NATS extensions                                                                                                                                                                                                                                                         |

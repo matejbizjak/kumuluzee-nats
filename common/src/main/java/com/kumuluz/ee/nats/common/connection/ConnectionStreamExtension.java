@@ -33,7 +33,6 @@ public class ConnectionStreamExtension implements Extension {
         establishAllConnections();
         if (isJetStreamEnabled()) {
             StreamManagement.establishAll();
-//            ConsumerManagement.establishAll();
         }
     }
 

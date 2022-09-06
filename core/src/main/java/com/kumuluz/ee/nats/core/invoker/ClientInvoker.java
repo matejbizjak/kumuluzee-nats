@@ -55,7 +55,6 @@ public class ClientInvoker implements InvocationHandler {
             CompletableFuture<Message> incoming = connection.request(message);
             Message response = incoming.get(getAnnotatedResponseTimeout(method).get(ChronoUnit.SECONDS), TimeUnit.SECONDS);
             if (response != null) {
-                // TODO
                 return SerDes.deserialize(response.getData(), CollectionSerDes.getCollectionReturnType(method));
             }
         }
