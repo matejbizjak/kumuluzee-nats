@@ -255,7 +255,7 @@ In this example we create a durable consumer `onlyNewMessagesConsumer` with the 
 If you want to create an ephemeral consumer leave a durable value empty at annotation `@JetStreamSubscriber` or `@JetStreamListener`.
 
 ```java
-@JetStreamSub(stream = "myStream", subject = "subject")
+@JetStreamListener(stream = "myStream", subject = "subject")
 @ConsumerConfig(configOverrides = {@ConfigurationOverride(key = "deliver-policy", value = "new")
         , @ConfigurationOverride(key = "ack-policy", value = "none")})
 public void receive(String value, JetStreamMessage msg) {
