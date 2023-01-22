@@ -159,12 +159,18 @@ public class NatsConfigLoader {
         // max bytes
         Optional<Long> maxBytes = configurationUtil.getLong(currentPrefix + ".max-bytes");
         maxBytes.ifPresent(consumerConfiguration::setMaxBytes);
+        // num replicas
+        Optional<Integer> numReplicas = configurationUtil.getInteger(currentPrefix + ".num-replicas");
+        numReplicas.ifPresent(consumerConfiguration::setNumReplicas);
         // flow control
         Optional<Boolean> flowControl = configurationUtil.getBoolean(currentPrefix + ".flow-control");
         flowControl.ifPresent(consumerConfiguration::setFlowControl);
         // headers only
         Optional<Boolean> headersOnly = configurationUtil.getBoolean(currentPrefix + ".headers-only");
         headersOnly.ifPresent(consumerConfiguration::setHeadersOnly);
+        // headers only
+        Optional<Boolean> memStorage = configurationUtil.getBoolean(currentPrefix + ".mem-storage");
+        memStorage.ifPresent(consumerConfiguration::setMemStorage);
         // backoff
         Optional<Integer> backoffListSize = configurationUtil.getListSize(currentPrefix + ".backoff");
         List<Duration> backoffList = new ArrayList<>();

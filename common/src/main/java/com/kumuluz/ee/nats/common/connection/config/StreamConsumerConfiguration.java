@@ -169,11 +169,17 @@ public class StreamConsumerConfiguration {
                     case "max-bytes":
                         consumerConfiguration.setMaxBytes(Long.valueOf(value));
                         break;
+                    case "num-replicas":
+                        consumerConfiguration.setNumReplicas(Integer.valueOf(value));
+                        break;
                     case "flow-control":
                         consumerConfiguration.setFlowControl(Boolean.valueOf(value));
                         break;
                     case "headers-only":
                         consumerConfiguration.setHeadersOnly(Boolean.valueOf(value));
+                        break;
+                    case "mem-storage":
+                        consumerConfiguration.setMemStorage(Boolean.valueOf(value));
                         break;
                     case "backoff":
                         List<Duration> backoffList = Arrays.stream(value.split(","))
@@ -206,11 +212,13 @@ public class StreamConsumerConfiguration {
         consumerConfiguration.setFilterSubject(cc.getFilterSubject());
         consumerConfiguration.setFlowControl(cc.isFlowControl());
         consumerConfiguration.setHeadersOnly(cc.isHeadersOnly());
+        consumerConfiguration.setMemStorage(cc.isMemStorage());
         consumerConfiguration.setIdleHeartbeat(cc.getIdleHeartbeat());
         consumerConfiguration.setInactiveThreshold(cc.getInactiveThreshold());
         consumerConfiguration.setMaxAckPending((long) cc.getMaxAckPending());
         consumerConfiguration.setMaxBatch((long) cc.getMaxBatch());
         consumerConfiguration.setMaxBytes((long) cc.getMaxBytes());
+        consumerConfiguration.setNumReplicas(cc.getNumReplicas());
         consumerConfiguration.setMaxDeliver((long) cc.getMaxDeliver());
         consumerConfiguration.setMaxExpires(cc.getMaxExpires());
         consumerConfiguration.setMaxPullWaiting((long) cc.getMaxPullWaiting());
@@ -287,11 +295,17 @@ public class StreamConsumerConfiguration {
         if (consumerConfiguration.getMaxBytes() != null) {
             builder.maxBytes(consumerConfiguration.getMaxBytes());
         }
+        if (consumerConfiguration.getNumReplicas() != null) {
+            builder.numReplicas(consumerConfiguration.getNumReplicas());
+        }
         if (consumerConfiguration.getFlowControl() == Boolean.TRUE) {
             builder.flowControl(consumerConfiguration.getIdleHeartbeat());
         }
         if (consumerConfiguration.getHeadersOnly() != null) {
             builder.headersOnly(consumerConfiguration.getHeadersOnly());
+        }
+        if (consumerConfiguration.getMemStorage() != null) {
+            builder.memStorage(consumerConfiguration.getMemStorage());
         }
         if (consumerConfiguration.getBackoff() != null) {
             builder.backoff(consumerConfiguration.getBackoff().toArray(new Duration[0]));

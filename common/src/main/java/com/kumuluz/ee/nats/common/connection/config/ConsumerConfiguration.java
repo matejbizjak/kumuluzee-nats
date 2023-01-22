@@ -58,9 +58,13 @@ public class ConsumerConfiguration {
 
     private Long maxBytes;
 
+    private Integer numReplicas;
+
     private Boolean flowControl;
 
     private Boolean headersOnly;
+
+    private Boolean memStorage;
 
     private List<Duration> backoff;
 
@@ -235,6 +239,14 @@ public class ConsumerConfiguration {
         this.maxBytes = maxBytes;
     }
 
+    public Integer getNumReplicas() {
+        return numReplicas;
+    }
+
+    public void setNumReplicas(Integer numReplicas) {
+        this.numReplicas = numReplicas;
+    }
+
     public Boolean getFlowControl() {
         return flowControl;
     }
@@ -249,6 +261,14 @@ public class ConsumerConfiguration {
 
     public void setHeadersOnly(Boolean headersOnly) {
         this.headersOnly = headersOnly;
+    }
+
+    public Boolean getMemStorage() {
+        return memStorage;
+    }
+
+    public void setMemStorage(Boolean memStorage) {
+        this.memStorage = memStorage;
     }
 
     public List<Duration> getBackoff() {

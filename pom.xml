@@ -30,7 +30,7 @@
 
         <kumuluzee.version>4.1.0</kumuluzee.version>
 
-        <jnats.version>2.15.3</jnats.version>
+        <jnats.version>2.15.6</jnats.version>
         <guava.version>31.1-jre</guava.version>
         <jackson.version>2.13.3</jackson.version>
     </properties>
