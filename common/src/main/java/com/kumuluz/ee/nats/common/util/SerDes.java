@@ -15,25 +15,25 @@ import java.io.IOException;
  */
 
 public class SerDes {
-    static ObjectMapper objectMapper = NatsObjectMapperProvider.getObjectMapper();
+    static final ObjectMapper OBJECT_MAPPER = NatsObjectMapperProvider.getObjectMapper();
 
     public static byte[] serialize(Object object) throws JsonProcessingException {
-        return objectMapper.writeValueAsBytes(object);
+        return OBJECT_MAPPER.writeValueAsBytes(object);
     }
 
     public static <T> T deserialize(byte[] data, Class<T> clazz) throws IOException {
-        return objectMapper.readValue(data, clazz);
+        return OBJECT_MAPPER.readValue(data, clazz);
     }
 
     public static <T> T deserialize(byte[] data, TypeReference<T> valueTypeRef) throws IOException {
-        return objectMapper.readValue(data, valueTypeRef);
+        return OBJECT_MAPPER.readValue(data, valueTypeRef);
     }
 
     public static <T> T deserialize(byte[] data, JavaType valueType) throws IOException {
-        return objectMapper.readValue(data, valueType);
+        return OBJECT_MAPPER.readValue(data, valueType);
     }
 
     public static TypeFactory getTypeFactory() {
-        return objectMapper.getTypeFactory();
+        return OBJECT_MAPPER.getTypeFactory();
     }
 }

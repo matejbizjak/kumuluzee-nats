@@ -41,7 +41,7 @@ implementation and slf4j-log4j adapter dependencies:
 
 You also need to include a Log4j2 configuration, which should be in a file named `log4j2.xml`, located in
 `src/main/resources`. For more information about KumuluzEE Logs visit the
-[KumuluzEE Logs Github page](https://github.com/kumuluz/kumuluzee-logs).
+[KumuluzEE Logs GitHub page](https://github.com/kumuluz/kumuluzee-logs).
 
 > If you are unfamiliar with the NATS JetStream, please check the [documentation](https://docs.nats.io/nats-concepts/jetstream) or read the [Configuration](#configuration) section first.
 

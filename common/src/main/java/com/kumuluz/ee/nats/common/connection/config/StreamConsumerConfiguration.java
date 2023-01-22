@@ -87,6 +87,7 @@ public class StreamConsumerConfiguration {
                 return Optional.of(buildConsumerConfiguration(consumerConfiguration));
             }
         } else {  // combine existing config and overrided values
+            @SuppressWarnings("UnnecessaryLocalVariable")
             String newConsumerName = consumerName;
             String oldConsumerName = consumerConfigAnnotation.base();
 
@@ -215,13 +216,13 @@ public class StreamConsumerConfiguration {
         consumerConfiguration.setMemStorage(cc.isMemStorage());
         consumerConfiguration.setIdleHeartbeat(cc.getIdleHeartbeat());
         consumerConfiguration.setInactiveThreshold(cc.getInactiveThreshold());
-        consumerConfiguration.setMaxAckPending((long) cc.getMaxAckPending());
-        consumerConfiguration.setMaxBatch((long) cc.getMaxBatch());
-        consumerConfiguration.setMaxBytes((long) cc.getMaxBytes());
+        consumerConfiguration.setMaxAckPending(cc.getMaxAckPending());
+        consumerConfiguration.setMaxBatch(cc.getMaxBatch());
+        consumerConfiguration.setMaxBytes(cc.getMaxBytes());
         consumerConfiguration.setNumReplicas(cc.getNumReplicas());
-        consumerConfiguration.setMaxDeliver((long) cc.getMaxDeliver());
+        consumerConfiguration.setMaxDeliver(cc.getMaxDeliver());
         consumerConfiguration.setMaxExpires(cc.getMaxExpires());
-        consumerConfiguration.setMaxPullWaiting((long) cc.getMaxPullWaiting());
+        consumerConfiguration.setMaxPullWaiting(cc.getMaxPullWaiting());
         consumerConfiguration.setRateLimit(cc.getRateLimit());
         consumerConfiguration.setReplayPolicy(cc.getReplayPolicy());
         consumerConfiguration.setSampleFrequency(cc.getSampleFrequency());

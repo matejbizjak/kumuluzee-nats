@@ -365,7 +365,7 @@ public class NatsConfigLoader {
         NamedJetStreamOptions.Builder namedBuilder = new NamedJetStreamOptions.Builder();
         // name
         Optional<String> name = configurationUtil.get(currentPrefix + ".name");
-        if (!name.isPresent()) {
+        if (name.isEmpty()) {
             throw configNotFoundException(currentPrefix + ".name").get();
         }
         namedBuilder.name(name.get());

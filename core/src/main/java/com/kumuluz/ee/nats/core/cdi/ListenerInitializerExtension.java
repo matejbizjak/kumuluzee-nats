@@ -148,9 +148,7 @@ public class ListenerInitializerExtension implements Extension {
             }
 
             // disconnect
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                dispatcher.unsubscribe(subjectName);
-            }));
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> dispatcher.unsubscribe(subjectName)));
         }
     }
 }
