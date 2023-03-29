@@ -18,9 +18,9 @@ kumuluzee:
         addresses:
           - tls://localhost:<nats_port>
         tls:
-          trust-store-path: certs\truststore.jks
+          trust-store-path: certs/truststore.jks
           trust-store-password: password2
-          key-store-path: certs\keystore.jks
+          key-store-path: certs/keystore.jks
           key-store-password: password
         streams:
           - name: stream2
