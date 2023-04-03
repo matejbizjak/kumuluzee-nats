@@ -1,11 +1,10 @@
 package com.kumuluz.ee.nats.jetstream.context;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
+import com.kumuluz.ee.nats.jetstream.util.TwoKeyTable;
 import io.nats.client.Connection;
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamOptions;
@@ -26,7 +25,7 @@ public class ContextFactory {
 
     private static ContextFactory instance;
 
-    private static final Table<String, String, JetStream> JET_STREAM_CONTEXTS = HashBasedTable.create();
+    private static final TwoKeyTable<String, String, JetStream> JET_STREAM_CONTEXTS = new TwoKeyTable<>();
 
     public ContextFactory() {
     }

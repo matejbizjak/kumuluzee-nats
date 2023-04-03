@@ -1,7 +1,5 @@
 package com.kumuluz.ee.nats.jetstream.consumer.subscriber;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.kumuluz.ee.nats.common.annotations.ConsumerConfig;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.ConnectionConfig;
@@ -12,6 +10,7 @@ import com.kumuluz.ee.nats.common.management.StreamManagement;
 import com.kumuluz.ee.nats.jetstream.JetStreamExtension;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamSubscriber;
 import com.kumuluz.ee.nats.jetstream.context.ContextFactory;
+import com.kumuluz.ee.nats.jetstream.util.TwoKeyTable;
 import io.nats.client.JetStream;
 import io.nats.client.JetStreamApiException;
 import io.nats.client.JetStreamSubscription;
@@ -35,7 +34,7 @@ public class SubscriberFactory {
 
     private static SubscriberFactory instance;
 
-    private static final Table<JetStream, String, JetStreamSubscription> SUBSCRIPTIONS = HashBasedTable.create();
+    private static final TwoKeyTable<JetStream, String, JetStreamSubscription> SUBSCRIPTIONS = new TwoKeyTable<>();
 
     public SubscriberFactory() {
     }
