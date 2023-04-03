@@ -33,6 +33,12 @@
         <jnats.version>2.16.5</jnats.version>
         <guava.version>31.1-jre</guava.version>
         <jackson.version>2.14.1</jackson.version>
+
+        <kumuluzee-arquillian-container.version>1.1.1</kumuluzee-arquillian-container.version>
+        <arquillian.version>1.7.0.Alpha10</arquillian.version>
+        <testng.version>7.7.1</testng.version>
+        <testcontainers.version>1.17.3</testcontainers.version>
+        <rest-assured.version>5.3.0</rest-assured.version>
     </properties>
 
     <!--    <scm>-->
@@ -128,51 +134,51 @@
     <!--        </profile>-->
     <!--    </profiles>-->
 
-<!--    <build>-->
-<!--        <resources>-->
-<!--            <resource>-->
-<!--                <directory>src/main/resources</directory>-->
-<!--                <filtering>true</filtering>-->
-<!--            </resource>-->
-<!--        </resources>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>com.kumuluz.ee</groupId>-->
-<!--                <artifactId>kumuluzee-maven-plugin</artifactId>-->
-<!--                <version>${kumuluzee.version}</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>package</id>-->
-<!--                        <goals>-->
-<!--                            <goal>repackage</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                <version>3.10.1</version>-->
-<!--                <configuration>-->
-<!--                    <source>1.8</source>-->
-<!--                    <target>1.8</target>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>com.kumuluz.ee</groupId>-->
-<!--                <artifactId>kumuluzee-maven-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>package</id>-->
-<!--                        <goals>-->
-<!--                            <goal>repackage</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
+    <!--    <build>-->
+    <!--        <resources>-->
+    <!--            <resource>-->
+    <!--                <directory>src/main/resources</directory>-->
+    <!--                <filtering>true</filtering>-->
+    <!--            </resource>-->
+    <!--        </resources>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>com.kumuluz.ee</groupId>-->
+    <!--                <artifactId>kumuluzee-maven-plugin</artifactId>-->
+    <!--                <version>${kumuluzee.version}</version>-->
+    <!--                <executions>-->
+    <!--                    <execution>-->
+    <!--                        <id>package</id>-->
+    <!--                        <goals>-->
+    <!--                            <goal>repackage</goal>-->
+    <!--                        </goals>-->
+    <!--                    </execution>-->
+    <!--                </executions>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--        <plugins>-->
+    <!--            <plugin>-->
+    <!--                <groupId>org.apache.maven.plugins</groupId>-->
+    <!--                <artifactId>maven-compiler-plugin</artifactId>-->
+    <!--                <version>3.10.1</version>-->
+    <!--                <configuration>-->
+    <!--                    <source>1.8</source>-->
+    <!--                    <target>1.8</target>-->
+    <!--                </configuration>-->
+    <!--            </plugin>-->
+    <!--            <plugin>-->
+    <!--                <groupId>com.kumuluz.ee</groupId>-->
+    <!--                <artifactId>kumuluzee-maven-plugin</artifactId>-->
+    <!--                <executions>-->
+    <!--                    <execution>-->
+    <!--                        <id>package</id>-->
+    <!--                        <goals>-->
+    <!--                            <goal>repackage</goal>-->
+    <!--                        </goals>-->
+    <!--                    </execution>-->
+    <!--                </executions>-->
+    <!--            </plugin>-->
+    <!--        </plugins>-->
+    <!--    </build>-->
 
 </project>
