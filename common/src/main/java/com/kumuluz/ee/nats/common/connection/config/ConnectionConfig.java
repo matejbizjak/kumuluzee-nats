@@ -1,5 +1,6 @@
 package com.kumuluz.ee.nats.common.connection.config;
 
+import com.kumuluz.ee.nats.common.exception.ConfigurationException;
 import io.nats.client.JetStreamOptions;
 import io.nats.client.Nats;
 import io.nats.client.Options;
@@ -310,6 +311,8 @@ public abstract class ConnectionConfig {
                     URL resource = getClass().getClassLoader().getResource(path);
                     if (resource != null) {
                         in = new BufferedInputStream(resource.openStream());
+                    } else {
+                        throw new ConfigurationException(String.format("Keystore or truststore wasn't found at path %s, please check the configuration.", path));
                     }
                 }
                 store.load(in, Optional.ofNullable(password).map(String::toCharArray).orElse(new char[0]));
