@@ -15,6 +15,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
@@ -44,7 +45,8 @@ public class NatsTest extends Arquillian {
             .withExposedPorts(NATS_PORT)
             .withCommand("-c /etc/nats/tlsverify.conf")
             .withClasspathResourceMapping("./config/", "/etc/nats", BindMode.READ_ONLY)
-            .withClasspathResourceMapping("./certs/", "/etc/nats/certs", BindMode.READ_ONLY);
+            .withClasspathResourceMapping("./certs/", "/etc/nats/certs", BindMode.READ_ONLY)
+            .waitingFor(Wait.forLogMessage(".*Server is ready.*\\n", 1));
 
     @Deployment
     public static JavaArchive createDeployment() {
