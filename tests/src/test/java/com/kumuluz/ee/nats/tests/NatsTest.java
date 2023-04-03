@@ -61,7 +61,7 @@ public class NatsTest extends Arquillian {
                     NatsTest.class.getClassLoader().getResourceAsStream("config.yml"),
                     "Could not load config.yml"
             ).readAllBytes(), StandardCharsets.UTF_8)
-                    .replace("<nats_port>", "" + NATS.getMappedPort(NATS_PORT));
+                    .replace("<nats_port>", String.valueOf(NATS.getMappedPort(NATS_PORT)));
         } catch (IOException e) {
             throw new IllegalStateException("Could not load config.yml", e);
         }
