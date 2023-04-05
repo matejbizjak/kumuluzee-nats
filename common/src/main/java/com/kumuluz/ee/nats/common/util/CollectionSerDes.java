@@ -27,7 +27,6 @@ public class CollectionSerDes {
         } else if (Set.class.isAssignableFrom(parameterType)) {
             genericParameterType = (ParameterizedType) method.getGenericParameterTypes()[0];
             deserType = typeFactory.constructCollectionType(Set.class, typeFactory.constructType(genericParameterType.getActualTypeArguments()[0]));
-//                        } else if (Collection.class.isAssignableFrom(parameterType)) {
         } else if (List.class.isAssignableFrom(parameterType)) {
             genericParameterType = (ParameterizedType) method.getGenericParameterTypes()[0];
             deserType = typeFactory.constructCollectionType(List.class, typeFactory.constructType(genericParameterType.getActualTypeArguments()[0]));
@@ -49,7 +48,6 @@ public class CollectionSerDes {
         } else if (Set.class.isAssignableFrom(returnType)) {
             genericParameterType = (ParameterizedType) method.getGenericReturnType();
             deserType = typeFactory.constructCollectionType(Set.class, typeFactory.constructType(genericParameterType.getActualTypeArguments()[0]));
-//                        } else if (Collection.class.isAssignableFrom(parameterType)) {
         } else if (List.class.isAssignableFrom(returnType)) {
             genericParameterType = (ParameterizedType) method.getGenericReturnType();
             deserType = typeFactory.constructCollectionType(List.class, typeFactory.constructType(genericParameterType.getActualTypeArguments()[0]));

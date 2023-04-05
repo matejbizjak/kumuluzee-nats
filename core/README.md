@@ -39,10 +39,6 @@ public class NatsMapperProvider implements NatsObjectMapperProvider {
 Do not forget to register the implementation and add the required dependencies.
 A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
 
-[//]: # (In our example in the resource directory `META-INF/services` add)
-
-[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
-
 #### Using ObjectMapper
 
 Use methods in SerDes class for de/serialization.
@@ -221,28 +217,28 @@ of how to authenticate with it. However, the configuration is completely optiona
 [//]: # ()
 [//]: # (#### Cluster connection)
 
-| Property                                        | Type                | Description                                                                                        |
-|-------------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------|
-| kumuluzee.nats.enabled                          | boolean             | Enables/disables the extension                                                                     |
-| kumuluzee.nats.response-timeout                 | java.time.Duration  | Timeout for the response of the message                                                            |
-| kumuluzee.nats.servers                          | java.util.List      | The list of servers                                                                                |
-| kumuluzee.nats.servers.name                     | java.lang.String    | The name of the connection to the server                                                           |
-| kumuluzee.nats.servers.addresses                | java.util.List      | The list of the addresses                                                                          |
-| kumuluzee.nats.servers.username                 | java.lang.String    | The username                                                                                       |
-| kumuluzee.nats.servers.password                 | java.lang.String    | The password                                                                                       |
-| kumuluzee.nats.servers.max-reconnect            | int                 | Times to try reconnect                                                                             |
-| kumuluzee.nats.servers.reconnect-wait           | java.time.Duration  | Time to wait before reconnecting                                                                   |
-| kumuluzee.nats.servers.connection-timeout       | java.time.Duration  | Timeout for the initial connection                                                                 |
-| kumuluzee.nats.servers.ping-interval            | java.time.Duration  | Time between server pings                                                                          |
-| kumuluzee.nats.servers.reconnect-buffer-size    | long                | Size of the buffer (in bytes) used to store publish messages during reconnect                      |
-| kumuluzee.nats.servers.inbox-prefix             | java.lang.String    | Custom prefix for request/reply inboxes                                                            |
-| kumuluzee.nats.servers.no-echo                  | boolean             | Enable or disable echo messages, messages that are sent by this connection back to this connection |
-| kumuluzee.nats.servers.credentials              | java.lang.String    | Path to the credentials file to use for the authentication with an account enabled server          |
-| kumuluzee.nats.servers.tls.trust-store-path     | java.lang.String    | Path to the trust store                                                                            |
-| kumuluzee.nats.servers.tls.trust-store-password | java.lang.String    | The password to unlock the trust store                                                             |
-| kumuluzee.nats.servers.tls.certificate-path     | java.lang.String    | Path to the server's certificate                                                                   |
-| kumuluzee.nats.servers.tls.key-store-path       | java.lang.String    | Path to the key store                                                                              |
-| kumuluzee.nats.servers.tls.key-store-password   | java.lang.String    | The password to unlock the key store                                                               |
+| Property                                        | Type                | Description                                                                                         |
+|-------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------|
+| kumuluzee.nats.enabled                          | boolean             | Enables/disables the extension.                                                                     |
+| kumuluzee.nats.response-timeout                 | java.time.Duration  | Timeout for the response of the message.                                                            |
+| kumuluzee.nats.servers                          | java.util.List      | The list of servers.                                                                                |
+| kumuluzee.nats.servers.name                     | java.lang.String    | The name of the connection to the server.                                                           |
+| kumuluzee.nats.servers.addresses                | java.util.List      | The list of the addresses.                                                                          |
+| kumuluzee.nats.servers.username                 | java.lang.String    | The username.                                                                                       |
+| kumuluzee.nats.servers.password                 | java.lang.String    | The password.                                                                                       |
+| kumuluzee.nats.servers.max-reconnect            | int                 | Times to try reconnect.                                                                             |
+| kumuluzee.nats.servers.reconnect-wait           | java.time.Duration  | Time to wait before reconnecting.                                                                   |
+| kumuluzee.nats.servers.connection-timeout       | java.time.Duration  | Timeout for the initial connection.                                                                 |
+| kumuluzee.nats.servers.ping-interval            | java.time.Duration  | Time between server pings.                                                                          |
+| kumuluzee.nats.servers.reconnect-buffer-size    | long                | Size of the buffer (in bytes) used to store publish messages during reconnect.                      |
+| kumuluzee.nats.servers.inbox-prefix             | java.lang.String    | Custom prefix for request/reply inboxes.                                                            |
+| kumuluzee.nats.servers.no-echo                  | boolean             | Enable or disable echo messages, messages that are sent by this connection back to this connection. |
+| kumuluzee.nats.servers.credentials              | java.lang.String    | Path to the credentials file to use for the authentication with an account enabled server.          |
+| kumuluzee.nats.servers.tls.trust-store-path     | java.lang.String    | Path to the trust store.                                                                            |
+| kumuluzee.nats.servers.tls.trust-store-password | java.lang.String    | The password to unlock the trust store.                                                             |
+| kumuluzee.nats.servers.tls.certificate-path     | java.lang.String    | Path to the server's certificate.                                                                   |
+| kumuluzee.nats.servers.tls.key-store-path       | java.lang.String    | Path to the key store.                                                                              |
+| kumuluzee.nats.servers.tls.key-store-password   | java.lang.String    | The password to unlock the key store.                                                               |
 
 ### Clusters & Reconnecting
 
