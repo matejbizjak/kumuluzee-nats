@@ -5,6 +5,8 @@ import com.kumuluz.ee.nats.core.annotations.Subject;
 import com.kumuluz.ee.nats.testapp.common.Product;
 
 /**
+ * NATS Core client interface.
+ *
  * @author Matej Bizjak
  */
 

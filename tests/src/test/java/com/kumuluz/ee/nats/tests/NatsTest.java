@@ -31,6 +31,8 @@ import static io.restassured.RestAssured.when;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 /**
+ * Starts a Docker container with the latest Nats server and runs several tests to ensure the correctness of the KumuluzEE NATS extension.
+ *
  * @author Matej Bizjak
  */
 

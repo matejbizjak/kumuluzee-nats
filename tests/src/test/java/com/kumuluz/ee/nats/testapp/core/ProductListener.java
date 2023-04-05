@@ -5,6 +5,8 @@ import com.kumuluz.ee.nats.core.annotations.Subject;
 import com.kumuluz.ee.nats.testapp.common.Product;
 
 /**
+ * NATS Core listener which is listening for new NATS Core messages and returns a response.
+ *
  * @author Matej Bizjak
  */
 

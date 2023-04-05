@@ -21,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 /**
+ * REST endpoint which publishes JetStream messages.
+ *
  * @author Matej Bizjak
  */
 

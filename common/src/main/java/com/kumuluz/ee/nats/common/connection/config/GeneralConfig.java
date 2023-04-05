@@ -3,6 +3,8 @@ package com.kumuluz.ee.nats.common.connection.config;
 import java.time.Duration;
 
 /**
+ * Class for general NATS configuration settings.
+ *
  * @author Matej Bizjak
  */
 

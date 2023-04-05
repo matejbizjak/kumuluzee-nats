@@ -5,6 +5,8 @@ import com.kumuluz.ee.nats.jetstream.wrappers.JetStreamMessage;
 import com.kumuluz.ee.nats.testapp.common.Product;
 
 /**
+ * JetStream push subscriber.
+ *
  * @author Matej Bizjak
  */
 

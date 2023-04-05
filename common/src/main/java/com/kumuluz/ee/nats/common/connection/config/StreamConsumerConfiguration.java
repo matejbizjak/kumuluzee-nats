@@ -16,6 +16,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * Class for NATS Streams settings (which includes Consumer settings).
+ *
  * @author Matej Bizjak
  */
 

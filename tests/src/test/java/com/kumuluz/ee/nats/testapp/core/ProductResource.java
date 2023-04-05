@@ -13,6 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
+ * REST endpoint which calls NATS Core client and returns the received message.
+ *
  * @author Matej Bizjak
  */
 

@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.time.Duration;
 
 /**
+ * JetStream pull subscriber.
+ *
  * @author Matej Bizjak
  */
 

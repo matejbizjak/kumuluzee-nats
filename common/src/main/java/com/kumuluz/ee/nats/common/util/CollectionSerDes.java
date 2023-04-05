@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Util class for de/serializing Java Collection types (choosing the correct parameter/return type).
+ *
  * @author Matej Bizjak
  */
 

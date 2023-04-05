@@ -5,6 +5,8 @@ import java.sql.Blob;
 import java.time.Instant;
 
 /**
+ * DTO for the test application.
+ *
  * @author Matej Bizjak
  */
 

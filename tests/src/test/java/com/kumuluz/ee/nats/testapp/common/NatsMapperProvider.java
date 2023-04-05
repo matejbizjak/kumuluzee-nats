@@ -5,6 +5,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider;
 
 /**
+ * ObjectMapper provider which registers JavaTimeModule.
+ *
  * @author Matej Bizjak
  */
 
