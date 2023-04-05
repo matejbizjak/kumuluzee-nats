@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>KumuluzEE Nats Common</name>
+    <name>KumuluzEE NATS Common</name>
     <description>KumuluzEE Nats Common module</description>
 
     <artifactId>kumuluzee-nats-common</artifactId>

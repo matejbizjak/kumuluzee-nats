@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <name>KumuluzEE Nats Core</name>
+    <name>KumuluzEE NATS Core</name>
     <description>NATS Core connective technology extension for the lightweight KumuluzEE framework.</description>
 
     <artifactId>kumuluzee-nats-core</artifactId>
