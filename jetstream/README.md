@@ -68,10 +68,6 @@ public class NatsMapperProvider implements NatsObjectMapperProvider {
 Do not forget to register the implementation and add the required dependencies.
 A Service Provider is configured and identified through a provider configuration file which we put in the resource directory META-INF/services. The file name is the fully-qualified name of the SPI and its content is the fully-qualified name of the SPI implementation.
 
-[//]: # (In our example in the resource directory `META-INF/services` add)
-
-[//]: # (a file `com.kumuluz.ee.nats.common.util.NatsObjectMapperProvider` with the content `si.matejbizjak.natscore.sample.api.NatsMapperProvider`.)
-
 #### Using ObjectMapper
 
 Use methods in SerDes class for de/serialization.
@@ -323,64 +319,6 @@ Configurations are read from KumuluzEE configuration file (`resources/config.yml
 a configuration server, such as etcd or Consul (for which the KumuluzEE Config project is required). For more details
 see the [KumuluzEE configuration wiki page](https://github.com/kumuluz/kumuluzee/wiki/Configuration) and
 [KumuluzEE Config](https://github.com/kumuluz/kumuluzee-config).
-
-[//]: # ()
-
-[//]: # (#### Single connection)
-
-[//]: # ()
-
-[//]: # (Used when connecting to a single server.)
-
-[//]: # ()
-
-[//]: # (| Property                 | Type             | Description                                                                                        |)
-
-[//]: # (|--------------------------|------------------|----------------------------------------------------------------------------------------------------|)
-
-[//]: # (| enabled                  | boolean          | Enables/disables the extension                                                                     |)
-
-[//]: # (| response-timeout         | int              | Timeout for the response of the message                                                            |)
-
-[//]: # (| name                     | java.lang.String | The name of the connection to the server                                                           |)
-
-[//]: # (| addresses                | java.util.List   | The list of the addresses                                                                          |)
-
-[//]: # (| username                 | java.lang.String | The username                                                                                       |)
-
-[//]: # (| password                 | java.lang.String | The password                                                                                       |)
-
-[//]: # (| max-reconnect            | int              | Times to try reconnect                                                                             |)
-
-[//]: # (| reconnect-wait           | int              | Number of seconds to wait before reconnecting                                                      |)
-
-[//]: # (| connection-timeout       | int              | Timeout for the initial connection &#40;in seconds&#41;                                                    |)
-
-[//]: # (| ping-interval            | int              | Time between server pings                                                                          |)
-
-[//]: # (| reconnect-buffer-size    | long             | Size of the buffer &#40;in bytes&#41; used to store publish messages during reconnect                      |)
-
-[//]: # (| inbox-prefix             | java.lang.String | Custom prefix for request/reply inboxes                                                            |)
-
-[//]: # (| no-echo                  | boolean          | Enable or disable echo messages, messages that are sent by this connection back to this connection |)
-
-[//]: # (| credentials              | java.lang.String | Path to the credentials file to use for the authentication with an account enabled server          |)
-
-[//]: # (| tls.trust-store-path     | java.lang.String | Path to the trust store                                                                            |)
-
-[//]: # (| tls.trust-store-password | java.lang.String | The password to unlock the trust store                                                             |)
-
-[//]: # (| tls.certificate-path     | java.lang.String | Path to the server's certificate                                                                   |)
-
-[//]: # (| tls.key-store-path       | java.lang.String | Path to the key store                                                                              |)
-
-[//]: # (| tls.key-store-password   | java.lang.String | The password to unlock the key store                                                               |)
-
-[//]: # ()
-
-[//]: # ()
-
-[//]: # (#### Cluster connection)
 
 The configuration is split into more parts for easier understanding.
 

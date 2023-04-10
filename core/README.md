@@ -162,61 +162,6 @@ In order for a NATS client application to connect to the NATS service, and then 
 subjects, it needs to be able to be configured with the details of how to connect to the NATS service infrastructure and
 of how to authenticate with it. However, the configuration is completely optional. If no values are set, the extension will use the default values.
 
-[//]: # (The prefix of all following properties must be `kumuluzee.nats`.)
-
-[//]: # ()
-[//]: # (#### Single connection)
-
-[//]: # ()
-[//]: # (Used when connecting to a single server.)
-
-[//]: # ()
-[//]: # (| Property                 | Type             | Description                                                                                        |)
-
-[//]: # (|--------------------------|------------------|----------------------------------------------------------------------------------------------------|)
-
-[//]: # (| enabled                  | boolean          | Enables/disables the extension                                                                     |)
-
-[//]: # (| response-timeout         | int              | Timeout for the response of the message                                                            |)
-
-[//]: # (| name                     | java.lang.String | The name of the connection to the server                                                           |)
-
-[//]: # (| addresses                | java.util.List   | The list of the addresses                                                                          |)
-
-[//]: # (| username                 | java.lang.String | The username                                                                                       |)
-
-[//]: # (| password                 | java.lang.String | The password                                                                                       |)
-
-[//]: # (| max-reconnect            | int              | Times to try reconnect                                                                             |)
-
-[//]: # (| reconnect-wait           | int              | Number of seconds to wait before reconnecting                                                      |)
-
-[//]: # (| connection-timeout       | int              | Timeout for the initial connection &#40;in seconds&#41;                                                    |)
-
-[//]: # (| ping-interval            | int              | Time between server pings                                                                          |)
-
-[//]: # (| reconnect-buffer-size    | long             | Size of the buffer &#40;in bytes&#41; used to store publish messages during reconnect                      |)
-
-[//]: # (| inbox-prefix             | java.lang.String | Custom prefix for request/reply inboxes                                                            |)
-
-[//]: # (| no-echo                  | boolean          | Enable or disable echo messages, messages that are sent by this connection back to this connection |)
-
-[//]: # (| credentials              | java.lang.String | Path to the credentials file to use for the authentication with an account enabled server          |)
-
-[//]: # (| tls.trust-store-path     | java.lang.String | Path to the trust store                                                                            |)
-
-[//]: # (| tls.trust-store-password | java.lang.String | The password to unlock the trust store                                                             |)
-
-[//]: # (| tls.certificate-path     | java.lang.String | Path to the server's certificate                                                                   |)
-
-[//]: # (| tls.key-store-path       | java.lang.String | Path to the key store                                                                              |)
-
-[//]: # (| tls.key-store-password   | java.lang.String | The password to unlock the key store                                                               |)
-
-[//]: # ()
-[//]: # ()
-[//]: # (#### Cluster connection)
-
 | Property                                        | Type                | Description                                                                                         |
 |-------------------------------------------------|---------------------|-----------------------------------------------------------------------------------------------------|
 | kumuluzee.nats.enabled                          | boolean             | Enables/disables the extension.                                                                     |
