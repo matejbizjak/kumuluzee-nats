@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.core.cdi;
+package com.kumuluz.ee.nats.core.cdi.client;
 
 import com.kumuluz.ee.nats.core.CoreExtension;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
@@ -11,6 +11,10 @@ import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * CDI {@link Extension} that adds dynamically created beans from interfaces annotated with {@link RegisterNatsClient}.
@@ -45,7 +49,7 @@ public class ClientInitializerExtension implements Extension {
 
         for (AnnotatedType anType : this.classes) {
             Class<? extends Annotation> scopeClass = resolveScope(anType.getJavaClass());
-            afterBeanDiscovery.addBean(new InvokerDelegateBean(anType.getJavaClass(), scopeClass));
+            afterBeanDiscovery.addBean(new InvokerClientDelegateBean(anType.getJavaClass(), scopeClass));
         }
     }
 

@@ -132,6 +132,22 @@ public class NatsTest extends Arquillian {
                 .body(equalTo("Message has been sent to stream stream2"));
     }
 
+    @Test
+    @RunAsClient
+    public void validateJetStreamPublish3() {
+        given()
+                .body(new Product(1, "Lemon", "Shiny lemon - 250g"
+                        , new BigDecimal("3.2"), 12, null, Instant.EPOCH))
+                .contentType(ContentType.JSON)
+                .when()
+                .post("/v1/product/any-product")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .contentType(ContentType.JSON)
+                .body(equalTo("Message has been sent to stream stream2"));
+    }
+
     @Test(dependsOnMethods = "validateJetStreamPublish1")
     @RunAsClient
     public void validateJetStreamPull() {

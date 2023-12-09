@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.core.cdi;
+package com.kumuluz.ee.nats.core.cdi.listener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
@@ -26,6 +26,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * Finds methods which are annotated with a {@link Subject} annotations and their class is annotated with {@link NatsListener} annotation.

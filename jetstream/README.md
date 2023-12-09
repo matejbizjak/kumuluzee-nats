@@ -74,9 +74,13 @@ Use methods in SerDes class for de/serialization.
 
 ### Publishing messages
 
-For injecting a JetStream context, the KumuluzEE NATS JetStream provides the `@JetStreamProducer` annotation, which will
-inject the producer reference.
-We have to use it in conjunction with the `@Inject` annotation, as shown in the example below.
+#### By injecting JetStream context
+
+The KumuluzEE NATS JetStream offers the `@JetStreamProducer` annotation for injecting a JetStream context.
+This annotation injects the producer reference. It should be used in conjunction with the `@Inject` annotation, as demonstrated in the example below.
+
+This approach offers greater flexibility and is recommended particularly when advanced settings are required for publishing. 
+It allows for the free manipulation of objects needed for JetStream's `publish()` and `publishAsync()` methods.
 
 ```java
 @Inject
@@ -103,6 +107,66 @@ PublishAck publishAck = jetStream.publish(message);
 ```
 
 We can also use `publishAsync()` to publish asynchronously.
+
+#### By defining JetStream client
+
+An alternative approach involves creating an interface with predefined functions that are implemented at runtime.
+These functions act as a JetStream client, sending JetStream messages upon invocation. 
+This method functions similarly to the way the NATS Core client operates.
+
+```java
+@RegisterJetStreamClient
+public interface ProductClient {
+
+    @JetStreamSubject(value = "subject1")
+    CompletableFuture<PublishAck> sendMessage1Async(String message);
+
+    @JetStreamSubject(value = "subject2")
+    PublishAck sendMessage2(String message);
+
+    PublishAck sendDynamicMessage(@JetStreamSubject String subject, BigDecimal message);
+}
+```
+
+`@RegisterJetStreamClient` has two optional parameters:
+
+- connection (name of the connection)
+- context (name of the JetStream context)
+
+`@JetStreamSubject` has 4 parameters:
+- value (subject name - required)
+- connection (name of the connection)
+- context (name of the JetStream context)
+- uniqueMessageHeader ([for message deduplication](#exactly-once-delivery))
+
+Functions need to return either `PublishAck` or `CompletableFuture<PublishAck>`.
+If they return `PublishAck` publishing will be executed synchronously, if `CompletableFuture<PublishAck>` asynchronously.
+We can also set subject dynamically during the runtime, as shown in the last function.
+
+To use JetStream client we need to inject the client with `@Inject` and `@JetStreamClient`. And then call the functions.
+
+```java
+@Inject
+@JetStreamClient
+private ProductClient productClient;
+
+public void sendMessage1(String message) {
+    try {
+        CompletableFuture<PublishAck> future = productClient.sendMessage1Async(message);
+        PublishAck publishAck = future.get();
+    } catch (ExecutionException | InterruptedException e) {
+        System.err.println("Error while trying to send JetStream message");
+    }
+}
+
+public void sendMessage2(String message) {
+    PublishAck publishAck = productClient.sendMessage2(message);
+}
+
+public void sendDynamicMessage(String topic, BigDecimal message) {
+    PublishAck publishAck = productClient.sendDynamicMessage(topic, message);
+}
+```
 
 ### Consuming messages
 
@@ -271,6 +335,7 @@ On the publishing side you can avoid duplicate message ingestion using the Messa
 JetStream support idempotent message writes by ignoring duplicate messages as indicated by the `Nats-Msg-Id header`.
 This tells JetStream to ensure we do not have duplicates of this message - we only consult the message ID not the body.
 
+We can do this manually when using injected jetStream instance:
 ```java
 String uniqueID = UUID.randomUUID().toString();
 Headers headers = new Headers().add("Nats-Msg-Id", uniqueID);
@@ -283,6 +348,8 @@ Message message=NatsMessage.builder()
 
 PublishAck publishAck = jetStream.publish(message);
 ```
+
+Or we can set `uniqueMessageHeader = true` at `@JetStreamSubject` annotation.
 
 #### Consumer
 
