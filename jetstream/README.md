@@ -115,8 +115,8 @@ These functions act as a JetStream client, sending JetStream messages upon invoc
 This method functions similarly to the way the NATS Core client operates.
 
 ```java
-@RegisterJetStreamClient
-public interface ProductClient {
+@RegisterJetStreamClient(context= "context1")
+public interface SimpleClient {
 
     @JetStreamSubject(value = "subject1")
     CompletableFuture<PublishAck> sendMessage1Async(String message);
