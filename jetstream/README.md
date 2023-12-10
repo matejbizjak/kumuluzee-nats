@@ -332,7 +332,7 @@ JetStream supports exactly-once delivery guarantees by combining Message Dedupli
 
 On the publishing side you can avoid duplicate message ingestion using the Message Deduplication feature.
 
-JetStream support idempotent message writes by ignoring duplicate messages as indicated by the `Nats-Msg-Id header`.
+JetStream support idempotent message writes by ignoring duplicate messages as indicated by the `Nats-Msg-Id` header.
 This tells JetStream to ensure we do not have duplicates of this message - we only consult the message ID not the body.
 
 We can do this manually when using injected jetStream instance:
