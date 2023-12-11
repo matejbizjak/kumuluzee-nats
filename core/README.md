@@ -56,6 +56,9 @@ public interface SimpleClient {
 
     @Subject(value = "simple2")
     String sendSimpleResponse(String value);
+
+    @Subject(value = "simple3")
+    CompletableFuture<String> sendSimpleResponseAsync(String value);
     
     String sendSimpleDynamicSubjectResponse(@Subject String subject, String value);
     
@@ -82,7 +85,10 @@ If those optional values are not set, NATS client will use the default values.
 
 #### Return type
 
-Method's return type specifies the response (message) object a client should receive. If the return type is `void` the client does not expect a response.
+Method's return type specifies the response (message) object a client should receive. 
+If the return type is `void` the client does not expect a response.
+If the return type is generic `CompletableFuture`, then the response will be sent asynchronously.
+For example `CompletableFuture<String>` tells the client that they will receive response of type String asynchronously. 
 
 > :information_source: Objects from `java.util.Collection` and `java.util.Map` are also supported.
 
@@ -109,6 +115,9 @@ simpleClient.sendSimple("simple string");
 ```
 ```java
 String msgResponse = simpleClient.sendSimpleResponse("another simple string");
+```
+```java
+CompletableFuture<String> futureResponse = simpleClient.sendSimpleResponseAsync("another simple string async");
 ```
 ```java
 String msgResponse = simpleClient.sendSimpleDynamicSubjectResponse("dynamic", "simple string with dynamic subject");
@@ -138,6 +147,12 @@ public class SimpleListener {
     public String receiveAndReturn2(String value) {
         System.out.println(value);
         return value.toLowerCase();
+    }
+
+    @Subject(value = "text3")
+    public String receiveAndReturn3(String value) {
+        LOG.info(String.format("Method receiveAndReturn3 received message %s in subject text3.", value));
+        return "async: " + value;
     }
 
     @Subject(value = "dynamic")

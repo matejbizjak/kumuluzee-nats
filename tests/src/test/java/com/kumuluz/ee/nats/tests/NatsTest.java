@@ -98,7 +98,7 @@ public class NatsTest extends Arquillian {
                 .assertThat()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
-                .body(equalTo("The product was sent. Even more, I also received a product as response. Its name is APPLE"));
+                .body(equalTo("The product was sent. Even more, I also received a product as response asynchronously. Its name is APPLE"));
     }
 
     @Test

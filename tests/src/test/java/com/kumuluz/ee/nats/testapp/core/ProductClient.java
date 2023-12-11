@@ -4,6 +4,8 @@ import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
 import com.kumuluz.ee.nats.core.annotations.Subject;
 import com.kumuluz.ee.nats.testapp.common.Product;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * NATS Core client interface.
  *
@@ -20,5 +22,5 @@ public interface ProductClient {
     String sendProductResponse(Product product);
 
     @Subject(value = "product3", connection = "secure")
-    Product sendProductResponseProduct(Product product);
+    CompletableFuture<Product> sendProductResponseProduct(Product product);
 }

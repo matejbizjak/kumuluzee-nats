@@ -3,6 +3,7 @@ package com.kumuluz.ee.nats.core.invoker;
 import com.kumuluz.ee.nats.common.connection.NatsConnection;
 import com.kumuluz.ee.nats.common.connection.config.NatsConfigLoader;
 import com.kumuluz.ee.nats.common.connection.config.SingleConnectionConfig;
+import com.kumuluz.ee.nats.common.exception.SerializationException;
 import com.kumuluz.ee.nats.common.util.CollectionSerDes;
 import com.kumuluz.ee.nats.common.util.SerDes;
 import com.kumuluz.ee.nats.core.annotations.RegisterNatsClient;
@@ -11,9 +12,8 @@ import io.nats.client.Connection;
 import io.nats.client.Message;
 import io.nats.client.impl.NatsMessage;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.io.IOException;
+import java.lang.reflect.*;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
@@ -51,7 +51,24 @@ public class ClientInvoker implements InvocationHandler {
 
         if (returnType.equals(Void.class) || returnType.equals(void.class)) {  // doesn't expect a response
             connection.publish(message);
-        } else { // wait for response
+        } else if (returnType.equals(CompletableFuture.class)) {  // return CompletableFuture - for async response
+            return connection.request(message)
+                    .thenApplyAsync(response -> {
+                        if (response != null) {
+                            try {
+                                return SerDes.deserialize(response.getData(), CollectionSerDes.getCollectionReturnType(method));
+                            } catch (IOException e) {
+                                throw new SerializationException(String
+                                        .format("Cannot deserialize the message as class %s for subject %s and connection %s."
+                                                , method.getParameterTypes()[0].getName(), message.getSubject()
+                                                , connection.getConnectedUrl()
+                                        ), e);
+                            }
+                        } else {
+                            return null;
+                        }
+                    });
+        } else {  // wait for response
             CompletableFuture<Message> incoming = connection.request(message);
             Message response = incoming.get(getAnnotatedResponseTimeout(method).get(ChronoUnit.SECONDS), TimeUnit.SECONDS);
             if (response != null) {

@@ -11,6 +11,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.concurrent.CompletionStage;
 
 /**
  * REST endpoint which calls NATS Core client and returns the received message.
@@ -30,9 +31,10 @@ public class ProductResource {
 
     @POST
     @Path("/withResponseProduct")
-    public Response postProductResponseProduct(Product product) {
-        Product demoResponse = productClient.sendProductResponseProduct(product);
-        return Response.ok(String.format("The product was sent. Even more, I also received a product as response. Its name is %s"
-                , demoResponse.getName())).build();
+    public CompletionStage<Response> postProductResponseProduct(Product product) {
+        return productClient.sendProductResponseProduct(product)
+                .thenApply(response -> Response.ok(String.format("The product was sent. Even more, I also received a product as response asynchronously. Its name is %s"
+                        , response.getName())).build())
+                .exceptionally(e -> Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error processing response").build());
     }
 }
