@@ -1,6 +1,6 @@
-package com.kumuluz.ee.nats.core.cdi;
+package com.kumuluz.ee.nats.jetstream.cdi.client;
 
-import com.kumuluz.ee.nats.core.annotations.NatsClient;
+import com.kumuluz.ee.nats.jetstream.annotations.JetStreamClient;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Any;
@@ -17,17 +17,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Bean that creates a NATS Client using a {@link InjectableClientHandler}.
+ * @author Matej Bizjak
+ */
+
+/**
+ * Bean that creates a JetStream Client using a {@link JetStreamInjectableClientHandler}.
  *
  * @author Matej Bizjak
  */
 
-public class InvokerDelegateBean implements Bean<Object>, PassivationCapable {
+public class JetStreamClientInvokerDelegateBean implements Bean<Object>, PassivationCapable {
 
     private final Class<?> restClientType;
     private final Class<? extends Annotation> scope;
 
-    public InvokerDelegateBean(Class<?> restClientType, Class<? extends Annotation> scope) {
+    public JetStreamClientInvokerDelegateBean(Class<?> restClientType, Class<? extends Annotation> scope) {
         this.restClientType = restClientType;
         this.scope = scope;
     }
@@ -50,7 +54,7 @@ public class InvokerDelegateBean implements Bean<Object>, PassivationCapable {
     @Override
     public Object create(CreationalContext<Object> creationalContext) {
         return Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{restClientType},
-                new InjectableClientHandler());
+                new JetStreamInjectableClientHandler());
     }
 
     @Override
@@ -70,7 +74,7 @@ public class InvokerDelegateBean implements Bean<Object>, PassivationCapable {
         });
         qualifiers.add(new AnnotationLiteral<Any>() {
         });
-        qualifiers.add(NatsClient.LITERAL);
+        qualifiers.add(JetStreamClient.LITERAL);
 
         return qualifiers;
     }

@@ -1,4 +1,4 @@
-package com.kumuluz.ee.nats.core.cdi;
+package com.kumuluz.ee.nats.core.cdi.client;
 
 import com.kumuluz.ee.nats.core.proxy.ClientBuilder;
 
@@ -8,6 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+/**
+ * @author Matej Bizjak
+ */
 
 /**
  * Caches and invokes {@link ClientBuilder}.

@@ -1,3 +1,4 @@
 com.kumuluz.ee.nats.common.connection.ConnectionStreamExtension
+com.kumuluz.ee.nats.jetstream.cdi.client.JetStreamClientInitializerExtension
 com.kumuluz.ee.nats.jetstream.consumer.listener.ListenerInitializerExtension
 com.kumuluz.ee.nats.jetstream.consumer.subscriber.SubscriberInitializerExtension

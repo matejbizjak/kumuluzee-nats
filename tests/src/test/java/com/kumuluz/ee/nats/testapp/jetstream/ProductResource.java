@@ -1,6 +1,7 @@
 package com.kumuluz.ee.nats.testapp.jetstream;
 
 import com.kumuluz.ee.nats.common.util.SerDes;
+import com.kumuluz.ee.nats.jetstream.annotations.JetStreamClient;
 import com.kumuluz.ee.nats.jetstream.annotations.JetStreamProducer;
 import com.kumuluz.ee.nats.testapp.common.Product;
 import io.nats.client.JetStream;
@@ -34,9 +35,14 @@ public class ProductResource {
 
     @Inject
     private ProductSubscriber productSubscriber;
+
     @Inject
     @JetStreamProducer(connection = "secure")
     private JetStream jetStream;
+
+    @Inject
+    @JetStreamClient
+    private ProductClient productClient;
 
     @POST
     @Path("/corn")
@@ -79,6 +85,14 @@ public class ProductResource {
         } catch (IOException | JetStreamApiException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(e).build();
         }
+    }
+
+    @POST
+    @Path("/any-product")
+    public Response postAnyProduct(Product product) {
+        String topic = "product." + product.getName().toLowerCase();
+        PublishAck publishAck = productClient.sendAnyProduct(topic, product);
+        return Response.ok(String.format("Message has been sent to stream %s", publishAck.getStream())).build();
     }
 
     @GET
